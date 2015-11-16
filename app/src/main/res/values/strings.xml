@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Dansk Datahistorisk Forening</string>
     <string name="lorem_ipsum"> hej hejdflsadkfj sdf sf sdf sdf dsaf ds flskdjfdslfkjsadhej hejdflsadkfj sdf sf sdf sdf dsaf ds flskdjfdslfkjsad hej hejdflsadkfj sdf sf sdf sdf dsaf ds flskdjfdslfkjsadhej hejdflsadkfj sdf sf sdf sdf dsaf ds flskdjfdslfkjsad hej hejdflsadkfj sdf sf sdf sdf dsaf ds flskdjfdslfkjsad hej hejdflsadkfj sdf sf sdf sdf dsaf ds flskdjfdslfkjsad</string>
+    <string name="title_activity_register2">Register2Activity</string>
 </resources>

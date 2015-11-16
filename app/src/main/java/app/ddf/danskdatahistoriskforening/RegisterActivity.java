@@ -39,7 +39,7 @@ public class RegisterActivity extends AppCompatActivity {
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
     }
-
+/*
     @Override
     public void onBackPressed() {
         if (mPager.getCurrentItem() == 0) {
@@ -48,7 +48,7 @@ public class RegisterActivity extends AppCompatActivity {
             mPager.setCurrentItem(mPager.getCurrentItem() - 1);
         }
     }
-
+*/
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
