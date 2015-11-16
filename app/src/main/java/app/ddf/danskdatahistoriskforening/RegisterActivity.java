@@ -19,7 +19,6 @@ public class RegisterActivity extends AppCompatActivity {
     /**
      * http://developer.android.com/training/animation/screen-slide.html
      */
-
     private ViewPager mPager;
     private PagerAdapter mPagerAdapter;
 
@@ -39,16 +38,7 @@ public class RegisterActivity extends AppCompatActivity {
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
     }
-/*
-    @Override
-    public void onBackPressed() {
-        if (mPager.getCurrentItem() == 0) {
-            super.onBackPressed();
-        } else {
-            mPager.setCurrentItem(mPager.getCurrentItem() - 1);
-        }
-    }
-*/
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -56,14 +46,21 @@ public class RegisterActivity extends AppCompatActivity {
         return true;
     }
 
+
+
+    @Override
+    public void onBackPressed() {
+        prompt();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_register_done:
-                System.out.println("Click done");
+                save();
                 return true;
             case android.R.id.home:
-                finish();
+                prompt();
                 return true;
 
             default:
@@ -71,6 +68,21 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
+    private void save() {
+        itemFragment.getTitle();
+        itemFragment.getImages();
+        itemFragment.getRecoording();
+
+
+    }
+
+    private void prompt(){
+        finish();
+    }
+
+    private RegisterItemFragment itemFragment = new RegisterItemFragment();
+    private RegisterDetailsFragment detailsFragment = new RegisterDetailsFragment();
+    private RegisterDescriptionFragment descriptionFragment = new RegisterDescriptionFragment();
 
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
@@ -78,9 +90,9 @@ public class RegisterActivity extends AppCompatActivity {
 
         public ScreenSlidePagerAdapter(FragmentManager fm) {
             super(fm);
-            fragments[0] = new RegisterItemFragment();
-            fragments[1] = new RegisterDetailsFragment();
-            fragments[2] = new RegisterDescriptionFragment();
+            fragments[0] = itemFragment;
+            fragments[1] = detailsFragment;
+            fragments[2] = descriptionFragment;
         }
 
         @Override
