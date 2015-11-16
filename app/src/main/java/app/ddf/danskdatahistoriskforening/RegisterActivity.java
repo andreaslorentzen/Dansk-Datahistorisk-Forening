@@ -78,9 +78,9 @@ public class RegisterActivity extends AppCompatActivity {
 
         public ScreenSlidePagerAdapter(FragmentManager fm) {
             super(fm);
-            fragments[0] = new SimpleFragment(R.layout.fragment_register_item);
-            fragments[1] = new SimpleFragment(R.layout.fragment_register_details);
-            fragments[2] = new SimpleFragment(R.layout.fragment_register_description);
+            fragments[0] = new RegisterItemFragment();
+            fragments[1] = new RegisterDetailsFragment();
+            fragments[2] = new RegisterDescriptionFragment();
         }
 
         @Override
