@@ -19,7 +19,8 @@ public class RegisterActivity extends AppCompatActivity {
     /**
      * http://developer.android.com/training/animation/screen-slide.html
      */
-    private ViewPager mPager;
+
+    private ViewPager viewPager;
     private PagerAdapter mPagerAdapter;
 
     @Override
@@ -34,9 +35,16 @@ public class RegisterActivity extends AppCompatActivity {
         setSupportActionBar(registerToolbar);
 
         // Instantiate a ViewPager and a PagerAdapter.
-        mPager = (ViewPager) findViewById(R.id.pager);
+        viewPager = (ViewPager) findViewById(R.id.pager);
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
-        mPager.setAdapter(mPagerAdapter);
+        viewPager.setAdapter(mPagerAdapter);
+
+        PagerSlidingTabStrip pagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tab_strip);
+        pagerSlidingTabStrip.setViewPager(viewPager);
+
+   //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
+   //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
+
     }
 
     @Override
@@ -72,8 +80,6 @@ public class RegisterActivity extends AppCompatActivity {
         itemFragment.getTitle();
         itemFragment.getImages();
         itemFragment.getRecoording();
-
-
     }
 
     private void prompt(){
@@ -104,6 +110,20 @@ public class RegisterActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             return fragments.length;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0:
+                    return "Genstand";
+                case 1:
+                    return "Oplysninger";
+                case 2:
+                    return "Beskrivelse";
+            }
+
+            return null;
         }
     }
 
