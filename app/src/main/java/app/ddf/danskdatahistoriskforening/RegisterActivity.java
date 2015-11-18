@@ -1,5 +1,8 @@
 package app.ddf.danskdatahistoriskforening;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -8,11 +11,17 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity{
+
+    public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+
 
     private Toolbar registerToolbar;
 
@@ -125,6 +134,23 @@ public class RegisterActivity extends AppCompatActivity {
 
             return null;
         }
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
+
+            itemFragment.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+
+    public void takePic(){
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        //    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+
+        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
     }
 
 }

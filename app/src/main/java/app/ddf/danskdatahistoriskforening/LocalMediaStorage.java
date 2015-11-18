@@ -34,7 +34,8 @@ public class LocalMediaStorage {
             return null;
         }
 
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "DanskDatahistoriskForening");
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "Dansk");
 
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
@@ -42,7 +43,7 @@ public class LocalMediaStorage {
         // Create the storage directory if it does not exist
         if (! mediaStorageDir.exists()){
             if (! mediaStorageDir.mkdirs()){
-                Log.d("DDF", "Failed to create folder");
+                Log.d("DDF", "Failed to create folder"+mediaStorageDir.getPath());
                 return null;
             }
         }
