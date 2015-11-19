@@ -24,6 +24,7 @@ public class RegisterActivity extends AppCompatActivity{
 
 
     private Toolbar registerToolbar;
+    private Item item;
 
     /**
      * http://developer.android.com/training/animation/screen-slide.html
@@ -50,6 +51,8 @@ public class RegisterActivity extends AppCompatActivity{
 
         PagerSlidingTabStrip pagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tab_strip);
         pagerSlidingTabStrip.setViewPager(viewPager);
+
+        item = new Item();
 
    //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
    //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
@@ -86,9 +89,13 @@ public class RegisterActivity extends AppCompatActivity{
     }
 
     private void save() {
-        itemFragment.getTitle();
-        itemFragment.getImages();
-        itemFragment.getRecoording();
+        //TODO store textfield content in item
+        item.itemHeadline = "test";
+
+        if(item.saveItemToDB(this)){
+            //app will request creation of item in API, but item may not be created yet if ever
+            finish();
+        }
     }
 
     private void prompt(){
