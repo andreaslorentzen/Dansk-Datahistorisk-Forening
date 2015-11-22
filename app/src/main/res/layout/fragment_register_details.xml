@@ -39,7 +39,7 @@
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:text="Modtagelses datog"
+                android:text="Modtagelses dato"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:layout_weight="1" />
 
