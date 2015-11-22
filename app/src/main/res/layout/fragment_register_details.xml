@@ -32,10 +32,13 @@
             android:text="Modtagelses dato"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
-        <EditText
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal" />
+            android:paddingTop="16dp"
+            android:text="___________"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/ReceiveDate" />
 
         <TextView
             android:layout_width="match_parent"
@@ -68,10 +71,13 @@
             android:text="Datering fra"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
-        <EditText
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="349dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal" />
+            android:paddingTop="16dp"
+            android:text="___________"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/DateFrom" />
 
         <TextView
             android:layout_width="match_parent"
@@ -80,10 +86,13 @@
             android:text="Datering til"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
-        <EditText
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal" />
+            android:paddingTop="16dp"
+            android:text="___________"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/DateTo" />
 
     </LinearLayout>
 
