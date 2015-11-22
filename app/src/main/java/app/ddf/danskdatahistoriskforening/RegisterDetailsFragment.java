@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -22,6 +23,7 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
     TextView dateFrom;
     TextView dateTo;
     TextView receiveDate;
+    LinearLayout recieveDateWrapper;
     public static TextView currentDateField;
 
 
@@ -32,6 +34,7 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
         dateFrom = (TextView) layout.findViewById(R.id.DateFrom);
         dateTo = (TextView) layout.findViewById(R.id.DateTo);
         receiveDate = (TextView) layout.findViewById(R.id.ReceiveDate);
+        recieveDateWrapper = (LinearLayout) layout.findViewById(R.id.RecieveDateWrapper);
 
         DateFormat format = DateFormat.getDateInstance();
 
@@ -41,13 +44,18 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
 
         dateFrom.setOnClickListener(this);
         dateTo.setOnClickListener(this);
-        receiveDate.setOnClickListener(this);
+        recieveDateWrapper.setOnClickListener(this);
         return layout;
     }
 
     @Override
     public void onClick(View v) {
-        if(v == dateFrom || v == dateTo || v == receiveDate) {
+        if(v == recieveDateWrapper){
+            currentDateField = receiveDate;
+            DialogFragment datePicker = new DatePickerFragment();
+            datePicker.show(getActivity().getSupportFragmentManager(), "datePicker");
+        }
+        else if(v == dateFrom || v == dateTo) {
             currentDateField = (TextView) v;
             DialogFragment datePicker = new DatePickerFragment();
             datePicker.show(getActivity().getSupportFragmentManager(), "datePicker");
