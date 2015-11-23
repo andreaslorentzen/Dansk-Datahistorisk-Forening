@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main2);
 
         Toolbar mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        mainToolbar.setTitle("Registrede genstande");
         setSupportActionBar(mainToolbar);
 
         itemList = (ListView) findViewById(R.id.itemList);
