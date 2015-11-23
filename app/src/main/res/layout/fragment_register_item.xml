@@ -38,8 +38,7 @@
             android:id="@+id/itemTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="1" />
+            android:layout_gravity="center_horizontal" />
 
         <ImageView
             android:layout_width="90dp"
