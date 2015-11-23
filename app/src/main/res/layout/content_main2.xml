@@ -10,4 +10,11 @@
     tools:showIn="@layout/activity_main2"
     tools:context="app.ddf.danskdatahistoriskforening.Main2Activity">
 
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/itemList"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:choiceMode="none" />
 </RelativeLayout>
