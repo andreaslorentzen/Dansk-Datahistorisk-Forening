@@ -20,7 +20,7 @@ import java.io.File;
 public class RegisterItemFragment extends Fragment implements View.OnClickListener{
 
     ImageButton cameraButton;
-    private  ImageButton micButton;
+    ImageButton micButton;
     ImageView imageView;
     RadioGaga rg;
 
@@ -43,14 +43,6 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
         rg.requestStop();
     }
 
-    public void getTitle() {
-    }
-
-    public void getImages() {
-    }
-
-    public void getRecoording() {
-    }
 
     Uri fileUri;
 

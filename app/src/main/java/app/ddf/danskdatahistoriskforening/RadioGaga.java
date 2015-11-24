@@ -28,6 +28,7 @@ public class RadioGaga {
         try {
             mRecorder.prepare();
         } catch (IOException e) {
+            e.printStackTrace();
         }
         mRecorder.start();
     }
