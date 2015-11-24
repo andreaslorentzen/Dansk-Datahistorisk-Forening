@@ -38,19 +38,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mainToolbar.setTitle("Registrede genstande");
         setSupportActionBar(mainToolbar);
 
-        itemList = (ListView) findViewById(R.id.itemList);
-        itemTitles = new ArrayList<String>();
+        addActivityButton = (FloatingActionButton) findViewById(R.id.fab);
+        addActivityButton.setOnClickListener(this);
 
-        new AsyncTask() {
-            protected Object doInBackground(Object... arg0) {
+        itemList = (ListView) findViewById(R.id.itemList);
+        itemTitles = new ArrayList<>();
+
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void ... params) {
                 BufferedReader br;
                 try {
                     br = new BufferedReader(new InputStreamReader(new URL(URL).openStream()));
                     StringBuilder sb = new StringBuilder();
-                    String linje = br.readLine();
-                    while (linje != null) {
-                        sb.append(linje + "\n");
-                        linje = br.readLine();
+                    String line = br.readLine();
+                    while (line != null) {
+                        sb.append(line).append("\n");
+                        line = br.readLine();
                     }
                     return sb.toString();
                 } catch (IOException e){
@@ -60,19 +64,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
-            protected void onPostExecute(Object resultat) {
-                if (resultat != null){
-                    String data = (String) resultat;
+            protected void onPostExecute(String data) {
+                if (data != null){
                     System.out.println("data = " + data);
 
                     try {
-                        items = new JSONArray(data);
 
+                        items = new JSONArray(data);
                         for (int n = 0; n<items.length(); n++) {
                             JSONObject item = items.getJSONObject(n);
                             itemTitles.add(item.optString("itemheadline", "(ukendt)"));
-
-                            System.out.println("ihead = " + item.optString("itemheadline"));
                         }
 
                     } catch (JSONException e) {
@@ -83,9 +84,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         }.execute();
-
-        addActivityButton = (FloatingActionButton) findViewById(R.id.fab);
-        addActivityButton.setOnClickListener(this);
     }
 
     @Override
@@ -97,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void updateItemList(){
-        itemList.setAdapter(new ArrayAdapter(this,
+        itemList.setAdapter(new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles));
     }
 }
