@@ -1,6 +1,7 @@
 package app.ddf.danskdatahistoriskforening;
 
 import android.media.MediaRecorder;
+import android.os.Environment;
 import android.util.Log;
 
 import java.io.Console;
@@ -9,7 +10,6 @@ import java.io.IOException;
 public class RadioGaga {
     boolean isRecording;
     private MediaRecorder mRecorder;
-    private String mFileName = "TEST FOR NOW";
 
     public void execute() {
         if (!isRecording)
@@ -19,6 +19,12 @@ public class RadioGaga {
     }
 
     private void startRecord() {
+        isRecording = true;
+        String mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
+        mFileName += "/audiorecordtest.3gp";
+
+        Log.d("DFF",mFileName);
+
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -40,6 +46,7 @@ public class RadioGaga {
         mRecorder.stop();
         mRecorder.release();
         mRecorder = null;
+        isRecording = false;
     }
 
     public void requestStop() {
