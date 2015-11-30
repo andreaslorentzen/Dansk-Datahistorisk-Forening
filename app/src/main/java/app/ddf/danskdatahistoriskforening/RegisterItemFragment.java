@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -23,6 +24,7 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
     ImageButton micButton;
     ImageView imageView;
     RadioGaga rg;
+    EditText itemTitle;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -32,6 +34,7 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
         micButton =  (ImageButton) layout.findViewById(R.id.micButton);
         micButton.setOnClickListener(this);
         imageView = (ImageView) layout.findViewById(R.id.imageView);
+        itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
         rg = new RadioGaga();
         return layout;
     }
@@ -75,6 +78,13 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
                 Toast.makeText(getActivity(), "Failed" , Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    public String getItemTitle(){
+        if(itemTitle == null){
+            return "";
+        }
+        return itemTitle.getText().toString();
     }
 
 }

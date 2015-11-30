@@ -26,6 +26,8 @@ public class RegisterActivity extends AppCompatActivity{
     private Toolbar registerToolbar;
     private Item item;
 
+    private IDAO dao;
+
     /**
      * http://developer.android.com/training/animation/screen-slide.html
      */
@@ -53,6 +55,8 @@ public class RegisterActivity extends AppCompatActivity{
         pagerSlidingTabStrip.setViewPager(viewPager);
 
         item = new Item();
+
+        dao = new DAO();
 
    //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
    //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
@@ -90,12 +94,29 @@ public class RegisterActivity extends AppCompatActivity{
 
     private void save() {
         //TODO store textfield content in item
-        item.itemHeadline = "test";
+        Log.d("fejl", "start save activity");
 
-        if(item.saveItemToDB(this)){
-            //app will request creation of item in API, but item may not be created yet if ever
-            finish();
+        item.itemHeadline = itemFragment.getItemTitle();
+        item.itemDescription = descriptionFragment.getItemDescription();
+
+        Log.d("fejl", item.itemHeadline);
+
+
+        int resultCode = dao.saveItemToDB(this, item);
+
+        switch(resultCode){
+            case -1:
+                finish();
+                break;
+            case 1:
+                Toast.makeText(this, "Der er ikke angivet en titel til museumsgenstanden!", Toast.LENGTH_LONG).show();
+                break;
+            case 2:
+                Toast.makeText(this, "Enheden er ikke forbundet til internettet!", Toast.LENGTH_LONG).show();
+            default:
+                Toast.makeText(this, "Noget gik galt", Toast.LENGTH_LONG).show();
         }
+
     }
 
     private void prompt(){
