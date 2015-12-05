@@ -49,7 +49,7 @@ public class DAO implements IDAO {
         return new String(buffer);
     }
 
-    public String getDataFromBackend(){
+    public String getOverviewFromBackend(){
         BufferedReader br;
         try {
             br = new BufferedReader(new InputStreamReader(new URL(API + "/items").openStream()));

@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void ... params) {
-                return new DAO().getDataFromBackend();
+                return new DAO().getOverviewFromBackend();
             }
 
             @Override
