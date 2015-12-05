@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -41,7 +42,6 @@ public class DAO implements IDAO {
     }
 
     //http://developer.android.com/training/basics/network-ops/connecting.html#download
-
     public String readIt(InputStream stream, int len) throws IOException {
         Reader reader = new InputStreamReader(stream, "UTF-8");
         char[] buffer = new char[len];
@@ -49,6 +49,22 @@ public class DAO implements IDAO {
         return new String(buffer);
     }
 
+    public String getDataFromBackend(){
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new InputStreamReader(new URL(API + "/items").openStream()));
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line).append("\n");
+                line = br.readLine();
+            }
+            return sb.toString();
+        } catch (IOException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     //create new entry in database
     private class HttpPostItem extends AsyncTask<Item, Void, String> {

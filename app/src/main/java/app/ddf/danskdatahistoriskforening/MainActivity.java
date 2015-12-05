@@ -50,20 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void ... params) {
-                BufferedReader br;
-                try {
-                    br = new BufferedReader(new InputStreamReader(new URL(URL).openStream()));
-                    StringBuilder sb = new StringBuilder();
-                    String line = br.readLine();
-                    while (line != null) {
-                        sb.append(line).append("\n");
-                        line = br.readLine();
-                    }
-                    return sb.toString();
-                } catch (IOException e){
-                    e.printStackTrace();
-                    return null;
-                }
+                return new DAO().getDataFromBackend();
             }
 
             @Override
@@ -104,16 +91,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onItemClick(AdapterView<?> aV, View v, int position, long l){
-        Item chosenItem;
+        Intent i = new Intent(this, ItemDetailsAcitivty.class);
+
         try {
-            chosenItem = new Item(items.getJSONObject(position).optString("itemheadline"),
-                    items.getJSONObject(position).optString("itemdescription"));
+            i.putExtra("itemTitle", items.getJSONObject(position).optString("itemheadline"));
+            i.putExtra("detailsURI", items.getJSONObject(position).optString("detailsuri"));
         } catch (JSONException e){
             e.printStackTrace();
             return;
         }
-        Intent i = new Intent(this, ItemDetailsAcitivty.class);
-        i.putExtra("item", chosenItem);
         startActivity(i);
     }
 }
