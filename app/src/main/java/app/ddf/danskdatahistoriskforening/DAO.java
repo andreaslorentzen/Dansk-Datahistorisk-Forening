@@ -66,6 +66,23 @@ public class DAO implements IDAO {
         }
     }
 
+    public String getDetailsFromBackEnd(String detailsURI){
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new InputStreamReader(new URL(API + detailsURI).openStream()));
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line).append("\n");
+                line = br.readLine();
+            }
+            return sb.toString();
+        } catch (IOException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     //create new entry in database
     private class HttpPostItem extends AsyncTask<Item, Void, String> {
         @Override

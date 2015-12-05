@@ -92,9 +92,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onItemClick(AdapterView<?> aV, View v, int position, long l){
         Intent i = new Intent(this, ItemDetailsAcitivty.class);
-
+        Log.d("main", "hej hej");
         try {
-            i.putExtra("itemTitle", items.getJSONObject(position).optString("itemheadline"));
+            i.putExtra("itemheadline", items.getJSONObject(position).optString("itemheadline"));
             i.putExtra("detailsURI", items.getJSONObject(position).optString("detailsuri"));
         } catch (JSONException e){
             e.printStackTrace();
