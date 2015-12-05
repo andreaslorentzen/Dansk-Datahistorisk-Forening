@@ -2,19 +2,25 @@ package app.ddf.danskdatahistoriskforening;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.text.DateFormat;
+import java.text.Format;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Item implements Parcelable{
-    private int itemId;
 
+    private int itemId;
     private String itemHeadline;
     private String itemDescription;
     private Date itemRecieved;
     private Date itemDatingFrom;
-    private Date getItemDatingTo;
+    private Date itemDatingTo;
     private String donator;
     private String producer;
     private String postalCode;
+    private DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
     public Item(){}
 
@@ -23,12 +29,38 @@ public class Item implements Parcelable{
         this.itemDescription = itemDescription;
     }
 
+    public Item(int itemId, String itemHeadline, String itemDescription, Date itemRecieved,
+                Date itemDatingFrom, Date itemDatingTo, String donator, String producer, String postalCode){
+        this.itemId = itemId;
+        this.itemHeadline = itemHeadline;
+        this.itemDescription = itemDescription;
+        this.itemRecieved = itemRecieved;
+        this.itemDatingFrom = itemDatingFrom;
+        this.itemDatingTo = itemDatingTo;
+        this.donator = donator;
+        this.producer = producer;
+        this.postalCode = postalCode;
+    }
+
     public Item(Parcel in){
-        String[] data = new String[2];
+        String[] data = new String[9];
 
         in.readStringArray(data);
-        this.itemHeadline = data[0];
-        this.itemDescription = data[1];
+        this.itemId = Integer.getInteger(data[0]);
+        this.itemHeadline = data[1];
+        this.itemDescription = data[2];
+        try {
+            this.itemRecieved = ((data[3] == null) ? null : formatter.parse(data[3]));
+            this.itemDatingFrom = ((data[4] == null) ? null : formatter.parse(data[4]));
+            this.itemDatingTo = ((data[5] == null) ? null : formatter.parse(data[5]));
+        } catch (ParseException e){
+            //TODO find ud af hvad her skal ske (dette burde aldrig nogensinde ske)
+            e.printStackTrace();
+            return;
+        }
+        this.donator = data[6];
+        this.producer = data[7];
+        this.postalCode = data[8];
     }
 
     @Override
@@ -38,7 +70,19 @@ public class Item implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeStringArray(new String[] {this.itemHeadline, this.itemDescription});
+        String[] data = new String[9];
+
+
+        data[0] = Integer.toString(this.itemId);
+        data[1] = this.itemHeadline;
+        data[2] = this.itemDescription;
+        data[3] = ((this.itemRecieved == null) ? null : formatter.format(this.itemRecieved));
+        data[4] = ((this.itemDatingFrom == null) ? null : formatter.format(this.itemDatingFrom));
+        data[5] = ((this.itemDatingTo == null) ? null : formatter.format(this.itemDatingTo));
+        data[6] = donator;
+        data[7] = producer;
+        data[8] = postalCode;
+        dest.writeStringArray(data);
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator(){
@@ -91,12 +135,12 @@ public class Item implements Parcelable{
         this.itemDatingFrom = itemDatingFrom;
     }
 
-    public Date getGetItemDatingTo() {
-        return getItemDatingTo;
+    public Date getItemDatingTo() {
+        return itemDatingTo;
     }
 
-    public void setGetItemDatingTo(Date getItemDatingTo) {
-        this.getItemDatingTo = getItemDatingTo;
+    public void setItemDatingTo(Date itemDatingTo) {
+        this.itemDatingTo = itemDatingTo;
     }
 
     public String getDonator() {
