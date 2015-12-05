@@ -18,7 +18,7 @@ public class DAO implements IDAO {
     private static final String API = "http://78.46.187.172:4019";
 
     public int saveItemToDB(Context context, Item item){
-        if(item.itemHeadline == null || item.itemHeadline.isEmpty()){
+        if(item.getItemHeadline() == null || item.getItemHeadline().isEmpty()){
             return  1;
         }
 
@@ -26,7 +26,7 @@ public class DAO implements IDAO {
             return 2;
         }
 
-        Log.d("fejl", item.itemHeadline);
+        Log.d("fejl", item.getItemHeadline());
         (new HttpPostItem()).execute(item);
 
         return -1;
@@ -56,8 +56,8 @@ public class DAO implements IDAO {
         protected String doInBackground(Item... params) {
             Log.d("fejl", "start post");
             Item item = params[0];
-            Log.d("fejl", item.itemHeadline);
-            String requestUrl = API + "/items?itemheadline=" + item.itemHeadline + "&itemdescription=" +  item.itemDescription;
+            Log.d("fejl", item.getItemHeadline());
+            String requestUrl = API + "/items?itemheadline=" + item.getItemHeadline() + "&itemdescription=" +  item.getItemHeadline();
             //TODO build entire request from variables with stringbuilder
 
             InputStream is = null;

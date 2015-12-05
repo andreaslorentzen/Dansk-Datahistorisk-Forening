@@ -6,7 +6,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -21,7 +23,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
 
     FloatingActionButton addActivityButton;
     ListView itemList;
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         addActivityButton.setOnClickListener(this);
 
         itemList = (ListView) findViewById(R.id.itemList);
+        itemList.setOnItemClickListener(this);
         itemTitles = new ArrayList<>();
 
         new AsyncTask<Void, Void, String>() {
@@ -88,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if(v == addActivityButton){
+        if(v == addActivityButton) {
             Intent i = new Intent(this, RegisterActivity.class);
             startActivity(i);
         }
@@ -97,5 +100,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void updateItemList(){
         itemList.setAdapter(new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles));
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> aV, View v, int position, long l){
+        Item chosenItem;
+        try {
+            chosenItem = new Item(items.getJSONObject(position).optString("itemheadline"),
+                    items.getJSONObject(position).optString("itemdescription"));
+        } catch (JSONException e){
+            e.printStackTrace();
+            return;
+        }
+        Intent i = new Intent(this, ItemDetailsAcitivty.class);
+        i.putExtra("item", chosenItem);
+        startActivity(i);
     }
 }

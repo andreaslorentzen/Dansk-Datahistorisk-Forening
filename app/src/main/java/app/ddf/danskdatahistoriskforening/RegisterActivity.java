@@ -96,10 +96,10 @@ public class RegisterActivity extends AppCompatActivity{
         //TODO store textfield content in item
         Log.d("fejl", "start save activity");
 
-        item.itemHeadline = itemFragment.getItemTitle();
-        item.itemDescription = descriptionFragment.getItemDescription();
+        item.setItemHeadline(itemFragment.getItemTitle());
+        item.setItemDescription(descriptionFragment.getItemDescription());
 
-        Log.d("fejl", item.itemHeadline);
+        Log.d("fejl", item.getItemHeadline());
 
 
         int resultCode = dao.saveItemToDB(this, item);
