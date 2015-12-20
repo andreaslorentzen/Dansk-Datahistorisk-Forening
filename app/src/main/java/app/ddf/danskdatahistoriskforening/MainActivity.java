@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mainToolbar.setTitle("Registrede genstande");
         setSupportActionBar(mainToolbar);
 
+
         addActivityButton = (FloatingActionButton) findViewById(R.id.fab);
         addActivityButton.setOnClickListener(this);
 
