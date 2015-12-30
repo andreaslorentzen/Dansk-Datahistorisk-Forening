@@ -3,6 +3,9 @@ package app.ddf.danskdatahistoriskforening;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
@@ -40,6 +43,25 @@ public class Item implements Parcelable{
         this.donator = donator;
         this.producer = producer;
         this.postalCode = postalCode;
+    }
+
+    public JSONObject toJSON(){
+        JSONObject item = new JSONObject();
+        try{
+            item.put("itemid", itemId);
+            item.put("itemheadline", itemHeadline);
+            item.put("itemdescription", itemDescription);
+            item.put("itemreceived", ((this.itemRecieved == null) ? null : formatter.format(this.itemRecieved)));
+            item.put("itemdatingfrom", ((this.itemDatingFrom == null) ? null : formatter.format(this.itemDatingFrom)));
+            item.put("itemdatingto", ((this.itemDatingTo == null) ? null : formatter.format(this.itemDatingTo)));
+            item.put("donator", donator);
+            item.put("producer", producer);
+            item.put("postalCode", postalCode);
+        } catch (JSONException e){
+            e.printStackTrace();
+            return null;
+        }
+        return item;
     }
 
     public Item(Parcel in){
