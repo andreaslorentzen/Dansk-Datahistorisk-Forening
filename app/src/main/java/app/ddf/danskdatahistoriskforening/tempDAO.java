@@ -1,6 +1,8 @@
 package app.ddf.danskdatahistoriskforening;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -8,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -21,7 +24,25 @@ public class tempDAO implements IDAO {
 
     @Override
     public int saveItemToDB(Context context, Item item) {
-        return 0;
+        if(item.getItemHeadline() == null || item.getItemHeadline().isEmpty()){
+            return  1;
+        }
+
+        if(!isConnected(context)){
+            return 2;
+        }
+
+        Log.d("fejl", item.getItemHeadline());
+        (new HttpPostItem()).execute(item);
+
+        return -1;
+    }
+
+    private boolean isConnected(Context context){
+        ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+        return (networkInfo != null && networkInfo.isConnected());
     }
 
     @Override
@@ -66,7 +87,7 @@ public class tempDAO implements IDAO {
             Log.d("fejl", "start post");
             Item item = params[0];
             Log.d("fejl", item.getItemHeadline());
-            String requestUrl = API + "/items?itemheadline=" + item.getItemHeadline() + "&itemdescription=" +  item.getItemHeadline();
+            String requestUrl = API + "/items" + userIDString;
             //TODO build entire request from variables with stringbuilder
 
             InputStream is = null;
@@ -78,10 +99,17 @@ public class tempDAO implements IDAO {
                 conn.setReadTimeout(10000);
                 conn.setConnectTimeout(15000);
                 conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
                 conn.setDoInput(true);
 
                 // Starts the query
-                conn.connect();
+                String requestBody = item.toJSON().toString();
+                byte[] outputInBytes = requestBody.getBytes();
+                OutputStream os = conn.getOutputStream();
+                os.write(outputInBytes);
+                os.close();
+
+
                 int responseCode = conn.getResponseCode();
                 Log.d("DDF", "The response is: " + responseCode + conn.getResponseMessage());
                 is = conn.getInputStream();

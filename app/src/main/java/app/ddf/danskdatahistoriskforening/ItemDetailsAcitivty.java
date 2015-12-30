@@ -44,7 +44,7 @@ public class ItemDetailsAcitivty extends AppCompatActivity implements View.OnCli
         titleView = (EditText) findViewById(R.id.titleView);
         titleView.setText(itemHeadLine);
 
-        descriptionView = (EditText) findViewById(R.id.descriptionView);
+        //descriptionView = (EditText) findViewById(R.id.descriptionView);
 
         new AsyncTask<Void, Void, String>() {
             @Override

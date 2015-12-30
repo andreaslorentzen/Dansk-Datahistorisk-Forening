@@ -56,7 +56,7 @@ public class RegisterActivity extends AppCompatActivity{
 
         item = new Item();
 
-        dao = new DAO();
+        dao = new tempDAO();
 
    //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
    //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
