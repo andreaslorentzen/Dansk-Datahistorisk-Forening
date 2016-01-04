@@ -7,11 +7,22 @@
     tools:showIn="@layout/activity_main2"
     tools:context="app.ddf.danskdatahistoriskforening.Main2Activity">
 
+
+
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/itemList"
+        android:choiceMode="none"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:choiceMode="none" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+<!--    <android.support.design.widget.FloatingActionButton android:id="@+id/fab"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:src="@drawable/ic_add"
+        android:layout_marginTop="142dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />-->
 </RelativeLayout>
