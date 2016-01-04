@@ -87,4 +87,7 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
         return itemTitle.getText().toString();
     }
 
+    public void setItemTitle(String title) {
+        this.itemTitle.setText(title);
+    }
 }

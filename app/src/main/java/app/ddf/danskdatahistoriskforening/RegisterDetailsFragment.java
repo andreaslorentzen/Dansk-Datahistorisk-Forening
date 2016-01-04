@@ -19,6 +19,8 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
     TextView dateFrom;
     TextView dateTo;
     TextView dateReceive;
+    TextView producer;
+    TextView donator;
 
     LinearLayout dateFromWrapper;
     LinearLayout dateToWrapper;
@@ -29,6 +31,9 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.fragment_register_details, container, false);
+
+        producer = (TextView) layout.findViewById(R.id.Producer);
+        donator = (TextView) layout.findViewById(R.id.Donator);
 
         dateFrom = (TextView) layout.findViewById(R.id.DateFrom);
         dateTo = (TextView) layout.findViewById(R.id.DateTo);
@@ -64,4 +69,23 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
         }
     }
 
+    public void setDateFrom(Date date) {
+        this.dateFrom.setText(date.toString());
+    }
+
+    public void setDateTo(Date date) {
+        this.dateTo.setText(date.toString());
+    }
+
+    public void setDateReceive(Date date) {
+        this.dateReceive.setText(date.toString());
+    }
+
+    public void setDonator(String donator) {
+        this.donator.setText(donator);
+    }
+
+    public void setProducer(String producer) {
+        this.producer.setText(producer);
+    }
 }

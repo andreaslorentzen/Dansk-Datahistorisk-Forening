@@ -24,4 +24,8 @@ public class RegisterDescriptionFragment extends Fragment {
         }
         return itemDescription.getText().toString();
     }
+
+    public void setItemDescription(String description) {
+        this.itemDescription.setText(description);
+    }
 }

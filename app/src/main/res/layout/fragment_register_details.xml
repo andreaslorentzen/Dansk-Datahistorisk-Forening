@@ -69,6 +69,7 @@
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <EditText
+                android:id="@+id/Donator"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal" />
@@ -81,6 +82,7 @@
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <EditText
+                android:id="@+id/Producer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal" />

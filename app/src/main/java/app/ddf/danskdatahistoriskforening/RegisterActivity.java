@@ -55,6 +55,21 @@ public class RegisterActivity extends AppCompatActivity{
         pagerSlidingTabStrip.setViewPager(viewPager);
 
         item = new Item();
+        Intent intent = getIntent();
+        if(intent.hasExtra("item")){
+            item = intent.getParcelableExtra("item");
+
+            itemFragment.setItemTitle(item.getItemHeadline());
+            //TODO indsæt billeder, lyd og lokation også
+
+            detailsFragment.setDateFrom(item.getItemDatingFrom());
+            detailsFragment.setDateTo(item.getItemDatingTo());
+            detailsFragment.setDateReceive(item.getItemRecieved());
+            detailsFragment.setDonator(item.getDonator());
+            detailsFragment.setProducer(item.getProducer());
+
+            descriptionFragment.setItemDescription(item.getItemDescription());
+        }
 
         dao = new tempDAO();
 
@@ -101,8 +116,14 @@ public class RegisterActivity extends AppCompatActivity{
 
         Log.d("fejl", item.getItemHeadline());
 
+        int resultCode;
 
-        int resultCode = dao.saveItemToDB(this, item);
+        if(item.getItemId() > 0){
+            resultCode = dao.saveItemToDB(this, item);
+        }
+        else{
+            resultCode = dao.updateItem(this, item);
+        }
 
         switch(resultCode){
             case -1:
@@ -113,6 +134,7 @@ public class RegisterActivity extends AppCompatActivity{
                 break;
             case 2:
                 Toast.makeText(this, "Enheden er ikke forbundet til internettet!", Toast.LENGTH_LONG).show();
+                break;
             default:
                 Toast.makeText(this, "Noget gik galt", Toast.LENGTH_LONG).show();
         }
