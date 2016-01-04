@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mainToolbar.setTitle("Registrede genstande");
         setSupportActionBar(mainToolbar);
 
+        startFragment = new FrontFragment();
+
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.frame, startFragment)
                 .addToBackStack(null)
