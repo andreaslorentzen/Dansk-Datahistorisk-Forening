@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -81,6 +82,11 @@ public class DAO implements IDAO {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @Override
+    public int updateItem(Item item) {
+        return 0;
     }
 
     //create new entry in database
