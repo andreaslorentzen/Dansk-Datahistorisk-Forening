@@ -2,13 +2,11 @@ package app.ddf.danskdatahistoriskforening;
 
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -23,12 +21,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    FloatingActionButton addActivityButton;
-    ListView itemList;
     JSONArray items;
-    List<String> itemTitles;
+
+    Fragment startFragment;
+    Fragment listFragment;
+    Fragment detailsFragment;
+
     private static final String URL = "http://78.46.187.172:4019/items";
 
     @Override
@@ -41,12 +41,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setSupportActionBar(mainToolbar);
 
 
-        addActivityButton = (FloatingActionButton) findViewById(R.id.fab);
-        addActivityButton.setOnClickListener(this);
-
-        itemList = (ListView) findViewById(R.id.itemList);
-        itemList.setOnItemClickListener(this);
-        itemTitles = new ArrayList<>();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.frame, startFragment)
+                .addToBackStack(null)
+                .commit();
 
         new AsyncTask<Void, Void, String>() {
             @Override
@@ -64,14 +62,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         items = new JSONArray(data);
                         for (int n = 0; n<items.length(); n++) {
                             JSONObject item = items.getJSONObject(n);
-                            itemTitles.add(item.optString("itemheadline", "(ukendt)"));
+                        //    itemTitles.add(item.optString("itemheadline", "(ukendt)"));
                         }
 
                     } catch (JSONException e) {
                         e.printStackTrace();
                         return;
                     }
-                    updateItemList();
+                //    updateItemList();
                 }
             }
         }.execute();
@@ -79,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if(v == addActivityButton) {
+        if(v == addActivityButton){
             Intent i = new Intent(this, RegisterActivity.class);
             startActivity(i);
         }
@@ -88,19 +86,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void updateItemList(){
         itemList.setAdapter(new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles));
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> aV, View v, int position, long l){
-        Intent i = new Intent(this, ItemDetailsAcitivty.class);
-        Log.d("main", "hej hej");
-        try {
-            i.putExtra("itemheadline", items.getJSONObject(position).optString("itemheadline"));
-            i.putExtra("detailsURI", items.getJSONObject(position).optString("detailsuri"));
-        } catch (JSONException e){
-            e.printStackTrace();
-            return;
-        }
-        startActivity(i);
     }
 }
