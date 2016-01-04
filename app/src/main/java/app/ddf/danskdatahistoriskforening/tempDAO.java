@@ -83,7 +83,7 @@ public class tempDAO implements IDAO {
     }
 
     @Override
-    public int updateItem(Item item) {
+    public int updateItem(Context context, Item item) {
         if (item.getItemId()== 0){
             return 1;
         }

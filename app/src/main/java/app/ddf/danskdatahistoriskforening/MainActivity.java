@@ -21,7 +21,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity {
 
     JSONArray items;
 
@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mainToolbar.setTitle("Registrede genstande");
         setSupportActionBar(mainToolbar);
 
+        startFragment = new FrontFragment();
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.frame, startFragment)
@@ -75,16 +76,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }.execute();
     }
 
-    @Override
-    public void onClick(View v) {
-        if(v == addActivityButton){
-            Intent i = new Intent(this, RegisterActivity.class);
-            startActivity(i);
-        }
-    }
-
-    public void updateItemList(){
-        itemList.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles));
-    }
 }

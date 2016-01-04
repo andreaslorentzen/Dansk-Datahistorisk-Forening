@@ -85,7 +85,7 @@ public class DAO implements IDAO {
     }
 
     @Override
-    public int updateItem(Item item) {
+    public int updateItem(Context context, Item item) {
         return 0;
     }
 
