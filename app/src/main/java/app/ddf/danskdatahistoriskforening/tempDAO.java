@@ -87,6 +87,9 @@ public class tempDAO implements IDAO {
         if (item.getItemId()== 0){
             return 1;
         }
+        if(!isConnected(context)){
+            return 2;
+        }
         (new HttpUpdateItem()).execute(item);
         return -1;
     }
