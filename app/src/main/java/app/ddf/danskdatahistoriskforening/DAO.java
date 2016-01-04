@@ -88,7 +88,7 @@ public class DAO implements IDAO {
     public int updateItem(Item item) {
         return 0;
     }
-    
+
     //create new entry in database
     private class HttpPostItem extends AsyncTask<Item, Void, String> {
         @Override
