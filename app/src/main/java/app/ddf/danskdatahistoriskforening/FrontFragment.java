@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-public class FrontFragment extends Fragment {
+public class FrontFragment extends Fragment implements View.OnClickListener{
 
     Button registerButton;
     Button listButton;
@@ -21,10 +21,19 @@ public class FrontFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.fragment_front, container, false);
         registerButton = (Button) layout.findViewById(R.id.registerButton);
+        registerButton.setOnClickListener(this);
         listButton = (Button) layout.findViewById(R.id.listButton);
-
-
+        listButton.setOnClickListener(this);
         return layout;
     }
 
+    @Override
+    public void onClick(View v) {
+        if(v == registerButton){
+            ((MainActivity) getActivity()).startRegister();
+        }
+        else if(v == listButton){
+            ((MainActivity) getActivity()).setFragmentList();
+        }
+    }
 }

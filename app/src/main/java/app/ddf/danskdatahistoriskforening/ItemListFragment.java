@@ -1,9 +1,9 @@
 package app.ddf.danskdatahistoriskforening;
 
 
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,8 +40,8 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
 
     public void updateItemList(List<String> titles){
         if (titles == null)
-                titles = itemTitles;
-        itemList.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, android.R.id.text1, titles));
+            titles = itemTitles;
+        itemList.setAdapter(new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, titles));
     }
 
     /**
@@ -74,15 +74,6 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
 
     @Override
     public void onItemClick(AdapterView<?> aV, View v, int position, long l){
-        Intent i = new Intent(this, ItemDetailsAcitivty.class);
-        Log.d("main", "hej hej");
-        try {
-            i.putExtra("itemheadline", items.getJSONObject(position).optString("itemheadline"));
-            i.putExtra("detailsURI", items.getJSONObject(position).optString("detailsuri"));
-        } catch (JSONException e){
-            e.printStackTrace();
-            return;
-        }
-        startActivity(i);
+        ((MainActivity)getActivity()).setFragmentDetails(position);
     }
 }

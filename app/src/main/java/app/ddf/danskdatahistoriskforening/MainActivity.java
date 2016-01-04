@@ -3,30 +3,21 @@ package app.ddf.danskdatahistoriskforening;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     JSONArray items;
 
     Fragment startFragment;
-    Fragment listFragment;
+    ListFragment listFragment;
     Fragment detailsFragment;
 
     private static final String URL = "http://78.46.187.172:4019/items";
@@ -41,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(mainToolbar);
 
         startFragment = new FrontFragment();
+        listFragment = new ListFragment();
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.frame, startFragment)
@@ -76,4 +68,20 @@ public class MainActivity extends AppCompatActivity {
         }.execute();
     }
 
+
+    public void startRegister() {
+        Intent i = new Intent(this, RegisterActivity.class);
+        startActivity(i);
+    }
+
+    public void setFragmentList(){
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.frame, listFragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    public void setFragmentDetails(int position) {
+
+    }
 }
