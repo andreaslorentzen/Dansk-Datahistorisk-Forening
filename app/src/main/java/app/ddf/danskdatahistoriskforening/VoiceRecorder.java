@@ -7,7 +7,7 @@ import android.util.Log;
 import java.io.Console;
 import java.io.IOException;
 
-public class RadioGaga {
+public class VoiceRecorder {
     boolean isRecording;
     private MediaRecorder mRecorder;
 
@@ -20,7 +20,7 @@ public class RadioGaga {
 
     private void startRecord() {
         isRecording = true;
-        String mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
+        String mFileName = Environment.DIRECTORY_PICTURES;
         mFileName += "/audiorecordtest.3gp";
 
         Log.d("DFF",mFileName);
