@@ -15,7 +15,6 @@ import org.json.JSONObject;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 
 public class ItemDetails extends Fragment {
@@ -82,9 +81,9 @@ public class ItemDetails extends Fragment {
                                 Integer.parseInt(item.getString("itemid")),
                                 item.getString("itemheadline"),
                                 item.getString("itemdescription"),
-                                ((item.getString("itemreceived") == null || item.getString("itemreceived").equals("")) ? null : formatter.parse(item.getString("itemreceived"))), //TODO ændre til at handle date (Venter på claus backend)
-                                ((item.getString("datingfrom") == null || item.getString("datingfrom").equals("")) ? null : formatter.parse(item.getString("datingfrom"))), //TODO ændre til at handle date (Venter på claus backend)
-                                ((item.getString("datingto") == null || item.getString("datingto").equals("")) ? null : formatter.parse(item.getString("datingto"))), //TODO ændre til at handle date (Venter på claus backend)
+                                ((item.getString("itemreceived") == null || item.getString("itemreceived").equals("")) ? null : formatter.parse(item.getString("itemreceived"))),
+                                ((item.getString("datingfrom") == null || item.getString("datingfrom").equals("")) ? null : formatter.parse(item.getString("datingfrom"))),
+                                ((item.getString("datingto") == null || item.getString("datingto").equals("")) ? null : formatter.parse(item.getString("datingto"))),
                                 item.getString("donator"),
                                 item.getString("producer"),
                                 item.getString("postnummer")
@@ -97,13 +96,13 @@ public class ItemDetails extends Fragment {
                         return;
                     }
 
-                    // udfyld felterne
+                    // felterne udfyld felterne
                     itemheadlineView.setText(currentItem.getItemHeadline());
                     // TODO handle billeder og lyd
                     itemdescriptionView.setText(currentItem.getItemDescription());
-                    receivedView.setText(formatter.format(currentItem.getItemRecieved()));
-                    datingFromView.setText(formatter.format(currentItem.getItemDatingFrom()));
-                    datingToView.setText(formatter.format(currentItem.getItemDatingTo()));
+                    receivedView.setText(((currentItem.getItemRecievedAsString() == null) ? null : currentItem.getItemRecievedAsString()));
+                    datingFromView.setText(((currentItem.getItemDatingFromAsString() == null) ? null : currentItem.getItemDatingFromAsString()));
+                    datingToView.setText(((currentItem.getItemDatingToAsString() == null) ? null : currentItem.getItemDatingToAsString()));
                     donatorView.setText(currentItem.getDonator());
                     producerView.setText(currentItem.getProducer());
                     postNummerView.setText(currentItem.getPostalCode());

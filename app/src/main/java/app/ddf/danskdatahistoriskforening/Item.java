@@ -51,13 +51,14 @@ public class Item implements Parcelable{
             item.put("itemid", itemId);
             item.put("itemheadline", itemHeadline);
             item.put("itemdescription", itemDescription);
-            item.put("itemreceived", ((this.itemRecieved == null) ? null : formatter.format(this.itemRecieved)));
-            item.put("itemdatingfrom", ((this.itemDatingFrom == null) ? null : formatter.format(this.itemDatingFrom)));
-            item.put("itemdatingto", ((this.itemDatingTo == null) ? null : formatter.format(this.itemDatingTo)));
+            item.put("itemreceived", this.getItemRecievedAsString());
+            item.put("itemdatingfrom", this.getItemDatingFromAsString());
+            item.put("itemdatingto", this.getItemDatingToAsString());
             item.put("donator", donator);
             item.put("producer", producer);
             item.put("postalCode", postalCode);
         } catch (JSONException e){
+
             e.printStackTrace();
             return null;
         }
@@ -76,7 +77,6 @@ public class Item implements Parcelable{
             this.itemDatingFrom = ((data[4] == null) ? null : formatter.parse(data[4]));
             this.itemDatingTo = ((data[5] == null) ? null : formatter.parse(data[5]));
         } catch (ParseException e){
-            //TODO find ud af hvad her skal ske (dette burde aldrig nogensinde ske)
             e.printStackTrace();
             return;
         }
@@ -98,9 +98,9 @@ public class Item implements Parcelable{
         data[0] = Integer.toString(this.itemId);
         data[1] = this.itemHeadline;
         data[2] = this.itemDescription;
-        data[3] = ((this.itemRecieved == null) ? null : formatter.format(this.itemRecieved));
-        data[4] = ((this.itemDatingFrom == null) ? null : formatter.format(this.itemDatingFrom));
-        data[5] = ((this.itemDatingTo == null) ? null : formatter.format(this.itemDatingTo));
+        data[3] = this.getItemRecievedAsString();
+        data[4] = this.getItemDatingFromAsString();
+        data[5] = this.getItemDatingToAsString();
         data[6] = donator;
         data[7] = producer;
         data[8] = postalCode;
@@ -145,6 +145,8 @@ public class Item implements Parcelable{
         return itemRecieved;
     }
 
+    public String getItemRecievedAsString() {return ((this.itemRecieved == null) ? null : formatter.format(this.itemRecieved));}
+
     public void setItemRecieved(Date itemRecieved) {
         this.itemRecieved = itemRecieved;
     }
@@ -153,6 +155,8 @@ public class Item implements Parcelable{
         return itemDatingFrom;
     }
 
+    public String getItemDatingFromAsString() {return ((this.itemDatingFrom == null) ? null : formatter.format(this.itemDatingFrom));}
+
     public void setItemDatingFrom(Date itemDatingFrom) {
         this.itemDatingFrom = itemDatingFrom;
     }
@@ -160,6 +164,8 @@ public class Item implements Parcelable{
     public Date getItemDatingTo() {
         return itemDatingTo;
     }
+
+    public String getItemDatingToAsString() {return ((this.itemDatingTo == null) ? null : formatter.format(this.itemDatingTo));}
 
     public void setItemDatingTo(Date itemDatingTo) {
         this.itemDatingTo = itemDatingTo;
