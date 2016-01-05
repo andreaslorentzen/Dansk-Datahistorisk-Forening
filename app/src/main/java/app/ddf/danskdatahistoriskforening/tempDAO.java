@@ -16,6 +16,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -24,24 +26,64 @@ import java.text.SimpleDateFormat;
 /**
  * Created by mathias on 30/12/15.
  */
-public class tempDAO implements IDAO {
+public class TempDAO implements IDAO {
     private static final String API = "http://msondrup.dk/api/v1";
     private static final String userIDString = "?userID=56837dedd2d76438906140";
 
     @Override
     public int saveItemToDB(Context context, Item item) {
         if(item.getItemHeadline() == null || item.getItemHeadline().isEmpty()){
-            return  1;
+            return 1;
         }
 
         if(!isConnected(context)){
             return 2;
         }
 
-        Log.d("fejl", item.getItemHeadline());
-        (new HttpPostItem()).execute(item);
+        InputStream is = null;
+        String requestURL = API + "/items" + userIDString;
+        int returnValue = 0;
 
-        return -1;
+        try{
+            //setup for the query
+            URL url = new URL(requestURL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setReadTimeout(10000);
+            conn.setConnectTimeout(15000);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoInput(true);
+
+            // start the query
+            String requestBody = item.toJSON().toString();
+            byte[] outputInBytes = requestBody.getBytes();
+            OutputStream os = conn.getOutputStream();
+            os.write(outputInBytes);
+            os.close();
+
+            int responseCode = conn.getResponseCode();
+
+            if(responseCode == 201){
+                returnValue = -1;
+            } else{
+                returnValue = 3;
+            }
+
+        } catch(MalformedURLException |ProtocolException e){
+            // SHOULD NEVER HAPPEN IN PRODUCTION
+            e.printStackTrace();
+        } catch(IOException e){
+            returnValue = 4;
+        } finally{
+            if (is != null){
+                try{
+                    is.close();
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+        return returnValue;
     }
 
     private boolean isConnected(Context context){
@@ -70,7 +112,7 @@ public class tempDAO implements IDAO {
     }
 
     @Override
-    public String getDetailsFromBackEnd(String detailsURI) {
+    public Item getDetailsFromBackEnd(String detailsURI) {
         BufferedReader br;
         StringBuilder sb;
         try {
@@ -106,7 +148,7 @@ public class tempDAO implements IDAO {
                     item.getString("producer"),
                     item.getString("postnummer")
             );
-            return currentItem.toString();
+            return currentItem;
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
@@ -124,131 +166,52 @@ public class tempDAO implements IDAO {
         if(!isConnected(context)){
             return 2;
         }
-        (new HttpUpdateItem()).execute(item);
-        return -1;
-    }
+        String requestURL = API + "/items/" + item.getItemId() + userIDString;
 
-    private class HttpUpdateItem extends AsyncTask<Item, Void, String> {
+        InputStream is = null;
+        int returnValue = 0;
 
-        @Override
-        protected String doInBackground(Item... params) {
-            Item item = params[0];
+        try{
+            URL url = new URL(requestURL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setReadTimeout(10000);
+            conn.setConnectTimeout(15000);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoInput(true);
 
-            String requestURL = API + "/items/" + item.getItemId() + userIDString;
+            String requestBody = item.toJSON().toString();
+            byte[] outputInBytes = requestBody.getBytes();
+            OutputStream os = conn.getOutputStream();
+            os.write(outputInBytes);
+            os.close();
 
-            InputStream is = null;
-            String response = "";
+            int responseCode = conn.getResponseCode();
 
-            try{
-                URL url = new URL(requestURL);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(10000);
-                conn.setConnectTimeout(15000);
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setDoInput(true);
+            if(responseCode == 200){
+                returnValue = -1;
+            } else{
+                returnValue = 3;
+            }
 
-                String requestBody = item.toJSON().toString();
-                byte[] outputInBytes = requestBody.getBytes();
-                OutputStream os = conn.getOutputStream();
-                os.write(outputInBytes);
-                os.close();
+            is = conn.getInputStream();
 
-                int responseCode = conn.getResponseCode();
-                // TODO handle response code
-                Log.d("DDF", "The response is: " + responseCode + conn.getResponseMessage());
-
-                is = conn.getInputStream();
-
-                response = readIt(is, 2000);
-
-            } catch (Exception e) {
-                //TODO do something useful
-                response = e.getMessage();
-                Log.d("DDF", response);
-            } finally {
-                if(is != null){
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+        } catch(MalformedURLException |ProtocolException e){
+            // SHOULD NEVER HAPPEN IN PRODUCTION
+            e.printStackTrace();
+        } catch(IOException e){
+            returnValue = 4;
+        }  finally {
+            if(is != null){
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-            return response;
-
         }
-
-        @Override
-        protected void onPostExecute(String result){
-
-        }
+        return returnValue;
     }
 
-    private class HttpPostItem extends AsyncTask<Item, Void, String> {
-        @Override
-        protected String doInBackground(Item... params) {
-            Log.d("fejl", "start post");
-            Item item = params[0];
-            Log.d("fejl", item.getItemHeadline());
-            String requestUrl = API + "/items" + userIDString;
-            //TODO build entire request from variables with stringbuilder
-
-            InputStream is = null;
-            String response = "";
-
-            try {
-                URL url = new URL(requestUrl);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(10000);
-                conn.setConnectTimeout(15000);
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setDoInput(true);
-
-                // Starts the query
-                String requestBody = item.toJSON().toString();
-                byte[] outputInBytes = requestBody.getBytes();
-                OutputStream os = conn.getOutputStream();
-                os.write(outputInBytes);
-                os.close();
-
-
-                int responseCode = conn.getResponseCode();
-                //TODO handle response code
-                Log.d("DDF", "The response is: " + responseCode + conn.getResponseMessage());
-                is = conn.getInputStream();
-
-                // Convert the InputStream into a string
-                response = readIt(is, 2000);
-            }
-            catch (Exception e){
-                //TODO do something useful maybe
-                response = e.getMessage();
-                Log.d("DDF", response);
-            }
-            finally {
-                if(is != null){
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            return response;
-        }
-
-        @Override
-        protected void onPostExecute(String response){
-            System.out.println(response);
-
-            //TODO handle failure
-
-            //TODO extract itemid for updates
-
-        }
-    }
 
     public String readIt(InputStream stream, int len) throws IOException {
         Reader reader = new InputStreamReader(stream, "UTF-8");

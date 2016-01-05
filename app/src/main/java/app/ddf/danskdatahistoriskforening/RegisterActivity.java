@@ -1,7 +1,9 @@
 package app.ddf.danskdatahistoriskforening;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -71,8 +73,6 @@ public class RegisterActivity extends AppCompatActivity{
             descriptionFragment.setItemDescription(item.getItemDescription());
         }
 
-        dao = new tempDAO();
-
    //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
    //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
 
@@ -119,13 +119,38 @@ public class RegisterActivity extends AppCompatActivity{
         int resultCode;
 
         if(item.getItemId() > 0){
-            resultCode = dao.saveItemToDB(this, item);
+            new AsyncTask<Item, Void, Integer>(){
+                @Override
+                protected Integer doInBackground(Item... params){
+                    return Model.getDAO().saveItemToDB(RegisterActivity.this, params[0]);
+                }
+
+                @Override
+                protected void onPostExecute(Integer response){
+                    checkForErrors(response);
+                }
+            }.execute(item);
         }
         else{
-            resultCode = dao.updateItem(this, item);
+            new AsyncTask<Item, Void, Integer>(){
+                @Override
+                protected Integer doInBackground(Item... params){
+                    return Model.getDAO().saveItemToDB(RegisterActivity.this, params[0]);
+                }
+
+                @Override
+                protected void onPostExecute(Integer response){
+                   checkForErrors(response);
+                }
+            }.execute(item);
         }
 
-        switch(resultCode){
+
+
+    }
+
+    private void checkForErrors(int responseCode){
+        switch(responseCode){
             case -1:
                 finish();
                 break;
@@ -135,10 +160,15 @@ public class RegisterActivity extends AppCompatActivity{
             case 2:
                 Toast.makeText(this, "Enheden er ikke forbundet til internettet!", Toast.LENGTH_LONG).show();
                 break;
+            case 3:
+                Toast.makeText(this, "Server problem", Toast.LENGTH_LONG).show();
+                break;
+            case 4:
+                Toast.makeText(this, "Kunne ikke forbinde til serveren", Toast.LENGTH_LONG).show();
+                break;
             default:
                 Toast.makeText(this, "Noget gik galt", Toast.LENGTH_LONG).show();
         }
-
     }
 
     private void prompt(){
