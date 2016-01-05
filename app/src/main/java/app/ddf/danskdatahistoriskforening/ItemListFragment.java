@@ -1,8 +1,7 @@
 package app.ddf.danskdatahistoriskforening;
 
 
-import android.app.Fragment;
-import android.content.Intent;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,7 +11,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +24,19 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     Stack<List<String>> stackTitles = new Stack<List<String>>();
     String lastSearch = "";
 
+    public ItemListFragment() {
+        itemTitles = new ArrayList<String>();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View layout = inflater.inflate(R.layout.fragment_register_item, container, false);
+        Log.d("ItemListFragment", "created");
+
+        View layout = inflater.inflate(R.layout.content_main2, container, false);
+        itemList = (ListView) layout.findViewById(R.id.itemList);
+        itemList.setOnItemClickListener(this);
+
+        updateItemList(null);
         return layout;
     }
 
@@ -38,10 +46,16 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
         super.onDetach();
     }
 
+    ArrayAdapter adapter;
+
     public void updateItemList(List<String> titles){
-        if (titles == null)
-            titles = itemTitles;
-        itemList.setAdapter(new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, titles));
+        if(titles != null)
+            itemTitles = titles;
+
+        if(getActivity() != null){
+            adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles);
+            itemList.setAdapter(adapter);
+        }
     }
 
     /**
@@ -74,6 +88,7 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
 
     @Override
     public void onItemClick(AdapterView<?> aV, View v, int position, long l){
+        Log.d("ItemListFragment", "OnItemClick");
         ((MainActivity)getActivity()).setFragmentDetails(position);
     }
 }
