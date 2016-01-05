@@ -3,9 +3,13 @@ package app.ddf.danskdatahistoriskforening;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,7 +21,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     JSONArray items;
-
+    List<String> itemTitles;
     Fragment startFragment;
     ItemListFragment listFragment;
     Fragment detailsFragment;
@@ -30,16 +34,26 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main2);
 
         Toolbar mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
-        mainToolbar.setTitle("Registrede genstande");
+        mainToolbar.setTitle("DDF");
+        mainToolbar.setTitleTextColor(-1); // #FFF
         setSupportActionBar(mainToolbar);
+
+        mainToolbar.setNavigationIcon(null);
+
+    //    ActionBar ab = getSupportActionBar();
+    //    ab.setDisplayHomeAsUpEnabled(true);
+
+
+
+
 
         startFragment = new FrontFragment();
         listFragment = new ItemListFragment();
         detailsFragment = new ItemDetails();
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.frame, startFragment)
-                .commit();
+            .replace(R.id.frame, startFragment)
+            .commit();
 
         new AsyncTask<Void, Void, String>() {
             @Override
@@ -69,7 +83,13 @@ public class MainActivity extends AppCompatActivity {
         }.execute();
     }
 
-    List<String> itemTitles;
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
     public void startRegister() {
         Intent i = new Intent(this, RegisterActivity.class);
         startActivity(i);
