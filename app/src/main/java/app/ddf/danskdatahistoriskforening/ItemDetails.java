@@ -3,6 +3,7 @@ package app.ddf.danskdatahistoriskforening;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,10 +79,12 @@ public class ItemDetails extends Fragment {
                     receivedView.setText(((currentItem.getItemRecievedAsString() == null) ? null : currentItem.getItemRecievedAsString()));
                     datingFromView.setText(((currentItem.getItemDatingFromAsString() == null) ? null : currentItem.getItemDatingFromAsString()));
                     datingToView.setText(((currentItem.getItemDatingToAsString() == null) ? null : currentItem.getItemDatingToAsString()));
+
                     donatorView.setText(currentItem.getDonator());
                     producerView.setText(currentItem.getProducer());
                     postNummerView.setText(currentItem.getPostalCode());
                 } else {
+                    Log.d("itemdetails", "else");
                     //TODO ERROR HANDLING FOR data = null
                 }
             }

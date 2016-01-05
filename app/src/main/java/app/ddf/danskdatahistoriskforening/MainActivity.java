@@ -78,9 +78,9 @@ public class MainActivity extends AppCompatActivity {
     public void setFragmentList(){
         listFragment.updateItemList(itemTitles);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.frame, listFragment)
-                .addToBackStack(null)
-                .commit();
+            .replace(R.id.frame, listFragment)
+            .addToBackStack(null)
+            .commit();
     }
 
     public void setFragmentDetails(int position) {
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
         String detailsURI;
         try {
-            detailsURI = items.getJSONObject(position).getString("detailsURI");
+            detailsURI = items.getJSONObject(position).getString("detailsuri");
         } catch(JSONException e){
             e.printStackTrace();
             return;
