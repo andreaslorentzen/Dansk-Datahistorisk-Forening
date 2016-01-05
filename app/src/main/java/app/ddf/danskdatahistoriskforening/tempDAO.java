@@ -112,7 +112,7 @@ public class TempDAO implements IDAO {
     }
 
     @Override
-    public String getDetailsFromBackEnd(String detailsURI) {
+    public Item getDetailsFromBackEnd(String detailsURI) {
         BufferedReader br;
         StringBuilder sb;
         try {
@@ -148,7 +148,7 @@ public class TempDAO implements IDAO {
                     item.getString("producer"),
                     item.getString("postnummer")
             );
-            return currentItem.toString();
+            return currentItem;
         } catch (JSONException e) {
             e.printStackTrace();
             return null;

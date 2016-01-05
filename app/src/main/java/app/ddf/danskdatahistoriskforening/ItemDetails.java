@@ -64,8 +64,7 @@ public class ItemDetails extends Fragment {
         new AsyncTask<String, Void, Item>() {
             @Override
             protected Item doInBackground(String ... params) {
-                return new Item();
-            //    return new tempDAO().getDetailsFromBackEnd(params[0]);
+                return Model.getDAO().getDetailsFromBackEnd(params[0]);
             }
 
             @Override
