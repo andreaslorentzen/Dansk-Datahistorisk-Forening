@@ -10,7 +10,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -71,7 +70,7 @@ public class tempDAO implements IDAO {
     }
 
     @Override
-    public Item getDetailsFromBackEnd(String detailsURI) {
+    public String getDetailsFromBackEnd(String detailsURI) {
         BufferedReader br;
         StringBuilder sb;
         try {
@@ -107,7 +106,7 @@ public class tempDAO implements IDAO {
                     item.getString("producer"),
                     item.getString("postnummer")
             );
-            return currentItem;
+            return currentItem.toString();
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
