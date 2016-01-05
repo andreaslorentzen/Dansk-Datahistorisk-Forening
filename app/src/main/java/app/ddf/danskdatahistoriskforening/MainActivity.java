@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
         startFragment = new FrontFragment();
         listFragment = new ListFragment();
+        detailsFragment = new ItemDetails();
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.frame, startFragment)
@@ -60,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
 
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        return;
                     }
                 //    updateItemList();
                 }
@@ -82,6 +82,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setFragmentDetails(int position) {
-
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.frame, detailsFragment)
+                .addToBackStack(null)
+                .commit();
+        String detailsURI;
+        try {
+            detailsURI = items.getJSONObject(position).getString("detailsURI");
+        } catch(JSONException e){
+            e.printStackTrace();
+            return;
+            //TODO DO SOMETHING USEFULL
+        }
+        ((ItemDetails) detailsFragment).setDetailsURI(detailsURI);
     }
 }
