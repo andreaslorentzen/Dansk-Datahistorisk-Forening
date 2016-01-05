@@ -60,7 +60,7 @@ public class RegisterActivity extends AppCompatActivity{
         Intent intent = getIntent();
         if(intent.hasExtra("item")){
             item = intent.getParcelableExtra("item");
-
+            System.out.println(item.getItemHeadline());
             itemFragment.setItemTitle(item.getItemHeadline());
             //TODO indsæt billeder, lyd og lokation også
 

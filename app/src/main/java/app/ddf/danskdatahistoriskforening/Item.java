@@ -66,23 +66,24 @@ public class Item implements Parcelable{
     }
 
     public Item(Parcel in){
-        String[] data = new String[9];
 
-        in.readStringArray(data);
-        this.itemId = Integer.getInteger(data[0]);
-        this.itemHeadline = data[1];
-        this.itemDescription = data[2];
+        this.itemId = in.readInt();
+        this.itemHeadline = in.readString();
+        this.itemDescription = in.readString();
+        String itemRecievedString = in.readString();
+        String itemDatingFromString = in.readString();
+        String itemDatingToString = in.readString();
         try {
-            this.itemRecieved = ((data[3] == null) ? null : formatter.parse(data[3]));
-            this.itemDatingFrom = ((data[4] == null) ? null : formatter.parse(data[4]));
-            this.itemDatingTo = ((data[5] == null) ? null : formatter.parse(data[5]));
+            this.itemRecieved = ((itemRecievedString == null) ? null : formatter.parse(itemRecievedString));
+            this.itemDatingFrom = ((itemDatingFromString == null) ? null : formatter.parse(itemDatingFromString));
+            this.itemDatingTo = ((itemDatingToString == null) ? null : formatter.parse(itemDatingToString));
         } catch (ParseException e){
             e.printStackTrace();
             return;
         }
-        this.donator = data[6];
-        this.producer = data[7];
-        this.postalCode = data[8];
+        this.donator = in.readString();
+        this.producer = in.readString();
+        this.postalCode = in.readString();
     }
 
     @Override
@@ -92,19 +93,17 @@ public class Item implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        String[] data = new String[9];
+//        String[] data = new String[9];
 
-
-        data[0] = Integer.toString(this.itemId);
-        data[1] = this.itemHeadline;
-        data[2] = this.itemDescription;
-        data[3] = this.getItemRecievedAsString();
-        data[4] = this.getItemDatingFromAsString();
-        data[5] = this.getItemDatingToAsString();
-        data[6] = donator;
-        data[7] = producer;
-        data[8] = postalCode;
-        dest.writeStringArray(data);
+        dest.writeInt(this.itemId);
+        dest.writeString(this.itemHeadline);
+        dest.writeString(this.itemDescription);
+        dest.writeString(this.getItemRecievedAsString());
+        dest.writeString(this.getItemDatingFromAsString());
+        dest.writeString(this.getItemDatingToAsString());
+        dest.writeString(donator);
+        dest.writeString(producer);
+        dest.writeString(postalCode);
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator(){
