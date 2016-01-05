@@ -81,6 +81,8 @@ public class ItemDetails extends Fragment {
                     donatorView.setText(currentItem.getDonator());
                     producerView.setText(currentItem.getProducer());
                     postNummerView.setText(currentItem.getPostalCode());
+                } else {
+                    //TODO ERROR HANDLING FOR data = null
                 }
             }
         }.execute(detailsURI);
