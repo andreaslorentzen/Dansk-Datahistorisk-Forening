@@ -5,7 +5,7 @@ package app.ddf.danskdatahistoriskforening;
  */
 public class Model {
     private static Model ourInstance = new Model();
-    private static IDAO dao = new tempDAO();
+    private static IDAO dao = new TempDAO();
 
     public static Model getInstance() {
         return ourInstance;

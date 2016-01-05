@@ -24,7 +24,7 @@ import java.text.SimpleDateFormat;
 /**
  * Created by mathias on 30/12/15.
  */
-public class tempDAO implements IDAO {
+public class TempDAO implements IDAO {
     private static final String API = "http://msondrup.dk/api/v1";
     private static final String userIDString = "?userID=56837dedd2d76438906140";
 
