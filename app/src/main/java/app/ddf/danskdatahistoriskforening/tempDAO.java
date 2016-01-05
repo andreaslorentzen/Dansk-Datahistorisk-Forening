@@ -3,8 +3,6 @@ package app.ddf.danskdatahistoriskforening;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +24,7 @@ import java.text.SimpleDateFormat;
 /**
  * Created by mathias on 30/12/15.
  */
-public class TempDAO implements IDAO {
+public class tempDAO implements IDAO {
     private static final String API = "http://msondrup.dk/api/v1";
     private static final String userIDString = "?userID=56837dedd2d76438906140";
 
@@ -135,18 +133,26 @@ public class TempDAO implements IDAO {
         JSONObject item;
 
         try {
-            data = data.substring(1, data.length()-1);
+            //   data = data.substring(1, data.length()-1);
             item = new JSONObject(data);
+
+            String itemreceived = item.getString("itemreceived");
+            String itemdatingfrom = item.getString("itemdatingfrom");
+            String itemdatingto = item.getString("itemdatingto");
+            String donator = item.getString("donator");
+            String producer = item.getString("producer");
+            String postnummer = item.getString("postnummer");
+
             Item currentItem = new Item(
                     Integer.parseInt(item.getString("itemid")),
                     item.getString("itemheadline"),
                     item.getString("itemdescription"),
-                    ((item.getString("itemreceived") == null || item.getString("itemreceived").equals("")) ? null : formatter.parse(item.getString("itemreceived"))),
-                    ((item.getString("datingfrom") == null || item.getString("datingfrom").equals("")) ? null : formatter.parse(item.getString("datingfrom"))),
-                    ((item.getString("datingto") == null || item.getString("datingto").equals("")) ? null : formatter.parse(item.getString("datingto"))),
-                    item.getString("donator"),
-                    item.getString("producer"),
-                    item.getString("postnummer")
+                    isJsonNull(itemreceived) ? null : formatter.parse(itemreceived),
+                    isJsonNull(itemdatingfrom) ? null : formatter.parse(itemdatingfrom),
+                    isJsonNull(itemdatingto) ? null : formatter.parse(itemdatingto),
+                    isJsonNull(donator) ? null : donator,
+                    isJsonNull(producer) ? null : producer,
+                    isJsonNull(postnummer) ? null : postnummer
             );
             return currentItem;
         } catch (JSONException e) {
@@ -156,6 +162,10 @@ public class TempDAO implements IDAO {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private boolean isJsonNull(String string){
+        return string == null || string.equals("null") || string.equals("");
     }
 
     @Override

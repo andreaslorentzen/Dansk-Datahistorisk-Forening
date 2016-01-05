@@ -67,7 +67,7 @@ public class DAO implements IDAO {
         }
     }
 
-    public String getDetailsFromBackEnd(String detailsURI){
+    public Item getDetailsFromBackEnd(String detailsURI){
         BufferedReader br;
         try {
             br = new BufferedReader(new InputStreamReader(new URL(API + detailsURI).openStream()));
@@ -77,7 +77,8 @@ public class DAO implements IDAO {
                 sb.append(line).append("\n");
                 line = br.readLine();
             }
-            return sb.toString();
+            return null;
+        //    return sb.toString();
         } catch (IOException e){
             e.printStackTrace();
             return null;
