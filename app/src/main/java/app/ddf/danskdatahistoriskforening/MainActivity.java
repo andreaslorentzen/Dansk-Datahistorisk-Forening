@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void ... params) {
-                return new tempDAO().getOverviewFromBackend();
+                return Model.getDAO().getOverviewFromBackend();
             }
 
             @Override
