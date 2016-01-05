@@ -61,41 +61,16 @@ public class ItemDetails extends Fragment {
     public void setDetailsURI(String detailsURI){
         this.detailsURI = detailsURI;
 
-        new AsyncTask<String, Void, String>() {
+        new AsyncTask<String, Void, Item>() {
             @Override
-            protected String doInBackground(String ... params) {
-                return new DAO().getDetailsFromBackEnd(params[0]);
+            protected Item doInBackground(String ... params) {
+                return new tempDAO().getDetailsFromBackEnd(params[0]);
             }
 
             @Override
-            protected void onPostExecute(String data) {
+            protected void onPostExecute(Item data) {
                 if (data != null){
-                    System.out.println("data = " + data);
-                    DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-                    JSONObject item;
-
-                    try {
-                        data = data.substring(1, data.length()-1);
-                        item = new JSONObject(data);
-                        currentItem = new Item(
-                                Integer.parseInt(item.getString("itemid")),
-                                item.getString("itemheadline"),
-                                item.getString("itemdescription"),
-                                ((item.getString("itemreceived") == null || item.getString("itemreceived").equals("")) ? null : formatter.parse(item.getString("itemreceived"))),
-                                ((item.getString("datingfrom") == null || item.getString("datingfrom").equals("")) ? null : formatter.parse(item.getString("datingfrom"))),
-                                ((item.getString("datingto") == null || item.getString("datingto").equals("")) ? null : formatter.parse(item.getString("datingto"))),
-                                item.getString("donator"),
-                                item.getString("producer"),
-                                item.getString("postnummer")
-                        );
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        return;
-                    } catch (ParseException e){
-                        e.printStackTrace();
-                        return;
-                    }
-
+                    currentItem = data;
                     // felterne udfyld felterne
                     itemheadlineView.setText(currentItem.getItemHeadline());
                     // TODO handle billeder og lyd

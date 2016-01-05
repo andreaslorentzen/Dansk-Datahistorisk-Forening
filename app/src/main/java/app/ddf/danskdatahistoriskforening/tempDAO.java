@@ -6,6 +6,9 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +18,9 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 /**
  * Created by mathias on 30/12/15.
@@ -65,18 +71,47 @@ public class tempDAO implements IDAO {
     }
 
     @Override
-    public String getDetailsFromBackEnd(String detailsURI) {
+    public Item getDetailsFromBackEnd(String detailsURI) {
         BufferedReader br;
+        StringBuilder sb;
         try {
             br = new BufferedReader(new InputStreamReader(new URL(API + detailsURI + userIDString).openStream()));
-            StringBuilder sb = new StringBuilder();
+            sb = new StringBuilder();
             String line = br.readLine();
             while (line != null) {
                 sb.append(line).append("\n");
                 line = br.readLine();
             }
-            return sb.toString();
+            sb.toString();
         } catch (IOException e){
+            e.printStackTrace();
+            return null;
+        }
+        String data = sb.toString();
+
+        System.out.println("data = " + data);
+        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        JSONObject item;
+
+        try {
+            data = data.substring(1, data.length()-1);
+            item = new JSONObject(data);
+            Item currentItem = new Item(
+                    Integer.parseInt(item.getString("itemid")),
+                    item.getString("itemheadline"),
+                    item.getString("itemdescription"),
+                    ((item.getString("itemreceived") == null || item.getString("itemreceived").equals("")) ? null : formatter.parse(item.getString("itemreceived"))),
+                    ((item.getString("datingfrom") == null || item.getString("datingfrom").equals("")) ? null : formatter.parse(item.getString("datingfrom"))),
+                    ((item.getString("datingto") == null || item.getString("datingto").equals("")) ? null : formatter.parse(item.getString("datingto"))),
+                    item.getString("donator"),
+                    item.getString("producer"),
+                    item.getString("postnummer")
+            );
+            return currentItem;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        } catch (ParseException e){
             e.printStackTrace();
             return null;
         }
