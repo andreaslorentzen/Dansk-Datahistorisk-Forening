@@ -29,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     MenuItem searchItem;
     MenuItem editModeItem;
 
+    boolean searchVisible = true;
+
     private static final String URL = "http://78.46.187.172:4019/items";
 
     @Override
@@ -91,14 +93,22 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         editModeItem = menu.findItem(R.id.editModeItem);
-        editModeItem.setVisible(false);
         editModeItem.setOnMenuItemClickListener(this);
 
         searchItem = menu.findItem(R.id.action_search);
+        searchItem.setOnMenuItemClickListener(this);
+
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setOnQueryTextListener(this);
 
-
+        if(searchVisible){
+            searchItem.setVisible(true);
+            editModeItem.setVisible(false);
+        }
+        else{
+            searchItem.setVisible(false);
+            editModeItem.setVisible(true);
+        }
 
         return true;
     }
@@ -134,9 +144,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         editModeItem.setVisible(true);
     }
 
-    public void changeToOnlySearch(){
-        searchItem.setVisible(true);
-        editModeItem.setVisible(false);
+    public void setSearchVisible(boolean isSerSearchVisible){
+        searchVisible = isSerSearchVisible;
+        searchItem.setVisible(isSerSearchVisible);
+        editModeItem.setVisible(!isSerSearchVisible);
     }
 
     @Override
@@ -152,10 +163,17 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        Intent i = new Intent(this, RegisterActivity.class);
-        System.out.println(((ItemDetails) detailsFragment).currentItem.toJSON().toString());
-        i.putExtra("item", ((ItemDetails) detailsFragment).currentItem);
-        startActivity(i);
+        System.out.println("menu");
+        if(item == searchItem){
+            System.out.println("menu");
+            setFragmentList();
+        }
+        else if(item == editModeItem){
+            Intent i = new Intent(this, RegisterActivity.class);
+            System.out.println(((ItemDetails) detailsFragment).currentItem.toJSON().toString());
+            i.putExtra("item", ((ItemDetails) detailsFragment).currentItem);
+            startActivity(i);
+        }
         return true;
     }
 
