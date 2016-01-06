@@ -56,6 +56,8 @@ public class ItemDetails extends Fragment {
         producerView = (TextView) layout.findViewById(R.id.producer);
         postNummerView = (TextView) layout.findViewById(R.id.postNummer);
 
+        ((MainActivity) getActivity()).setSearchVisible(false);
+
         return layout;
     }
 
@@ -90,6 +92,12 @@ public class ItemDetails extends Fragment {
             }
         }.execute(detailsURI);
 
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ((MainActivity) getActivity()).setSearchVisible(true);
     }
 
     public String getDetailsURI(){
