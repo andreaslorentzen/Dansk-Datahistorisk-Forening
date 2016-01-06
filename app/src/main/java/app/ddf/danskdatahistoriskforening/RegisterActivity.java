@@ -28,6 +28,10 @@ public class RegisterActivity extends AppCompatActivity{
     private Toolbar registerToolbar;
     private Item item;
 
+    public Item getItem() {
+        return item;
+    }
+
     private IDAO dao;
 
     /**
@@ -36,6 +40,11 @@ public class RegisterActivity extends AppCompatActivity{
 
     private ViewPager viewPager;
     private PagerAdapter mPagerAdapter;
+
+
+    private RegisterItemFragment itemFragment = new RegisterItemFragment();
+    private RegisterDetailsFragment detailsFragment = new RegisterDetailsFragment();
+    private RegisterDescriptionFragment descriptionFragment = new RegisterDescriptionFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,17 +69,6 @@ public class RegisterActivity extends AppCompatActivity{
         Intent intent = getIntent();
         if(intent.hasExtra("item")){
             item = intent.getParcelableExtra("item");
-
-            itemFragment.setItemTitle(item.getItemHeadline());
-            //TODO indsæt billeder, lyd og lokation også
-
-            detailsFragment.setDateFrom(item.getItemDatingFrom());
-            detailsFragment.setDateTo(item.getItemDatingTo());
-            detailsFragment.setDateReceive(item.getItemRecieved());
-            detailsFragment.setDonator(item.getDonator());
-            detailsFragment.setProducer(item.getProducer());
-
-            descriptionFragment.setItemDescription(item.getItemDescription());
         }
 
    //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
@@ -175,9 +173,6 @@ public class RegisterActivity extends AppCompatActivity{
         finish();
     }
 
-    private RegisterItemFragment itemFragment = new RegisterItemFragment();
-    private RegisterDetailsFragment detailsFragment = new RegisterDetailsFragment();
-    private RegisterDescriptionFragment descriptionFragment = new RegisterDescriptionFragment();
 
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 

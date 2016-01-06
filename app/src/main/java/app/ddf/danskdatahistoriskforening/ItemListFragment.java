@@ -36,6 +36,8 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
         itemList = (ListView) layout.findViewById(R.id.itemList);
         itemList.setOnItemClickListener(this);
 
+        ((MainActivity)getActivity()).changeToOnlySearch();
+
         updateItemList(null);
         return layout;
     }

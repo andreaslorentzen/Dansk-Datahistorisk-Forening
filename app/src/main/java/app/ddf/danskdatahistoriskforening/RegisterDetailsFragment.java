@@ -51,6 +51,14 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
         dateFromWrapper.setOnClickListener(this);
         dateToWrapper.setOnClickListener(this);
         dateReceiveWrapper.setOnClickListener(this);
+
+        Item item = ((RegisterActivity) getActivity()).getItem();
+        setDateFrom(item.getItemDatingFrom());
+        setDateTo(item.getItemDatingTo());
+        setDateReceive(item.getItemRecieved());
+        setDonator(item.getDonator());
+        setProducer(item.getProducer());
+
         return layout;
     }
 
@@ -70,15 +78,18 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
     }
 
     public void setDateFrom(Date date) {
-        this.dateFrom.setText(date.toString());
+        if(date != null)
+            this.dateFrom.setText(date.toString());
     }
 
     public void setDateTo(Date date) {
-        this.dateTo.setText(date.toString());
+        if(date != null)
+            this.dateTo.setText(date.toString());
     }
 
     public void setDateReceive(Date date) {
-        this.dateReceive.setText(date.toString());
+        if(date != null)
+            this.dateReceive.setText(date.toString());
     }
 
     public void setDonator(String donator) {

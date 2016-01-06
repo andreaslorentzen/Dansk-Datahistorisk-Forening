@@ -9,6 +9,11 @@
         app:showAsAction="ifRoom|collapseActionView"
         app:actionViewClass="android.support.v7.widget.SearchView" />
 
+    <item android:id="@+id/editModeItem"
+        android:title="editMode"
+        android:icon="@drawable/ic_mode_edit"
+        app:showAsAction="ifRoom"/>
+
     <!-- Settings, should always be in the overflow -->
     <!--<item android:id="@+id/action_settings"
         android:title="Settings"
