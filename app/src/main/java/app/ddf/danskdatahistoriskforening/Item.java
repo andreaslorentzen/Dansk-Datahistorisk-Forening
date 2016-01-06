@@ -73,6 +73,11 @@ public class Item implements Parcelable{
         String itemRecievedString = in.readString();
         String itemDatingFromString = in.readString();
         String itemDatingToString = in.readString();
+
+        System.out.println(itemRecievedString);
+        System.out.println(itemDatingFromString);
+        System.out.println(itemDatingToString);
+
         try {
             this.itemRecieved = ((itemRecievedString == null) ? null : formatter.parse(itemRecievedString));
             this.itemDatingFrom = ((itemDatingFromString == null) ? null : formatter.parse(itemDatingFromString));

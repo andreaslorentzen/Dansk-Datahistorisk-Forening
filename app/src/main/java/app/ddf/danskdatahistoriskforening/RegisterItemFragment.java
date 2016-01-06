@@ -36,6 +36,10 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
         imageView = (ImageView) layout.findViewById(R.id.imageView);
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
         rg = new RadioGaga();
+
+        Item item = ((RegisterActivity) getActivity()).getItem();
+        itemTitle.setText(item.getItemHeadline());
+        //TODO indsæt billeder, lyd
         return layout;
     }
 
@@ -88,6 +92,5 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
     }
 
     public void setItemTitle(String title) {
-        this.itemTitle.setText(title);
     }
 }
