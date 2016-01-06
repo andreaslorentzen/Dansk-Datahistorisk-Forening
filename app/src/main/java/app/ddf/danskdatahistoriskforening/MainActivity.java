@@ -1,6 +1,7 @@
 package app.ddf.danskdatahistoriskforening;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
@@ -8,8 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,8 +30,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     Fragment startFragment;
     ItemListFragment listFragment;
     Fragment detailsFragment;
+
     MenuItem searchItem;
     MenuItem editModeItem;
+    SearchView searchView;
 
     boolean searchVisible = true;
 
@@ -98,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         searchItem = menu.findItem(R.id.action_search);
         searchItem.setOnMenuItemClickListener(this);
 
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setOnQueryTextListener(this);
 
         if(searchVisible){
@@ -148,6 +154,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         searchVisible = isSerSearchVisible;
         searchItem.setVisible(isSerSearchVisible);
         editModeItem.setVisible(!isSerSearchVisible);
+        if(!isSerSearchVisible)
+            MenuItemCompat.collapseActionView(searchItem);
     }
 
     @Override
