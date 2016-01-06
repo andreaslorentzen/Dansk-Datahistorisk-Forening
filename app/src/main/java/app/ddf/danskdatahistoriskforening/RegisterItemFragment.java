@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.Pair;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RegisterItemFragment extends Fragment implements View.OnClickListener{
 
@@ -31,7 +33,7 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
     RadioGaga rg;
     EditText itemTitle;
     LinearLayout imageContatiner;
-    ArrayList<Uri> imageUris;
+    ArrayList<Pair<ImageView,Uri>> imageUris;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -64,7 +66,7 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
             //http://developer.android.com/guide/topics/media/camera.html#intents
             Uri fileUri = LocalMediaStorage.getOutputMediaFileUri(LocalMediaStorage.MEDIA_TYPE_IMAGE);
             if(fileUri != null) {
-                imageUris.add(fileUri);
+                imageUris.add(new Pair<>(new ImageView(getActivity()), fileUri));
 
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
@@ -74,9 +76,36 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
                 Toast.makeText(getActivity(), "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
             }
         }
-        if(v == micButton){
-            rg.execute();
+        else if(v == micButton){
+            //Intent i = new Intent(getActivity(), RecordingActivity.class);
+            //startActivity(i);
         }
+        else { //image tapped
+            try {
+                ImageView image = (ImageView) v;
+
+                int index = -1;
+                for(int i = 0; i<imageUris.size(); i++){
+                    if(imageUris.get(i).first == image){
+                        //the correct imageView was found
+                        index = i;
+                        break;
+                    }
+                }
+
+                if(index < 0){
+                    //none of the imageViews matched
+                    Log.d("ddf", "no imageView matched");
+                    return;
+                }
+
+                Toast.makeText(getActivity(), "" + index, Toast.LENGTH_LONG).show();
+            }
+            catch (ClassCastException e){
+                //View was not an image
+            }
+        }
+
     }
 
     @Override
@@ -85,14 +114,15 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
             if (resultCode == Activity.RESULT_OK) {
                 // Image captured and saved to fileUri specified in the Intent
 
-                ImageView image = new ImageView(getActivity());
+                ImageView image = imageUris.get(imageUris.size()-1).first;
                 LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(150, 250);
                 image.setLayoutParams(sizeParameters);
 
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inSampleSize = 4;
-                Bitmap thumbnail = BitmapFactory.decodeFile(imageUris.get(imageUris.size() - 1).getPath(), options);
+                Bitmap thumbnail = BitmapFactory.decodeFile(imageUris.get(imageUris.size() - 1).second.getPath(), options);
                 image.setImageBitmap(thumbnail);
+                image.setOnClickListener(this);
 
                 //image.setImageURI(imageUris.get(imageUris.size()-1));
                 imageContatiner.addView(image);
@@ -116,5 +146,27 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
 
     public void setItemTitle(String title) {
         this.itemTitle.setText(title);
+    }
+
+
+    //needed for generating unique ids in android versions less than 17
+    private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
+
+    /**
+     * Generate a value suitable for use in {@link #setId(int)}.
+     * This value will not collide with ID values generated at build time by aapt for R.id.
+     *
+     * @return a generated ID value
+     */
+    public static int generateViewId() {
+        for (;;) {
+            final int result = sNextGeneratedId.get();
+            // aapt-generated IDs have the high byte nonzero; clamp to the range under that.
+            int newValue = result + 1;
+            if (newValue > 0x00FFFFFF) newValue = 1; // Roll over to 1, not 0.
+            if (sNextGeneratedId.compareAndSet(result, newValue)) {
+                return result;
+            }
+        }
     }
 }
