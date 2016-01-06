@@ -23,7 +23,6 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
     ImageButton cameraButton;
     ImageButton micButton;
     ImageView imageView;
-    RadioGaga rg;
     EditText itemTitle;
 
     @Override
@@ -35,7 +34,6 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
         micButton.setOnClickListener(this);
         imageView = (ImageView) layout.findViewById(R.id.imageView);
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
-        rg = new RadioGaga();
         return layout;
     }
 
@@ -43,7 +41,6 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
     @Override
     public void onDetach() {
         super.onDetach();
-        rg.requestStop();
     }
 
 
@@ -59,7 +56,8 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
             getActivity().startActivityForResult(intent, RegisterActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
         }
         if(v == micButton){
-            rg.execute();
+            Intent i = new Intent(getActivity(), RecordingActivity.class);
+            startActivity(i);
         }
     }
 

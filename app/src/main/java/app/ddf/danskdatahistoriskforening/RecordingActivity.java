@@ -1,6 +1,7 @@
 package app.ddf.danskdatahistoriskforening;
 
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -11,7 +12,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     ImageButton pauseButton;
     TextView time_text;
     VoiceRecorder vr;
-
+    Handler timerHandler = new Handler();
     boolean running;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,26 +22,40 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         time_text = (TextView) this.findViewById(R.id.time_text);
         System.out.println(pauseButton);
         pauseButton.setOnClickListener(this);
-        //vr = new VoiceRecorder();
-        //vr.execute();
         running = true;
-        timer();
+        timerHandler.postDelayed(timerRunnable, 0);
+        //timer();
     }
 
     @Override
     public void onClick(View v) {
         if(v == pauseButton){
-            System.out.println("ASASD");
+            System.out.println("STOP");
+            timerHandler.removeCallbacks(timerRunnable);
             running = false;
             finish();
         }
     }
 
-
-    private void timer() {
+    Runnable timerRunnable = new Runnable() {
         final long startTime = System.currentTimeMillis();
+        @Override
+        public void run() {
+            int time = (int) (System.currentTimeMillis() - startTime); // elapsed time from nano to millis
+            int hours = time/3600000;
+            time -= hours * 3600000;
+            int minuts = time/60000;
+            time -= minuts * 60000;
+            int seconds = time/1000;
+            time -= seconds * 1000;
+            int millis = time/1;
+            time_text.setText(hours +":"+  String.format("%02d", minuts)+":"+  String.format("%02d", seconds) +";"+String.format("%02d", millis).substring(0,2)    );
+            timerHandler.postDelayed(this, 50);
+        }
+    };
+/*
+    private void timer() {
         new AsyncTask() {
-
             @Override
             protected Object doInBackground(Object... executeParametre) {
                 while (running) {
@@ -48,10 +63,8 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
                 }
                 return "færdig!";  // <5>
             }
-
             @Override
             protected void onProgressUpdate(Object... progress) {
-                System.out.println("onProgressUpdate");
                 // 1000 millis
                 // 60 seconds
                 // 60 minuts
@@ -63,14 +76,9 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
                 int seconds = time/1000;
                 time -= seconds * 1000;
                 int millis = time/1;
-
-                time_text.setText(hours +":"+  String.format("%02d", minuts)+":"+  String.format("%02d", seconds) +":"+String.format("%03d", millis)    );
-            }
-
-            @Override
-            protected void onPostExecute(Object result) {
-                System.out.println("onPostExecute");
+                //onPostExecute((hours +":"+  String.format("%02d", minuts)+":"+  String.format("%02d", seconds) +":"+String.format("%02d", millis).substring(0,2)    ));
+                time_text.setText(hours +":"+  String.format("%02d", minuts)+":"+  String.format("%02d", seconds) +";"+String.format("%02d", millis).substring(0,2)    );
             }
         }.execute(100);
-    }
+    }*/
 }
