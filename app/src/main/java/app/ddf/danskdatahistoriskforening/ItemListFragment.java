@@ -31,7 +31,7 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d("ItemListFragment", "created");
-        View layout = inflater.inflate(R.layout.content_main2, container, false);
+        View layout = inflater.inflate(R.layout.fragment_item_list, container, false);
         itemList = (ListView) layout.findViewById(R.id.itemList);
         itemList.setOnItemClickListener(this);
         stackTitles.push(itemTitles);
