@@ -40,10 +40,20 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal" />
 
-        <ImageView
-            android:layout_width="90dp"
-            android:layout_height="90dp"
-            android:id="@+id/imageView" />
+        <HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/horizontalScrollView">
+
+            <LinearLayout
+                android:id="@+id/imageContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="64dp"
+                android:paddingTop="16dp" />
+
+        </HorizontalScrollView>
 
         <LinearLayout
             android:layout_width="match_parent"
