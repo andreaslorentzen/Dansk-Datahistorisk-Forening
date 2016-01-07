@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.item;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -21,6 +21,11 @@ import android.widget.Toast;
 
 import java.text.ParseException;
 
+import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.helper.PagerSlidingTabStrip;
+import app.ddf.danskdatahistoriskforening.R;
+
 public class ItemActivity extends AppCompatActivity{
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
@@ -41,9 +46,9 @@ public class ItemActivity extends AppCompatActivity{
     private PagerAdapter mPagerAdapter;
 
 
-    private RegisterItemFragment itemFragment = new RegisterItemFragment();
-    private RegisterDetailsFragment detailsFragment = new RegisterDetailsFragment();
-    private RegisterDescriptionFragment descriptionFragment = new RegisterDescriptionFragment();
+    private ItemFragment itemFragment = new ItemFragment();
+    private ItemDetailsFragment detailsFragment = new ItemDetailsFragment();
+    private ItemDescriptionFragment descriptionFragment = new ItemDescriptionFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

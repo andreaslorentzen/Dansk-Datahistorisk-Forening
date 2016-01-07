@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.main;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,15 +10,12 @@ import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.R;
 
 
-public class ItemDetails extends Fragment {
+public class ItemShowFragment extends Fragment {
 
     private String detailsURI;
     private TextView itemheadlineView;
@@ -32,7 +29,7 @@ public class ItemDetails extends Fragment {
     private TextView postNummerView;
     protected Item currentItem;
 
-    public ItemDetails() {
+    public ItemShowFragment() {
         // Required empty public constructor
     }
 
@@ -44,7 +41,7 @@ public class ItemDetails extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View layout = inflater.inflate(R.layout.fragment_item_details, container, false);
+        View layout = inflater.inflate(R.layout.fragment_item_show, container, false);
 
         itemheadlineView = (TextView) layout.findViewById(R.id.itemheadline);
         imageScrollView = (HorizontalScrollView) layout.findViewById(R.id.imageScrollView);

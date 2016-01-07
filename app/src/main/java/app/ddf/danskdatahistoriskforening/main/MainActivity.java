@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.main;
 
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -18,17 +18,22 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.item.ItemActivity;
+
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener {
 
     JSONArray items;
     List<String> itemTitles;
+
     Fragment startFragment;
     ItemListFragment listFragment;
     Fragment detailsFragment;
 
-    MenuItem searchItem;
-    MenuItem editModeItem;
+    MenuItem searchButton;
+    MenuItem editButton;
     SearchView searchView;
 
     boolean searchVisible = true;
@@ -38,30 +43,20 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
+        setContentView(R.layout.activity_main);
 
         Toolbar mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
-        mainToolbar.setTitle("DDF");
-        mainToolbar.setTitleTextColor(-1); // #FFF
         setSupportActionBar(mainToolbar);
 
         mainToolbar.setNavigationIcon(null);
 
-    //    ActionBar ab = getSupportActionBar();
-    //    ab.setDisplayHomeAsUpEnabled(true);
-
-
-
-
-
         startFragment = new FrontFragment();
         listFragment = new ItemListFragment();
-        detailsFragment = new ItemDetails();
+        detailsFragment = new ItemShowFragment();
 
         getSupportFragmentManager().beginTransaction()
             .replace(R.id.frame, startFragment)
             .commit();
-
 
     }
 
@@ -69,22 +64,22 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
-        editModeItem = menu.findItem(R.id.editModeItem);
-        editModeItem.setOnMenuItemClickListener(this);
+        editButton = menu.findItem(R.id.editModeItem);
+        editButton.setOnMenuItemClickListener(this);
 
-        searchItem = menu.findItem(R.id.action_search);
-        searchItem.setOnMenuItemClickListener(this);
+        searchButton = menu.findItem(R.id.action_search);
+        searchButton.setOnMenuItemClickListener(this);
 
-        searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView = (SearchView) MenuItemCompat.getActionView(searchButton);
         searchView.setOnQueryTextListener(this);
 
         if(searchVisible){
-            searchItem.setVisible(true);
-            editModeItem.setVisible(false);
+            searchButton.setVisible(true);
+            editButton.setVisible(false);
         }
         else{
-            searchItem.setVisible(false);
-            editModeItem.setVisible(true);
+            searchButton.setVisible(false);
+            editButton.setVisible(true);
         }
 
         return true;
@@ -149,17 +144,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             return;
             //TODO DO SOMETHING USEFULL
         }
-        ((ItemDetails) detailsFragment).setDetailsURI(detailsURI);
-        searchItem.setVisible(false);
-        editModeItem.setVisible(true);
+        ((ItemShowFragment) detailsFragment).setDetailsURI(detailsURI);
     }
 
     public void setSearchVisible(boolean isSerSearchVisible){
         searchVisible = isSerSearchVisible;
-        searchItem.setVisible(isSerSearchVisible);
-        editModeItem.setVisible(!isSerSearchVisible);
+        searchButton.setVisible(isSerSearchVisible);
+        editButton.setVisible(!isSerSearchVisible);
         if(!isSerSearchVisible)
-            MenuItemCompat.collapseActionView(searchItem);
+            MenuItemCompat.collapseActionView(searchButton);
     }
 
     @Override
@@ -176,14 +169,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         System.out.println("menu");
-        if(item == searchItem){
+        if(item == searchButton){
             System.out.println("menu");
             setFragmentList();
         }
-        else if(item == editModeItem){
+        else if(item == editButton){
             Intent i = new Intent(this, ItemActivity.class);
-            System.out.println(((ItemDetails) detailsFragment).currentItem.toJSON().toString());
-            i.putExtra("item", ((ItemDetails) detailsFragment).currentItem);
+            System.out.println(((ItemShowFragment) detailsFragment).currentItem.toJSON().toString());
+            i.putExtra("item", ((ItemShowFragment) detailsFragment).currentItem);
             startActivity(i);
         }
         return true;

@@ -1,6 +1,7 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.main;
 
 
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,7 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener{
+import app.ddf.danskdatahistoriskforening.R;
+
+public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener {
 
     ListView itemList;
     JSONArray items;
@@ -31,11 +34,15 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d("ItemListFragment", "created");
-        View layout = inflater.inflate(R.layout.content_main2, container, false);
+        View layout = inflater.inflate(R.layout.fragment_item_list, container, false);
         itemList = (ListView) layout.findViewById(R.id.itemList);
         itemList.setOnItemClickListener(this);
         stackTitles.push(itemTitles);
         updateItemList(itemTitles);
+
+        FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fab);
+        fab.setOnClickListener(this);
+
         return layout;
     }
 
@@ -90,5 +97,10 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     public void onItemClick(AdapterView<?> aV, View v, int position, long l){
         Log.d("ItemListFragment", "OnItemClick");
         ((MainActivity)getActivity()).setFragmentDetails(position);
+    }
+
+    @Override
+    public void onClick(View v) {
+        ((MainActivity)getActivity()).startRegister();
     }
 }

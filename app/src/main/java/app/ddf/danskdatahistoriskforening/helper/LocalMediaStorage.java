@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.helper;
 
 //http://developer.android.com/guide/topics/media/camera.html#saving-media
 

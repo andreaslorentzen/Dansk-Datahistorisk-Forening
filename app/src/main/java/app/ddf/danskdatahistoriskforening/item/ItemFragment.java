@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.item;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -21,7 +21,12 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class RegisterItemFragment extends Fragment implements View.OnClickListener{
+import app.ddf.danskdatahistoriskforening.image.ImageviewerActivity;
+import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
+import app.ddf.danskdatahistoriskforening.R;
+
+public class ItemFragment extends Fragment implements View.OnClickListener{
 
     ImageButton cameraButton;
     ImageButton micButton;
@@ -31,7 +36,7 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View layout = inflater.inflate(R.layout.fragment_register_item, container, false);
+        View layout = inflater.inflate(R.layout.fragment_item, container, false);
         cameraButton = (ImageButton) layout.findViewById(R.id.cameraButton);
         cameraButton.setOnClickListener(this);
         micButton =  (ImageButton) layout.findViewById(R.id.micButton);

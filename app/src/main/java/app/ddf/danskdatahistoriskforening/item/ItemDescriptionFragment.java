@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.item;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -7,11 +7,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
-public class RegisterDescriptionFragment extends Fragment {
+import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.R;
+
+public class ItemDescriptionFragment extends Fragment {
     EditText itemDescription;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View layout = inflater.inflate(R.layout.fragment_register_description, container, false);
+        View layout = inflater.inflate(R.layout.fragment_item_description, container, false);
 
         itemDescription = (EditText) layout.findViewById(R.id.itemDescription);
 
