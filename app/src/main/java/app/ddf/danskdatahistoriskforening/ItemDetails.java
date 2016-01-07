@@ -3,6 +3,7 @@ package app.ddf.danskdatahistoriskforening;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,6 +56,8 @@ public class ItemDetails extends Fragment {
         producerView = (TextView) layout.findViewById(R.id.producer);
         postNummerView = (TextView) layout.findViewById(R.id.postNummer);
 
+        ((MainActivity) getActivity()).setSearchVisible(false);
+
         return layout;
     }
 
@@ -64,8 +67,7 @@ public class ItemDetails extends Fragment {
         new AsyncTask<String, Void, Item>() {
             @Override
             protected Item doInBackground(String ... params) {
-                return new Item();
-            //    return new tempDAO().getDetailsFromBackEnd(params[0]);
+                return Model.getDAO().getDetailsFromBackEnd(params[0]);
             }
 
             @Override
@@ -79,15 +81,23 @@ public class ItemDetails extends Fragment {
                     receivedView.setText(((currentItem.getItemRecievedAsString() == null) ? null : currentItem.getItemRecievedAsString()));
                     datingFromView.setText(((currentItem.getItemDatingFromAsString() == null) ? null : currentItem.getItemDatingFromAsString()));
                     datingToView.setText(((currentItem.getItemDatingToAsString() == null) ? null : currentItem.getItemDatingToAsString()));
+
                     donatorView.setText(currentItem.getDonator());
                     producerView.setText(currentItem.getProducer());
                     postNummerView.setText(currentItem.getPostalCode());
                 } else {
+                    Log.d("itemdetails", "else");
                     //TODO ERROR HANDLING FOR data = null
                 }
             }
         }.execute(detailsURI);
 
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ((MainActivity) getActivity()).setSearchVisible(true);
     }
 
     public String getDetailsURI(){

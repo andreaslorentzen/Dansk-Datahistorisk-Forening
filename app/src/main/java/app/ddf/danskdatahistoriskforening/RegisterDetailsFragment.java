@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
@@ -27,6 +28,7 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
     LinearLayout dateReceiveWrapper;
 
     public static TextView currentDateField;
+    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -42,15 +44,23 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
         dateFromWrapper = (LinearLayout) layout.findViewById(R.id.DateFromWrapper);
         dateToWrapper = (LinearLayout) layout.findViewById(R.id.DateToWrapper);
 
-        DateFormat format = DateFormat.getDateInstance();
 
-        dateFrom.setText(format.format(new Date()));
-        dateTo.setText(format.format(new Date()));
-        dateReceive.setText(format.format(new Date()));
+
+        dateFrom.setText(formatter.format(new Date()));
+        dateTo.setText(formatter.format(new Date()));
+        dateReceive.setText(formatter.format(new Date()));
 
         dateFromWrapper.setOnClickListener(this);
         dateToWrapper.setOnClickListener(this);
         dateReceiveWrapper.setOnClickListener(this);
+
+        Item item = ((RegisterActivity) getActivity()).getItem();
+        setDateFrom(item.getItemDatingFrom());
+        setDateTo(item.getItemDatingTo());
+        setDateReceive(item.getItemRecieved());
+        setDonator(item.getDonator());
+        setProducer(item.getProducer());
+
         return layout;
     }
 
@@ -61,7 +71,7 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
                 currentDateField = dateReceive;
             else if(v == dateFromWrapper)
                 currentDateField = dateFrom;
-            else
+            else if(v == dateToWrapper)
                 currentDateField = dateTo;
 
             DialogFragment datePicker = new DatePickerFragment();
@@ -70,15 +80,18 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
     }
 
     public void setDateFrom(Date date) {
-        this.dateFrom.setText(date.toString());
+        if(date != null)
+            this.dateFrom.setText(formatter.format(date));
     }
 
     public void setDateTo(Date date) {
-        this.dateTo.setText(date.toString());
+        if(date != null)
+            this.dateTo.setText(formatter.format(date));
     }
 
     public void setDateReceive(Date date) {
-        this.dateReceive.setText(date.toString());
+        if(date != null)
+            this.dateReceive.setText(formatter.format(date));
     }
 
     public void setDonator(String donator) {

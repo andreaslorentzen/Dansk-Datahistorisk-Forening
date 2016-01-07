@@ -13,17 +13,25 @@
         <Button
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:text="Register"
+            android:text="Registrer Genstand"
             android:id="@+id/registerButton"
             android:layout_gravity="center_horizontal"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:textSize="24dp"
+            android:background="?attr/colorPrimary"
+            android:layout_margin="20dp"
+            android:textColor="#ffffff" />
 
         <Button
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:text="Liste"
+            android:text="Vis Genstande"
             android:id="@+id/listButton"
             android:layout_gravity="center_horizontal"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:textSize="24dp"
+            android:background="?attr/colorPrimary"
+            android:layout_margin="20dp"
+            android:textColor="#ffffff" />
     </LinearLayout>
 </FrameLayout>

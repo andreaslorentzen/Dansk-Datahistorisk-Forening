@@ -2,21 +2,28 @@ package app.ddf.danskdatahistoriskforening;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.Pair;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RegisterItemFragment extends Fragment implements View.OnClickListener{
 
@@ -25,6 +32,8 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
     ImageView imageView;
     RadioGaga rg;
     EditText itemTitle;
+    LinearLayout imageContatiner;
+    ArrayList<Pair<ImageView,Uri>> imageUris;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -33,9 +42,17 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
         cameraButton.setOnClickListener(this);
         micButton =  (ImageButton) layout.findViewById(R.id.micButton);
         micButton.setOnClickListener(this);
-        imageView = (ImageView) layout.findViewById(R.id.imageView);
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
         rg = new RadioGaga();
+
+        Item item = ((RegisterActivity) getActivity()).getItem();
+        itemTitle.setText(item.getItemHeadline());
+        //TODO indsæt billeder, lyd
+
+        //((HorizontalScrollView) layout.findViewById(R.id.horizontalScrollView)).setFillViewport(true);
+        imageContatiner = (LinearLayout) layout.findViewById(R.id.imageContainer);
+        imageUris = new ArrayList<>();
+
         return layout;
     }
 
@@ -46,21 +63,49 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
         rg.requestStop();
     }
 
-
-    Uri fileUri;
-
     @Override
     public void onClick(View v) {
         if(v == cameraButton){
             //http://developer.android.com/guide/topics/media/camera.html#intents
-            fileUri = LocalMediaStorage.getOutputMediaFileUri(LocalMediaStorage.MEDIA_TYPE_IMAGE);
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-            getActivity().startActivityForResult(intent, RegisterActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+            Uri fileUri = LocalMediaStorage.getOutputMediaFileUri(LocalMediaStorage.MEDIA_TYPE_IMAGE);
+            if(fileUri != null) {
+                imageUris.add(new Pair<>(new ImageView(getActivity()), fileUri));
+
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                getActivity().startActivityForResult(intent, RegisterActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+            }
+            else{
+                Toast.makeText(getActivity(), "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
+            }
         }
-        if(v == micButton){
-            rg.execute();
+        else if(v == micButton){
+
         }
+        else { //image tapped
+                int index = -1;
+                ArrayList<Uri> uris = new ArrayList<>();
+                for(int i = 0; i<imageUris.size(); i++){
+                    if(imageUris.get(i).first == v){
+                        //the correct imageView was found
+                        index = i;
+                    }
+
+                    uris.add(imageUris.get(i).second);
+                }
+
+                if(index < 0){
+                    //none of the imageViews matched
+                    Log.d("ddf", "no imageView matched");
+                    return;
+                }
+
+                Intent intent = new Intent(getActivity(), ImageviewerActivity.class);
+                intent.putExtra("imageURIs", uris);
+                intent.putExtra("index", index);
+                getActivity().startActivityForResult(intent, RegisterActivity.IMAGEVIEWER_REQUEST_CODE);
+        }
+
     }
 
     @Override
@@ -68,14 +113,33 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
         if (requestCode == RegisterActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 // Image captured and saved to fileUri specified in the Intent
-                imageView.setImageURI(fileUri);
-             //   Toast.makeText(getActivity(),  Toast.LENGTH_LONG).show();
+                ImageView image = imageUris.get(imageUris.size()-1).first;
+                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(150, 250);
+                image.setLayoutParams(sizeParameters);
+
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inSampleSize = 4;
+                Bitmap thumbnail = BitmapFactory.decodeFile(imageUris.get(imageUris.size() - 1).second.getPath(), options);
+                image.setImageBitmap(thumbnail);
+                image.setOnClickListener(this);
+
+                //image.setImageURI(imageUris.get(imageUris.size()-1));
+                imageContatiner.addView(image);
+
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // User cancelled the image capture
-                Toast.makeText(getActivity(), "Cancelled", Toast.LENGTH_LONG).show();
+                //clean up
+                imageUris.remove(imageUris.size()-1);
             } else {
                 // Image capture failed, advise user
-                Toast.makeText(getActivity(), "Failed" , Toast.LENGTH_LONG).show();
+                imageUris.remove(imageUris.size()-1);
+                Toast.makeText(getActivity(), "Der opstod en fejl under brug af kameraet" , Toast.LENGTH_LONG).show();
+            }
+        }
+        else if(requestCode == RegisterActivity.IMAGEVIEWER_REQUEST_CODE){
+            if(resultCode == Activity.RESULT_OK){
+                Log.d("imageviewer", "" + resultCode);
+                Toast.makeText(getActivity(), "imageviewer", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -88,6 +152,5 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
     }
 
     public void setItemTitle(String title) {
-        this.itemTitle.setText(title);
     }
 }

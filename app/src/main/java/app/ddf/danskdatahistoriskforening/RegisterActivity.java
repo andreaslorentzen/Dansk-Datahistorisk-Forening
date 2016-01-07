@@ -1,7 +1,9 @@
 package app.ddf.danskdatahistoriskforening;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -21,10 +23,14 @@ import android.widget.Toast;
 public class RegisterActivity extends AppCompatActivity{
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
-
+    public static final int IMAGEVIEWER_REQUEST_CODE = 200;
 
     private Toolbar registerToolbar;
     private Item item;
+
+    public Item getItem() {
+        return item;
+    }
 
     private IDAO dao;
 
@@ -34,6 +40,11 @@ public class RegisterActivity extends AppCompatActivity{
 
     private ViewPager viewPager;
     private PagerAdapter mPagerAdapter;
+
+
+    private RegisterItemFragment itemFragment = new RegisterItemFragment();
+    private RegisterDetailsFragment detailsFragment = new RegisterDetailsFragment();
+    private RegisterDescriptionFragment descriptionFragment = new RegisterDescriptionFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,20 +69,7 @@ public class RegisterActivity extends AppCompatActivity{
         Intent intent = getIntent();
         if(intent.hasExtra("item")){
             item = intent.getParcelableExtra("item");
-
-            itemFragment.setItemTitle(item.getItemHeadline());
-            //TODO indsæt billeder, lyd og lokation også
-
-            detailsFragment.setDateFrom(item.getItemDatingFrom());
-            detailsFragment.setDateTo(item.getItemDatingTo());
-            detailsFragment.setDateReceive(item.getItemRecieved());
-            detailsFragment.setDonator(item.getDonator());
-            detailsFragment.setProducer(item.getProducer());
-
-            descriptionFragment.setItemDescription(item.getItemDescription());
         }
-
-        dao = new tempDAO();
 
    //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
    //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
@@ -119,14 +117,40 @@ public class RegisterActivity extends AppCompatActivity{
         int resultCode;
 
         if(item.getItemId() > 0){
-            resultCode = dao.saveItemToDB(this, item);
+            new AsyncTask<Item, Void, Integer>(){
+                @Override
+                protected Integer doInBackground(Item... params){
+                    return Model.getDAO().saveItemToDB(RegisterActivity.this, params[0]);
+                }
+
+                @Override
+                protected void onPostExecute(Integer response){
+                    checkForErrors(response);
+                }
+            }.execute(item);
         }
         else{
-            resultCode = dao.updateItem(this, item);
+            new AsyncTask<Item, Void, Integer>(){
+                @Override
+                protected Integer doInBackground(Item... params){
+                    return Model.getDAO().saveItemToDB(RegisterActivity.this, params[0]);
+                }
+
+                @Override
+                protected void onPostExecute(Integer response){
+                   checkForErrors(response);
+                }
+            }.execute(item);
         }
 
-        switch(resultCode){
+
+
+    }
+
+    private void checkForErrors(int responseCode){
+        switch(responseCode){
             case -1:
+                Model.setListUpdated(false);
                 finish();
                 break;
             case 1:
@@ -135,19 +159,21 @@ public class RegisterActivity extends AppCompatActivity{
             case 2:
                 Toast.makeText(this, "Enheden er ikke forbundet til internettet!", Toast.LENGTH_LONG).show();
                 break;
+            case 3:
+                Toast.makeText(this, "Server problem", Toast.LENGTH_LONG).show();
+                break;
+            case 4:
+                Toast.makeText(this, "Kunne ikke forbinde til serveren", Toast.LENGTH_LONG).show();
+                break;
             default:
                 Toast.makeText(this, "Noget gik galt", Toast.LENGTH_LONG).show();
         }
-
     }
 
     private void prompt(){
         finish();
     }
 
-    private RegisterItemFragment itemFragment = new RegisterItemFragment();
-    private RegisterDetailsFragment detailsFragment = new RegisterDetailsFragment();
-    private RegisterDescriptionFragment descriptionFragment = new RegisterDescriptionFragment();
 
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
@@ -190,7 +216,9 @@ public class RegisterActivity extends AppCompatActivity{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
-
+            itemFragment.onActivityResult(requestCode, resultCode, data);
+        }
+        else if(requestCode == IMAGEVIEWER_REQUEST_CODE){
             itemFragment.onActivityResult(requestCode, resultCode, data);
         }
     }

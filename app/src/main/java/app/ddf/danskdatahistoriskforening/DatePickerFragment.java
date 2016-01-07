@@ -15,13 +15,13 @@ import java.util.Date;
 
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener{
 
-    DateFormat formater;
+    SimpleDateFormat formater;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceBundle){
 
-
-        formater = DateFormat.getDateInstance();
+        System.out.println("Inside onCreate");
+        formater = new SimpleDateFormat("yyyy-MM-dd");
         Date chosenDate;
         try {
             chosenDate = formater.parse(RegisterDetailsFragment.currentDateField.getText().toString());

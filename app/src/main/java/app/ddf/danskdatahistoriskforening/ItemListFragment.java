@@ -1,8 +1,7 @@
 package app.ddf.danskdatahistoriskforening;
 
 
-import android.app.Fragment;
-import android.content.Intent;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,7 +11,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +24,18 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     Stack<List<String>> stackTitles = new Stack<List<String>>();
     String lastSearch = "";
 
+    public ItemListFragment() {
+        itemTitles = new ArrayList<String>();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View layout = inflater.inflate(R.layout.fragment_register_item, container, false);
+        Log.d("ItemListFragment", "created");
+        View layout = inflater.inflate(R.layout.content_main2, container, false);
+        itemList = (ListView) layout.findViewById(R.id.itemList);
+        itemList.setOnItemClickListener(this);
+        stackTitles.push(itemTitles);
+        updateItemList(itemTitles);
         return layout;
     }
 
@@ -38,10 +45,14 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
         super.onDetach();
     }
 
+    ArrayAdapter adapter;
+
     public void updateItemList(List<String> titles){
-        if (titles == null)
-            titles = itemTitles;
-        itemList.setAdapter(new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, titles));
+        itemTitles = titles;
+        if(getActivity() != null){
+            adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles);
+            itemList.setAdapter(adapter);
+        }
     }
 
     /**
@@ -53,27 +64,31 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     */
     public void searchItemList(String search) {
         List<String> currentTitles = itemTitles;
-        if (!lastSearch.equals("")){
-            if (search.contains(lastSearch) && search.length() == lastSearch.length()+1) // if 1 char is added, get last title list
-                currentTitles = stackTitles.peek();
-            else if (search.length() == lastSearch.length()-1) { // if 1 char is removed, delete last title list and get the "new last" title list
-                stackTitles.pop();
-                currentTitles = stackTitles.peek();
-            }
+        if (search.equals("") && lastSearch.equals("")) {
+            return;
         }
-
+        if (search.contains(lastSearch) && search.length() == lastSearch.length() + 1) { // if 1 char is added, get last title list
+            currentTitles = stackTitles.peek();
+        } else if (lastSearch.length() > 0 && search.equals(lastSearch.substring(0, lastSearch.length() - 1))) { // if 1 char is removed, delete last title list and get the "new last" title list
+            stackTitles.pop();
+            currentTitles = stackTitles.peek();
+            lastSearch = search;
+            updateItemList(currentTitles);
+            return;
+        }
         List<String> searchedTitles = new ArrayList<String>();
         for (String title : currentTitles) {
-            if (title.contains(search))
+            if (title.toLowerCase().contains(search.toLowerCase()))
                 searchedTitles.add(title);
         }
-        searchedTitles = currentTitles;
         stackTitles.push(searchedTitles);
+        lastSearch = search;
         updateItemList(searchedTitles);
     }
 
     @Override
     public void onItemClick(AdapterView<?> aV, View v, int position, long l){
+        Log.d("ItemListFragment", "OnItemClick");
         ((MainActivity)getActivity()).setFragmentDetails(position);
     }
 }
