@@ -23,6 +23,7 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
     Intent result;
 
     ArrayList<Uri> imageUris;
+    ArrayList<Uri> imagesToRemove;
 
 
     @Override
@@ -64,6 +65,8 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
         else if(v == deleteButton){
             int index = viewPager.getCurrentItem();
 
+
+
             imageUris.remove(index);
 
             if(imageUris.size() < 1){ //all images have been removed
@@ -79,7 +82,7 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onBackPressed() {
-        result.putExtra("remainingUris", imageUris);
+        result.putExtra("remainingURIs", imageUris);
         setResult(Activity.RESULT_OK, result);
 
         super.onBackPressed();
