@@ -1,11 +1,20 @@
 package app.ddf.danskdatahistoriskforening;
 
+import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.util.Pair;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -16,17 +25,22 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
+
+import java.text.ParseException;
 
 public class RegisterActivity extends AppCompatActivity{
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
-
+    public static final int IMAGEVIEWER_REQUEST_CODE = 200;
 
     private Toolbar registerToolbar;
     private Item item;
 
-    private IDAO dao;
+    public Item getItem() {
+        return item;
+    }
 
     /**
      * http://developer.android.com/training/animation/screen-slide.html
@@ -34,6 +48,11 @@ public class RegisterActivity extends AppCompatActivity{
 
     private ViewPager viewPager;
     private PagerAdapter mPagerAdapter;
+
+
+    private RegisterItemFragment itemFragment = new RegisterItemFragment();
+    private RegisterDetailsFragment detailsFragment = new RegisterDetailsFragment();
+    private RegisterDescriptionFragment descriptionFragment = new RegisterDescriptionFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,20 +77,7 @@ public class RegisterActivity extends AppCompatActivity{
         Intent intent = getIntent();
         if(intent.hasExtra("item")){
             item = intent.getParcelableExtra("item");
-
-            itemFragment.setItemTitle(item.getItemHeadline());
-            //TODO indsæt billeder, lyd og lokation også
-
-            detailsFragment.setDateFrom(item.getItemDatingFrom());
-            detailsFragment.setDateTo(item.getItemDatingTo());
-            detailsFragment.setDateReceive(item.getItemRecieved());
-            detailsFragment.setDonator(item.getDonator());
-            detailsFragment.setProducer(item.getProducer());
-
-            descriptionFragment.setItemDescription(item.getItemDescription());
         }
-
-        dao = new tempDAO();
 
    //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
    //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
@@ -107,26 +113,86 @@ public class RegisterActivity extends AppCompatActivity{
         }
     }
 
+
     private void save() {
-        //TODO store textfield content in item
-        Log.d("fejl", "start save activity");
 
         item.setItemHeadline(itemFragment.getItemTitle());
+        for(Pair<ImageView, Uri> pair : itemFragment.imageUris){
+            item.addToPictures(pair.second);
+        }
+        item.setDonator(detailsFragment.donator.getText().toString());
+        item.setProducer(detailsFragment.producer.getText().toString());
         item.setItemDescription(descriptionFragment.getItemDescription());
 
-        Log.d("fejl", item.getItemHeadline());
-
-        int resultCode;
 
         if(item.getItemId() > 0){
-            resultCode = dao.saveItemToDB(this, item);
+            try{
+                if(detailsFragment.dateReceive.getText() != null || !detailsFragment.dateReceive.getText().toString().equals(""))
+                    item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
+                else
+                    item.setItemRecieved(null);
+                if(detailsFragment.dateFrom.getText() != null || !detailsFragment.dateFrom.getText().toString().equals(""))
+                    item.setItemDatingFrom(Model.getFormatter().parse(detailsFragment.dateFrom.getText().toString()));
+                else
+                    item.setItemDatingFrom(null);
+                if(detailsFragment.dateTo.getText() != null || !detailsFragment.dateTo.getText().toString().equals(""))
+                    item.setItemDatingTo(Model.getFormatter().parse(detailsFragment.dateTo.getText().toString()));
+                else
+                    item.setItemDatingTo(null);
+            } catch(ParseException e){
+                e.printStackTrace();
+            }
+            new AsyncTask<Item, Void, Integer>(){
+                @Override
+                protected Integer doInBackground(Item... params){
+                    return Model.getDAO().updateItem(RegisterActivity.this, params[0]);
+                }
+
+                @Override
+                protected void onPostExecute(Integer response){
+                    checkForErrors(response);
+                }
+            }.execute(item);
         }
         else{
-            resultCode = dao.updateItem(this, item);
+            try{
+                System.out.println(detailsFragment.hasReceiveChanged());
+                if(detailsFragment.hasReceiveChanged())
+                    item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
+                else
+                    item.setItemRecieved(null);
+                if(detailsFragment.hasDateFromChanged())
+                    item.setItemDatingFrom(Model.getFormatter().parse(detailsFragment.dateFrom.getText().toString()));
+                else
+                    item.setItemDatingFrom(null);
+                if(detailsFragment.hasDateToChanged())
+                    item.setItemDatingTo(Model.getFormatter().parse(detailsFragment.dateTo.getText().toString()));
+                else
+                    item.setItemDatingTo(null);
+            } catch(ParseException e){
+                e.printStackTrace();
+            }
+            new AsyncTask<Item, Void, Integer>(){
+                @Override
+                protected Integer doInBackground(Item... params){
+                    return Model.getDAO().saveItemToDB(RegisterActivity.this, params[0]);
+                }
+
+                @Override
+                protected void onPostExecute(Integer response){
+                   checkForErrors(response);
+                }
+            }.execute(item);
         }
 
-        switch(resultCode){
+
+
+    }
+
+    private void checkForErrors(int responseCode){
+        switch(responseCode){
             case -1:
+                Model.setListUpdated(false);
                 finish();
                 break;
             case 1:
@@ -135,19 +201,23 @@ public class RegisterActivity extends AppCompatActivity{
             case 2:
                 Toast.makeText(this, "Enheden er ikke forbundet til internettet!", Toast.LENGTH_LONG).show();
                 break;
+            case 3:
+                Toast.makeText(this, "Server problem", Toast.LENGTH_LONG).show();
+                break;
+            case 4:
+                Toast.makeText(this, "Kunne ikke forbinde til serveren", Toast.LENGTH_LONG).show();
+                break;
+            case 5:
+                Toast.makeText(this, "Server problem", Toast.LENGTH_LONG).show(); // JSON problem
             default:
                 Toast.makeText(this, "Noget gik galt", Toast.LENGTH_LONG).show();
         }
-
     }
 
     private void prompt(){
         finish();
     }
 
-    private RegisterItemFragment itemFragment = new RegisterItemFragment();
-    private RegisterDetailsFragment detailsFragment = new RegisterDetailsFragment();
-    private RegisterDescriptionFragment descriptionFragment = new RegisterDescriptionFragment();
 
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
@@ -190,7 +260,9 @@ public class RegisterActivity extends AppCompatActivity{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
-
+            itemFragment.onActivityResult(requestCode, resultCode, data);
+        }
+        else if(requestCode == IMAGEVIEWER_REQUEST_CODE){
             itemFragment.onActivityResult(requestCode, resultCode, data);
         }
     }

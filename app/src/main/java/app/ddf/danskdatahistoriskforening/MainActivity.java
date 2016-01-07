@@ -1,24 +1,41 @@
 package app.ddf.danskdatahistoriskforening;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ListFragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.Toast;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener {
 
     JSONArray items;
-
+    List<String> itemTitles;
     Fragment startFragment;
-    ListFragment listFragment;
+    ItemListFragment listFragment;
     Fragment detailsFragment;
+
+    MenuItem searchItem;
+    MenuItem editModeItem;
+    SearchView searchView;
+
+    boolean searchVisible = true;
 
     private static final String URL = "http://78.46.187.172:4019/items";
 
@@ -28,46 +45,87 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main2);
 
         Toolbar mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
-        mainToolbar.setTitle("Registrede genstande");
+        mainToolbar.setTitle("DDF");
+        mainToolbar.setTitleTextColor(-1); // #FFF
         setSupportActionBar(mainToolbar);
 
+        mainToolbar.setNavigationIcon(null);
+
+    //    ActionBar ab = getSupportActionBar();
+    //    ab.setDisplayHomeAsUpEnabled(true);
+
+
+
+
+
         startFragment = new FrontFragment();
-        listFragment = new ListFragment();
+        listFragment = new ItemListFragment();
         detailsFragment = new ItemDetails();
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.frame, startFragment)
-                .addToBackStack(null)
-                .commit();
+            .replace(R.id.frame, startFragment)
+            .commit();
 
-        new AsyncTask<Void, Void, String>() {
-            @Override
-            protected String doInBackground(Void ... params) {
-                return new tempDAO().getOverviewFromBackend();
-            }
 
-            @Override
-            protected void onPostExecute(String data) {
-                if (data != null){
-                    System.out.println("data = " + data);
-
-                    try {
-
-                        items = new JSONArray(data);
-                        for (int n = 0; n<items.length(); n++) {
-                            JSONObject item = items.getJSONObject(n);
-                        //    itemTitles.add(item.optString("itemheadline", "(ukendt)"));
-                        }
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                //    updateItemList();
-                }
-            }
-        }.execute();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        editModeItem = menu.findItem(R.id.editModeItem);
+        editModeItem.setOnMenuItemClickListener(this);
+
+        searchItem = menu.findItem(R.id.action_search);
+        searchItem.setOnMenuItemClickListener(this);
+
+        searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setOnQueryTextListener(this);
+
+        if(searchVisible){
+            searchItem.setVisible(true);
+            editModeItem.setVisible(false);
+        }
+        else{
+            searchItem.setVisible(false);
+            editModeItem.setVisible(true);
+        }
+
+        return true;
+    }
+
+    @Override
+    protected void onResume(){
+        if(!Model.isListUpdated()) {
+            new AsyncTask<Void, Void, String>() {
+                @Override
+                protected String doInBackground(Void... params) {
+                    return Model.getDAO().getOverviewFromBackend();
+                }
+
+                @Override
+                protected void onPostExecute(String data) {
+                    if (data != null) {
+                        System.out.println("data = " + data);
+
+                        try {
+                            itemTitles = new ArrayList<String>();
+                            items = new JSONArray(data);
+                            for (int n = 0; n < items.length(); n++) {
+                                JSONObject item = items.getJSONObject(n);
+                                itemTitles.add(item.optString("itemheadline", "(ukendt)"));
+                            }
+
+                            Model.setListUpdated(true);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }.execute();
+        }
+        super.onResume();
+    }
 
     public void startRegister() {
         Intent i = new Intent(this, RegisterActivity.class);
@@ -75,10 +133,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setFragmentList(){
+        listFragment.updateItemList(itemTitles);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.frame, listFragment)
-                .addToBackStack(null)
-                .commit();
+            .replace(R.id.frame, listFragment)
+            .addToBackStack(null)
+            .commit();
     }
 
     public void setFragmentDetails(int position) {
@@ -88,12 +147,50 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
         String detailsURI;
         try {
-            detailsURI = items.getJSONObject(position).getString("detailsURI");
+            detailsURI = items.getJSONObject(position).getString("detailsuri");
         } catch(JSONException e){
             e.printStackTrace();
             return;
             //TODO DO SOMETHING USEFULL
         }
         ((ItemDetails) detailsFragment).setDetailsURI(detailsURI);
+        searchItem.setVisible(false);
+        editModeItem.setVisible(true);
     }
+
+    public void setSearchVisible(boolean isSerSearchVisible){
+        searchVisible = isSerSearchVisible;
+        searchItem.setVisible(isSerSearchVisible);
+        editModeItem.setVisible(!isSerSearchVisible);
+        if(!isSerSearchVisible)
+            MenuItemCompat.collapseActionView(searchItem);
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        listFragment.searchItemList(newText);
+        return false;
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        System.out.println("menu");
+        if(item == searchItem){
+            System.out.println("menu");
+            setFragmentList();
+        }
+        else if(item == editModeItem){
+            Intent i = new Intent(this, RegisterActivity.class);
+            System.out.println(((ItemDetails) detailsFragment).currentItem.toJSON().toString());
+            i.putExtra("item", ((ItemDetails) detailsFragment).currentItem);
+            startActivity(i);
+        }
+        return true;
+    }
+
 }

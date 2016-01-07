@@ -1,11 +1,13 @@
 package app.ddf.danskdatahistoriskforening;
 
 import android.content.Context;
+import android.net.Uri;
 
 
 public interface IDAO {
     int saveItemToDB(Context context, Item item);
     String getOverviewFromBackend();
-    String getDetailsFromBackEnd(String detailsURI);
+    Item getDetailsFromBackEnd(String detailsURI);
     int updateItem(Context context, Item item);
+    void postFile(Context context, Uri path, int itemID, String extension);
 }
