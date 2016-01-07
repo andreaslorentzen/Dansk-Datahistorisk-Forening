@@ -150,6 +150,7 @@ public class RegisterActivity extends AppCompatActivity{
     private void checkForErrors(int responseCode){
         switch(responseCode){
             case -1:
+                Model.setListUpdated(false);
                 finish();
                 break;
             case 1:

@@ -66,32 +66,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             .replace(R.id.frame, startFragment)
             .commit();
 
-        new AsyncTask<Void, Void, String>() {
-            @Override
-            protected String doInBackground(Void ... params) {
-                return Model.getDAO().getOverviewFromBackend();
-            }
 
-            @Override
-            protected void onPostExecute(String data) {
-                if (data != null){
-                    System.out.println("data = " + data);
-
-                    try {
-                        itemTitles = new ArrayList<String>();
-                        items = new JSONArray(data);
-                        for (int n = 0; n<items.length(); n++) {
-                            JSONObject item = items.getJSONObject(n);
-                            itemTitles.add(item.optString("itemheadline", "(ukendt)"));
-                        }
-                        listFragment.updateItemList(itemTitles);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                //    updateItemList();
-                }
-            }
-        }.execute();
     }
 
     @Override
@@ -117,6 +92,39 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
 
         return true;
+    }
+
+    @Override
+    protected void onResume(){
+        if(!Model.isListUpdated()) {
+            new AsyncTask<Void, Void, String>() {
+                @Override
+                protected String doInBackground(Void... params) {
+                    return Model.getDAO().getOverviewFromBackend();
+                }
+
+                @Override
+                protected void onPostExecute(String data) {
+                    if (data != null) {
+                        System.out.println("data = " + data);
+
+                        try {
+                            itemTitles = new ArrayList<String>();
+                            items = new JSONArray(data);
+                            for (int n = 0; n < items.length(); n++) {
+                                JSONObject item = items.getJSONObject(n);
+                                itemTitles.add(item.optString("itemheadline", "(ukendt)"));
+                            }
+
+                            Model.setListUpdated(true);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }.execute();
+        }
+        super.onResume();
     }
 
     public void startRegister() {
