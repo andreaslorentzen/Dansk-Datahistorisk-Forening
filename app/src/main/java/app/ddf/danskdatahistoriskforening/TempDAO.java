@@ -147,9 +147,9 @@ public class TempDAO implements IDAO {
                     Integer.parseInt(item.getString("itemid")),
                     item.getString("itemheadline"),
                     item.getString("itemdescription"),
-                    isJsonNull(itemreceived) ? null : formatter.parse(itemreceived),
-                    isJsonNull(itemdatingfrom) ? null : formatter.parse(itemdatingfrom),
-                    isJsonNull(itemdatingto) ? null : formatter.parse(itemdatingto),
+                    (isJsonNull(itemreceived) || itemreceived.equals("0000-00-00")) ? null : formatter.parse(itemreceived),
+                    (isJsonNull(itemdatingfrom) || itemdatingfrom.equals("0000-00-00")) ? null : formatter.parse(itemdatingfrom),
+                    (isJsonNull(itemdatingto) || itemdatingto.equals("0000-00-00")) ? null : formatter.parse(itemdatingto),
                     isJsonNull(donator) ? null : donator,
                     isJsonNull(producer) ? null : producer,
                     isJsonNull(postnummer) ? null : postnummer

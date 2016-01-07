@@ -58,7 +58,6 @@ public class Item implements Parcelable{
             item.put("producer", producer);
             item.put("postalCode", postalCode);
         } catch (JSONException e){
-
             e.printStackTrace();
             return null;
         }
@@ -73,10 +72,6 @@ public class Item implements Parcelable{
         String itemRecievedString = in.readString();
         String itemDatingFromString = in.readString();
         String itemDatingToString = in.readString();
-
-        System.out.println(itemRecievedString);
-        System.out.println(itemDatingFromString);
-        System.out.println(itemDatingToString);
 
         try {
             this.itemRecieved = ((itemRecievedString == null) ? null : formatter.parse(itemRecievedString));
@@ -98,8 +93,6 @@ public class Item implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-//        String[] data = new String[9];
-
         dest.writeInt(this.itemId);
         dest.writeString(this.itemHeadline);
         dest.writeString(this.itemDescription);
