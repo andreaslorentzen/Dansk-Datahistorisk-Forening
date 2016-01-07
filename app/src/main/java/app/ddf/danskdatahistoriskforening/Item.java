@@ -3,15 +3,9 @@ package app.ddf.danskdatahistoriskforening;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.net.URI;
-import java.text.DateFormat;
-import java.text.Format;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 

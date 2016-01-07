@@ -4,19 +4,10 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -25,11 +16,8 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
-import java.net.URI;
 import java.net.URL;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 /**
  * Created by mathias on 30/12/15.
@@ -116,8 +104,6 @@ public class TempDAO implements IDAO {
                 }
             }
         }
-
-
         return returnValue;
     }
 
@@ -165,12 +151,9 @@ public class TempDAO implements IDAO {
         }
         String data = sb.toString();
 
-        System.out.println("data = " + data);
-
         JSONObject item;
 
         try {
-            //   data = data.substring(1, data.length()-1);
             item = new JSONObject(data);
 
             String itemreceived = item.getString("itemreceived");
@@ -257,7 +240,6 @@ public class TempDAO implements IDAO {
         return returnValue;
     }
 
-
     public String readIt(InputStream stream, int len) throws IOException {
         Reader reader = new InputStreamReader(stream, "UTF-8");
         char[] buffer = new char[len];
@@ -266,8 +248,6 @@ public class TempDAO implements IDAO {
     }
 
     public void postFile(Context context, Uri path, int itemID, String extension){
-        System.out.println("Inside Post File");
-
         InputStream inputStream;
         int bufferSize = 1024;
         byte[] buffer = new byte[bufferSize];
@@ -275,25 +255,19 @@ public class TempDAO implements IDAO {
 
         try{
             inputStream = context.getContentResolver().openInputStream(path);
-            // this dynamically extends to take the bytes you read
+
             byteBuffer = new ByteArrayOutputStream();
 
-            // we need to know how may bytes were read to write them to the byteBuffer
             int len = 0;
             while ((len = inputStream.read(buffer)) != -1) {
                 byteBuffer.write(buffer, 0, len);
             }
 
-            // and then we can return your byte array.
-
         } catch (IOException e){
             e.printStackTrace();
         }
 
-
         String requestURL = API + "/items/" + itemID + userIDString;
-
-
 
         try{
             //setup for the query
@@ -302,7 +276,6 @@ public class TempDAO implements IDAO {
             conn.setReadTimeout(10000);
             conn.setConnectTimeout(15000);
             conn.setRequestMethod("POST");
-            System.out.println("Hello");
             if(extension.equals("jpg")){
                 conn.setRequestProperty("Content-Type", "image/jpg");
             } else if(extension.equals("mp4")){
@@ -310,9 +283,7 @@ public class TempDAO implements IDAO {
             }
             conn.setDoInput(true);
 
-
             // start the query
-
             OutputStream os = conn.getOutputStream();
             os.write(byteBuffer.toByteArray());
             os.close();
@@ -324,9 +295,6 @@ public class TempDAO implements IDAO {
         } catch(IOException e){
             e.printStackTrace();
         }
-
-        System.out.println("Posted");
-
     }
 
 }

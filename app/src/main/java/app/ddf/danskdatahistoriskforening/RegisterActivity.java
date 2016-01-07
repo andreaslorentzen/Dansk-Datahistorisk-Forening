@@ -42,8 +42,6 @@ public class RegisterActivity extends AppCompatActivity{
         return item;
     }
 
-    private IDAO dao;
-
     /**
      * http://developer.android.com/training/animation/screen-slide.html
      */
@@ -117,8 +115,6 @@ public class RegisterActivity extends AppCompatActivity{
 
 
     private void save() {
-        //TODO store textfield content in item
-        Log.d("fejl", "start save activity");
 
         item.setItemHeadline(itemFragment.getItemTitle());
         for(Pair<ImageView, Uri> pair : itemFragment.imageUris){
@@ -136,9 +132,6 @@ public class RegisterActivity extends AppCompatActivity{
         }
         item.setItemDescription(descriptionFragment.getItemDescription());
 
-        Log.d("fejl", item.getItemHeadline());
-
-        int resultCode;
 
         if(item.getItemId() > 0){
             new AsyncTask<Item, Void, Integer>(){
