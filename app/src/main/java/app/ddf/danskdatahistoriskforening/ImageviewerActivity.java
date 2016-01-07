@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class ImageviewerActivity extends AppCompatActivity implements View.OnClickListener, ConfirmDeletionDialogFragment.ConfirmDeletionListener{
@@ -84,6 +85,9 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
     public void onDialogPositiveClick(DialogFragment dialog) {
         int index = ((ConfirmDeletionDialogFragment) dialog).getIndex();
 
+        File file = new File(imageUris.get(index).getPath());
+        file.delete();
+
         imageUris.remove(index);
 
         if(imageUris.size() < 1){ //all images have been removed
@@ -100,7 +104,6 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
     public void onDialogNegativeClick(DialogFragment dialog) {
         //no change required
     }
-
 
     private class ImageviewerPageAdapter extends FragmentStatePagerAdapter{
         public ImageviewerPageAdapter(FragmentManager fm){
