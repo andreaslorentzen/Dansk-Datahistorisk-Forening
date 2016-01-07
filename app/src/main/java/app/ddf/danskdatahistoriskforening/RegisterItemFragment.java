@@ -29,7 +29,6 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
 
     ImageButton cameraButton;
     ImageButton micButton;
-    //ImageView imageView;
     RadioGaga rg;
     EditText itemTitle;
     LinearLayout imageContatiner;
@@ -77,20 +76,19 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
             }
         }
         else if(v == micButton){
-            //Intent i = new Intent(getActivity(), RecordingActivity.class);
-            //startActivity(i);
+            Intent i = new Intent(getActivity(), RecordingActivity.class);
+            startActivity(i);
         }
         else { //image tapped
-            try {
-                ImageView image = (ImageView) v;
-
                 int index = -1;
+                ArrayList<Uri> uris = new ArrayList<>();
                 for(int i = 0; i<imageUris.size(); i++){
-                    if(imageUris.get(i).first == image){
+                    if(imageUris.get(i).first == v){
                         //the correct imageView was found
                         index = i;
-                        break;
                     }
+
+                    uris.add(imageUris.get(i).second);
                 }
 
                 if(index < 0){
@@ -99,11 +97,10 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
                     return;
                 }
 
-                Toast.makeText(getActivity(), "" + index, Toast.LENGTH_LONG).show();
-            }
-            catch (ClassCastException e){
-                //View was not an image
-            }
+                Intent intent = new Intent(getActivity(), ImageviewerActivity.class);
+                intent.putExtra("imageURIs", uris);
+                intent.putExtra("index", index);
+                getActivity().startActivityForResult(intent, RegisterActivity.IMAGEVIEWER_REQUEST_CODE);
         }
 
     }
@@ -113,7 +110,6 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
         if (requestCode == RegisterActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 // Image captured and saved to fileUri specified in the Intent
-
                 ImageView image = imageUris.get(imageUris.size()-1).first;
                 LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(150, 250);
                 image.setLayoutParams(sizeParameters);
@@ -129,10 +125,18 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
 
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // User cancelled the image capture
-                Toast.makeText(getActivity(), "Cancelled", Toast.LENGTH_LONG).show();
+                //clean up
+                imageUris.remove(imageUris.size()-1);
             } else {
                 // Image capture failed, advise user
-                Toast.makeText(getActivity(), "Failed" , Toast.LENGTH_LONG).show();
+                imageUris.remove(imageUris.size()-1);
+                Toast.makeText(getActivity(), "Der opstod en fejl under brug af kameraet" , Toast.LENGTH_LONG).show();
+            }
+        }
+        else if(requestCode == RegisterActivity.IMAGEVIEWER_REQUEST_CODE){
+            if(resultCode == Activity.RESULT_OK){
+                Log.d("imageviewer", "" + resultCode);
+                Toast.makeText(getActivity(), "imageviewer", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -146,27 +150,5 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
 
     public void setItemTitle(String title) {
         this.itemTitle.setText(title);
-    }
-
-
-    //needed for generating unique ids in android versions less than 17
-    private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
-
-    /**
-     * Generate a value suitable for use in {@link #setId(int)}.
-     * This value will not collide with ID values generated at build time by aapt for R.id.
-     *
-     * @return a generated ID value
-     */
-    public static int generateViewId() {
-        for (;;) {
-            final int result = sNextGeneratedId.get();
-            // aapt-generated IDs have the high byte nonzero; clamp to the range under that.
-            int newValue = result + 1;
-            if (newValue > 0x00FFFFFF) newValue = 1; // Roll over to 1, not 0.
-            if (sNextGeneratedId.compareAndSet(result, newValue)) {
-                return result;
-            }
-        }
     }
 }

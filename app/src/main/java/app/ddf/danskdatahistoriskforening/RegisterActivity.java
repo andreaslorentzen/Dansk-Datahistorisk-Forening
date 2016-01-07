@@ -21,7 +21,7 @@ import android.widget.Toast;
 public class RegisterActivity extends AppCompatActivity{
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
-
+    public static final int IMAGEVIEWER_REQUEST_CODE = 200;
 
     private Toolbar registerToolbar;
     private Item item;
@@ -190,7 +190,9 @@ public class RegisterActivity extends AppCompatActivity{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
-
+            itemFragment.onActivityResult(requestCode, resultCode, data);
+        }
+        else if(requestCode == IMAGEVIEWER_REQUEST_CODE){
             itemFragment.onActivityResult(requestCode, resultCode, data);
         }
     }
