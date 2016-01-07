@@ -46,17 +46,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         setContentView(R.layout.activity_main);
 
         Toolbar mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
-     //   mainToolbar.setTitle("DDF");
         setSupportActionBar(mainToolbar);
 
         mainToolbar.setNavigationIcon(null);
-
-    //    ActionBar ab = getSupportActionBar();
-    //    ab.setDisplayHomeAsUpEnabled(true);
-
-
-
-
 
         startFragment = new FrontFragment();
         listFragment = new ItemListFragment();
@@ -65,7 +57,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         getSupportFragmentManager().beginTransaction()
             .replace(R.id.frame, startFragment)
             .commit();
-
 
     }
 
@@ -154,8 +145,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             //TODO DO SOMETHING USEFULL
         }
         ((ItemShowFragment) detailsFragment).setDetailsURI(detailsURI);
-        searchButton.setVisible(false);
-        editButton.setVisible(true);
     }
 
     public void setSearchVisible(boolean isSerSearchVisible){
