@@ -2,6 +2,7 @@ package app.ddf.danskdatahistoriskforening;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -24,6 +25,7 @@ public class ImageviewerFragment extends Fragment {
         //this may be too big memorywise, but the page adapter should destroy old fragments as needed
         options.inSampleSize = 2;
         Bitmap bitmap = BitmapFactory.decodeFile(imageUri.getPath(), options);
+        image.setBackgroundColor(Color.BLACK);
         image.setImageBitmap(bitmap);
 
         return layout;

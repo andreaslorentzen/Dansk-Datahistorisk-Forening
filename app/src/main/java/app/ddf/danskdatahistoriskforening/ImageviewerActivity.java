@@ -16,11 +16,12 @@ import java.util.ArrayList;
 
 public class ImageviewerActivity extends AppCompatActivity implements View.OnClickListener {
     Button backButton;
+    Button deleteButton;
     ViewPager viewPager;
+    ImageviewerPageAdapter pageAdapter;
 
     Intent result;
 
-    ArrayList<Integer> removedImages;
     ArrayList<Uri> imageUris;
 
 
@@ -30,7 +31,6 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
         setContentView(R.layout.activity_imageviewer);
 
         result = new Intent();
-        removedImages = new ArrayList<>();
 
         Intent intent = getIntent();
 
@@ -45,9 +45,15 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
         backButton = (Button) findViewById(R.id.imageview_back_button);
         backButton.setOnClickListener(this);
 
+        deleteButton = (Button) findViewById(R.id.imageview_delete_button);
+        deleteButton.setOnClickListener(this);
+
         viewPager = (ViewPager) findViewById(R.id.imageview_viewpager);
-        ImageviewerPageAdapter pageAdapter = new ImageviewerPageAdapter(getSupportFragmentManager());
+        pageAdapter = new ImageviewerPageAdapter(getSupportFragmentManager());
         viewPager.setAdapter(pageAdapter);
+
+        int index = intent.getIntExtra("index", 0);
+        viewPager.setCurrentItem(index);
     }
 
     @Override
@@ -55,11 +61,25 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
         if(v == backButton){
             onBackPressed();
         }
+        else if(v == deleteButton){
+            int index = viewPager.getCurrentItem();
+
+            imageUris.remove(index);
+
+            if(imageUris.size() < 1){ //all images have been removed
+                onBackPressed();
+            }
+            else {
+                pageAdapter.notifyDataSetChanged();
+                //workaround to force redraw of viewpager
+                viewPager.setAdapter(pageAdapter);
+            }
+        }
     }
 
     @Override
     public void onBackPressed() {
-        result.putExtra("removedImages", removedImages);
+        result.putExtra("remainingUris", imageUris);
         setResult(Activity.RESULT_OK, result);
 
         super.onBackPressed();
