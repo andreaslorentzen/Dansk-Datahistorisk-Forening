@@ -30,7 +30,6 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
 
     ImageButton cameraButton;
     ImageButton micButton;
-    RadioGaga rg;
     EditText itemTitle;
     LinearLayout imageContatiner;
     ArrayList<Pair<ImageView,Uri>> imageUris;
@@ -43,7 +42,6 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
         micButton =  (ImageButton) layout.findViewById(R.id.micButton);
         micButton.setOnClickListener(this);
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
-        rg = new RadioGaga();
 
         Item item = ((RegisterActivity) getActivity()).getItem();
         itemTitle.setText(item.getItemHeadline());
@@ -79,8 +77,9 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
                 Toast.makeText(getActivity(), "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
             }
         }
-        else if(v == micButton){
-
+        if(v == micButton){
+            Intent i = new Intent(getActivity(), RecordingActivity.class);
+            startActivity(i);
         }
         else { //image tapped
                 int index = -1;
@@ -175,5 +174,6 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
     }
 
     public void setItemTitle(String title) {
+        this.itemTitle.setText(title);
     }
 }

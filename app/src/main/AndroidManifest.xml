@@ -23,6 +23,7 @@
         </activity>
         <activity android:name=".RegisterActivity"></activity>
         <activity android:name=".ImageviewerActivity"></activity>
+        <activity android:name=".RecordingActivity"></activity>
     </application>
 
 </manifest>
