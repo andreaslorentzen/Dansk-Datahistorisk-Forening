@@ -1,6 +1,7 @@
 package app.ddf.danskdatahistoriskforening;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.support.v4.app.FragmentManager;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
@@ -20,6 +21,7 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
     Intent result;
 
     ArrayList<Integer> removedImages;
+    ArrayList<Uri> imageUris;
 
 
     @Override
@@ -29,6 +31,16 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
 
         result = new Intent();
         removedImages = new ArrayList<>();
+
+        Intent intent = getIntent();
+
+        if(intent.hasExtra("imageURIs")){
+            imageUris = intent.getParcelableArrayListExtra("imageURIs");
+        }
+        else{
+            //should never happen... but just in case
+            imageUris = new ArrayList<>();
+        }
 
         backButton = (Button) findViewById(R.id.imageview_back_button);
         backButton.setOnClickListener(this);
@@ -60,12 +72,15 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
 
         @Override
         public Fragment getItem(int position) {
-            return new ImageviewerFragment();
+            ImageviewerFragment fragment = new ImageviewerFragment();
+            fragment.setImageUri(imageUris.get(position));
+
+            return fragment;
         }
 
         @Override
         public int getCount() {
-            return 5;
+            return imageUris.size();
         }
     }
 }

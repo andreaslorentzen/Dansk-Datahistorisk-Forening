@@ -8,13 +8,30 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/imageview_viewpager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <Button
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Button"
-        android:id="@+id/imageview_back_button" />
+        android:layout_weight="1"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="2">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Tilbage"
+            android:id="@+id/imageview_back_button"
+            android:layout_weight="1"/>
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Slet"
+            android:id="@+id/imageview_delete_button"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
 </LinearLayout>
 
 <!--

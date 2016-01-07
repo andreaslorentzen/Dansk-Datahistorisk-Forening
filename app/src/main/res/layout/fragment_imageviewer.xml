@@ -4,9 +4,9 @@
     android:layout_height="match_parent"
     tools:context="app.ddf.danskdatahistoriskforening.ImageviewerFragment">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="test" />
-
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/imageviewfragment_imageview"
+        android:layout_gravity="left|top" />
 </FrameLayout>
