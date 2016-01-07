@@ -3,6 +3,7 @@ package app.ddf.danskdatahistoriskforening;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -88,6 +89,11 @@ public class DAO implements IDAO {
     @Override
     public int updateItem(Context context, Item item) {
         return 0;
+    }
+
+    @Override
+    public void postFile(Context context, Uri path, int itemID, String extension) {
+
     }
 
     //create new entry in database

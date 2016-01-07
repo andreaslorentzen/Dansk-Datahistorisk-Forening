@@ -3,11 +3,11 @@ package app.ddf.danskdatahistoriskforening;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-
+import android.net.Uri;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,9 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 /**
  * Created by mathias on 30/12/15.
@@ -61,18 +59,43 @@ public class TempDAO implements IDAO {
 
             int responseCode = conn.getResponseCode();
 
+
             if(responseCode == 201){
                 returnValue = -1;
             } else{
                 returnValue = 3;
             }
 
+            is = conn.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line).append("\n");
+                line = br.readLine();
+            }
+            JSONObject createdItem = new JSONObject(sb.toString());
+            is.close();
+            int itemID = createdItem.getInt("itemid");
+
+            if(item.getPictures() != null) {
+                for (Uri picture : item.getPictures()) {
+                    postFile(context, picture, itemID, "jpg");
+                }
+            }
+            if(item.getRecordings() != null) {
+                for (Uri recording : item.getRecordings()) {
+                    postFile(context, recording, itemID, "mp4");
+                }
+            }
         } catch(MalformedURLException |ProtocolException e){
             // SHOULD NEVER HAPPEN IN PRODUCTION
             e.printStackTrace();
         } catch(IOException e){
             returnValue = 4;
-        } finally{
+        } catch(JSONException e){
+            returnValue = 5;
+        }finally{
             if (is != null){
                 try{
                     is.close();
@@ -128,12 +151,9 @@ public class TempDAO implements IDAO {
         }
         String data = sb.toString();
 
-        System.out.println("data = " + data);
-        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         JSONObject item;
 
         try {
-            //   data = data.substring(1, data.length()-1);
             item = new JSONObject(data);
 
             String itemreceived = item.getString("itemreceived");
@@ -147,9 +167,9 @@ public class TempDAO implements IDAO {
                     Integer.parseInt(item.getString("itemid")),
                     item.getString("itemheadline"),
                     item.getString("itemdescription"),
-                    (isJsonNull(itemreceived) || itemreceived.equals("0000-00-00")) ? null : formatter.parse(itemreceived),
-                    (isJsonNull(itemdatingfrom) || itemdatingfrom.equals("0000-00-00")) ? null : formatter.parse(itemdatingfrom),
-                    (isJsonNull(itemdatingto) || itemdatingto.equals("0000-00-00")) ? null : formatter.parse(itemdatingto),
+                    (isJsonNull(itemreceived) || itemreceived.equals("0000-00-00")) ? null : Model.getFormatter().parse(itemreceived),
+                    (isJsonNull(itemdatingfrom) || itemdatingfrom.equals("0000-00-00")) ? null : Model.getFormatter().parse(itemdatingfrom),
+                    (isJsonNull(itemdatingto) || itemdatingto.equals("0000-00-00")) ? null : Model.getFormatter().parse(itemdatingto),
                     isJsonNull(donator) ? null : donator,
                     isJsonNull(producer) ? null : producer,
                     isJsonNull(postnummer) ? null : postnummer
@@ -203,8 +223,6 @@ public class TempDAO implements IDAO {
                 returnValue = 3;
             }
 
-            is = conn.getInputStream();
-
         } catch(MalformedURLException |ProtocolException e){
             // SHOULD NEVER HAPPEN IN PRODUCTION
             e.printStackTrace();
@@ -222,12 +240,61 @@ public class TempDAO implements IDAO {
         return returnValue;
     }
 
-
     public String readIt(InputStream stream, int len) throws IOException {
         Reader reader = new InputStreamReader(stream, "UTF-8");
         char[] buffer = new char[len];
         reader.read(buffer);
         return new String(buffer);
+    }
+
+    public void postFile(Context context, Uri path, int itemID, String extension){
+        InputStream inputStream;
+        int bufferSize = 1024;
+        byte[] buffer = new byte[bufferSize];
+        ByteArrayOutputStream byteBuffer = null;
+
+        try{
+            inputStream = context.getContentResolver().openInputStream(path);
+
+            byteBuffer = new ByteArrayOutputStream();
+
+            int len = 0;
+            while ((len = inputStream.read(buffer)) != -1) {
+                byteBuffer.write(buffer, 0, len);
+            }
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+        String requestURL = API + "/items/" + itemID + userIDString;
+
+        try{
+            //setup for the query
+            URL url = new URL(requestURL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setReadTimeout(10000);
+            conn.setConnectTimeout(15000);
+            conn.setRequestMethod("POST");
+            if(extension.equals("jpg")){
+                conn.setRequestProperty("Content-Type", "image/jpg");
+            } else if(extension.equals("mp4")){
+                conn.setRequestProperty("Content-Type", "audio/mp4");
+            }
+            conn.setDoInput(true);
+
+            // start the query
+            OutputStream os = conn.getOutputStream();
+            os.write(byteBuffer.toByteArray());
+            os.close();
+            System.out.println(conn.getResponseCode());
+
+        } catch(MalformedURLException |ProtocolException e){
+            // SHOULD NEVER HAPPEN IN PRODUCTION
+            e.printStackTrace();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
     }
 
 }
