@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,7 +30,6 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
 
     ImageButton cameraButton;
     ImageButton micButton;
-    ImageView imageView;
     RadioGaga rg;
     EditText itemTitle;
     LinearLayout imageContatiner;
@@ -129,7 +129,7 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // User cancelled the image capture
                 //clean up
-                imageUris.remove(imageUris.size()-1);
+                imageUris.remove(imageUris.size() - 1);
             } else {
                 // Image capture failed, advise user
                 imageUris.remove(imageUris.size()-1);
@@ -138,8 +138,31 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
         }
         else if(requestCode == RegisterActivity.IMAGEVIEWER_REQUEST_CODE){
             if(resultCode == Activity.RESULT_OK){
-                Log.d("imageviewer", "" + resultCode);
-                Toast.makeText(getActivity(), "imageviewer", Toast.LENGTH_LONG).show();
+                ArrayList<Uri> remainingURIs = data.getParcelableArrayListExtra("remainingURIs");
+
+                //no change
+                if(remainingURIs.size() == imageUris.size()){
+                    return;
+                }
+
+                //update image list and reconstruct imageContainer
+                imageContatiner.removeAllViews();
+
+                ArrayList temp = new ArrayList<Pair<ImageView, Uri>>(imageUris);
+                for(int i = 0; i<imageUris.size(); i++){
+                    Pair listItem = imageUris.get(i);
+
+                    if(!remainingURIs.contains(listItem.second)){
+                        //image has been removed
+                        temp.remove(listItem);
+                    }
+                    else{
+                        //image still exists
+                        imageContatiner.addView((ImageView)listItem.first);
+                    }
+                }
+
+                imageUris = temp;
             }
         }
     }

@@ -4,12 +4,37 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
-    <Button
-        android:layout_width="wrap_content"
+    <android.support.v4.view.ViewPager
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/imageview_viewpager"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="New Button"
-        android:id="@+id/imageview_back_button" />
+        android:layout_weight="1"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="2"
+        android:background="@color/colorPrimary">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Tilbage"
+            android:id="@+id/imageview_back_button"
+            android:layout_weight="1"
+            android:textSize="@dimen/abc_text_size_large_material" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Slet"
+            android:id="@+id/imageview_delete_button"
+            android:layout_weight="1"
+            android:textSize="@dimen/abc_text_size_large_material" />
+    </LinearLayout>
+
 </LinearLayout>
 
 <!--
