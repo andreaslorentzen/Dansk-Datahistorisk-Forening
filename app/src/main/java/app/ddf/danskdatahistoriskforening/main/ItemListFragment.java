@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.main;
 
 
 import android.support.v4.app.Fragment;
@@ -15,6 +15,8 @@ import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+
+import app.ddf.danskdatahistoriskforening.R;
 
 public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener{
 

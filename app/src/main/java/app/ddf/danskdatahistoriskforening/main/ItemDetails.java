@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.main;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,12 +10,9 @@ import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.R;
 
 
 public class ItemDetails extends Fragment {

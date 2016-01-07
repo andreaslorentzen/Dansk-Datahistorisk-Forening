@@ -2,6 +2,9 @@ package app.ddf.danskdatahistoriskforening;
 
 import java.text.SimpleDateFormat;
 
+import app.ddf.danskdatahistoriskforening.dal.IDAO;
+import app.ddf.danskdatahistoriskforening.dal.TempDAO;
+
 /**
  * Created by mathias on 05/01/16.
  */

@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.dal;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -18,6 +18,8 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.text.ParseException;
+
+import app.ddf.danskdatahistoriskforening.Model;
 
 /**
  * Created by mathias on 30/12/15.

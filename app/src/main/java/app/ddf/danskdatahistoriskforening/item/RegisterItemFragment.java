@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.item;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -20,6 +20,12 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+
+import app.ddf.danskdatahistoriskforening.ImageviewerActivity;
+import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.LocalMediaStorage;
+import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.RecordingActivity;
 
 public class RegisterItemFragment extends Fragment implements View.OnClickListener{
 

@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.item;
 
 
 import android.app.DatePickerDialog;
@@ -12,6 +12,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.Date;
+
+import app.ddf.danskdatahistoriskforening.DatePickerFragment;
+import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.R;
 
 
 public class RegisterDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener{

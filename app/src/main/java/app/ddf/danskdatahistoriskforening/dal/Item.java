@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.dal;
 
 import android.net.Uri;
 import android.os.Parcel;
@@ -8,6 +8,8 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+
+import app.ddf.danskdatahistoriskforening.Model;
 
 public class Item implements Parcelable{
 

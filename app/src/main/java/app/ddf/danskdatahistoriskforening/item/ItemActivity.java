@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.item;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -20,6 +20,11 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.text.ParseException;
+
+import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.PagerSlidingTabStrip;
+import app.ddf.danskdatahistoriskforening.R;
 
 public class ItemActivity extends AppCompatActivity{
 

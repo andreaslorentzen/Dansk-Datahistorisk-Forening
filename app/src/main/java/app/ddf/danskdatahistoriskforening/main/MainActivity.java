@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.main;
 
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -17,6 +17,10 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener {

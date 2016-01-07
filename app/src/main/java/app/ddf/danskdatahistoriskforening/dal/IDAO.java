@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.dal;
 
 import android.content.Context;
 import android.net.Uri;
