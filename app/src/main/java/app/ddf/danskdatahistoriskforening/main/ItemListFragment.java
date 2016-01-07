@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 
 public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener {
@@ -24,21 +25,25 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     ListView itemList;
     JSONArray items;
     List<String> itemTitles;
-    Stack<List<String>> stackTitles = new Stack<List<String>>();
+    Stack<List<String>> stackTitles = new Stack<>();
     String lastSearch = "";
 
     public ItemListFragment() {
-        itemTitles = new ArrayList<String>();
+        itemTitles = new ArrayList<>();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d("ItemListFragment", "created");
         View layout = inflater.inflate(R.layout.fragment_item_list, container, false);
+
+        itemTitles = Model.getInstance().getItemTitles();
+        stackTitles.push(itemTitles);
+
         itemList = (ListView) layout.findViewById(R.id.itemList);
         itemList.setOnItemClickListener(this);
-        stackTitles.push(itemTitles);
-        updateItemList(itemTitles);
+        adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles);
+        itemList.setAdapter(adapter);
 
         FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fab);
         fab.setOnClickListener(this);

@@ -1,5 +1,7 @@
 package app.ddf.danskdatahistoriskforening.main;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
@@ -8,8 +10,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,38 +29,36 @@ import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener {
 
-    JSONArray items;
-    List<String> itemTitles;
-
-    Fragment startFragment;
-    ItemListFragment listFragment;
-    Fragment detailsFragment;
+    Toolbar mainToolbar;
 
     MenuItem searchButton;
     MenuItem editButton;
     SearchView searchView;
-
     boolean searchVisible = true;
 
     private static final String URL = "http://78.46.187.172:4019/items";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
-        setSupportActionBar(mainToolbar);
 
+
+        Log.d("MAni", "" + (editButton == null));
+
+        if(savedInstanceState == null) {
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.frame, new FrontFragment())
+                    .commit();
+
+
+        }
+        mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
         mainToolbar.setNavigationIcon(null);
-
-        startFragment = new FrontFragment();
-        listFragment = new ItemListFragment();
-        detailsFragment = new ItemShowFragment();
-
-        getSupportFragmentManager().beginTransaction()
-            .replace(R.id.frame, startFragment)
-            .commit();
+        setSupportActionBar(mainToolbar);
 
     }
 
@@ -70,8 +72,17 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         searchButton = menu.findItem(R.id.action_search);
         searchButton.setOnMenuItemClickListener(this);
 
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         searchView = (SearchView) MenuItemCompat.getActionView(searchButton);
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(false);
         searchView.setOnQueryTextListener(this);
+
+        String searchQuery = Model.getInstance().getCurrentSearch();
+        if(searchQuery != null){
+            MenuItemCompat.expandActionView(searchButton);
+            searchView.setQuery(searchQuery, false);
+        }
 
         if(searchVisible){
             searchButton.setVisible(true);
@@ -100,13 +111,19 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         System.out.println("data = " + data);
 
                         try {
-                            itemTitles = new ArrayList<String>();
-                            items = new JSONArray(data);
-                            for (int n = 0; n < items.length(); n++) {
-                                JSONObject item = items.getJSONObject(n);
-                                itemTitles.add(item.optString("itemheadline", "(ukendt)"));
-                            }
+                            List<JSONObject> items;
+                            List<String> itemTitles;
+                            itemTitles = new ArrayList<>();
+                            items = new ArrayList<>();
+                            JSONArray jsonItems = new JSONArray(data);
 
+                            for (int n = 0; n < jsonItems.length(); n++) {
+                                JSONObject item = jsonItems.getJSONObject(n);
+                                itemTitles.add(item.optString("itemheadline", "(ukendt)"));
+                                items.add(item);
+                            }
+                            Model.getInstance().setItemTitles(itemTitles);
+                            Model.getInstance().setItems(items);
                             Model.setListUpdated(true);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -124,35 +141,43 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentList(){
-        listFragment.updateItemList(itemTitles);
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+        if(fragments != null && fragments.size() > 0){
+            if(fragments.get(fragments.size()-1) instanceof  ItemListFragment){
+                return;
+            }
+        }
         getSupportFragmentManager().beginTransaction()
-            .replace(R.id.frame, listFragment)
+            .replace(R.id.frame, new ItemListFragment())
             .addToBackStack(null)
             .commit();
+
     }
 
     public void setFragmentDetails(int position) {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.frame, detailsFragment)
-                .addToBackStack(null)
-                .commit();
-        String detailsURI;
         try {
-            detailsURI = items.getJSONObject(position).getString("detailsuri");
+            String detailsURI = Model.getInstance().getItems().get(position).getString("detailsuri");
+            if(detailsURI == null)
+                // Maybe throw exception
+                return;
+            Model.getInstance().setCurrentDetailsURI(detailsURI);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.frame, new ItemShowFragment())
+                    .addToBackStack(null)
+                    .commit();
         } catch(JSONException e){
             e.printStackTrace();
             return;
             //TODO DO SOMETHING USEFULL
         }
-        ((ItemShowFragment) detailsFragment).setDetailsURI(detailsURI);
     }
 
     public void setSearchVisible(boolean isSerSearchVisible){
         searchVisible = isSerSearchVisible;
         searchButton.setVisible(isSerSearchVisible);
         editButton.setVisible(!isSerSearchVisible);
-        if(!isSerSearchVisible)
-            MenuItemCompat.collapseActionView(searchButton);
+     //   if(!isSerSearchVisible)
+       //     MenuItemCompat.collapseActionView(searchButton);
     }
 
     @Override
@@ -162,7 +187,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        listFragment.searchItemList(newText);
+        Model.getInstance().setCurrentSearch(newText);
+     //   ItemListFragment.searchItemList(newText);
         return false;
     }
 
@@ -175,8 +201,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
         else if(item == editButton){
             Intent i = new Intent(this, ItemActivity.class);
-            System.out.println(((ItemShowFragment) detailsFragment).currentItem.toJSON().toString());
-            i.putExtra("item", ((ItemShowFragment) detailsFragment).currentItem);
+            i.putExtra("item", Model.getInstance().getCurrentItem());
             startActivity(i);
         }
         return true;

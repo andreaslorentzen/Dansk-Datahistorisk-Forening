@@ -27,7 +27,6 @@ public class ItemShowFragment extends Fragment {
     private TextView donatorView;
     private TextView producerView;
     private TextView postNummerView;
-    protected Item currentItem;
 
     public ItemShowFragment() {
         // Required empty public constructor
@@ -55,6 +54,8 @@ public class ItemShowFragment extends Fragment {
 
         ((MainActivity) getActivity()).setSearchVisible(false);
 
+        setDetailsURI(Model.getInstance().getCurrentDetailsURI());
+
         return layout;
     }
 
@@ -69,8 +70,12 @@ public class ItemShowFragment extends Fragment {
 
             @Override
             protected void onPostExecute(Item data) {
+
                 if (data != null){
-                    currentItem = data;
+                    Model.getInstance().setCurrentItem(data);
+                    Item currentItem = data;
+                    Log.d("itemdetails", data.toJSON().toString());
+
                     // felterne udfyld felterne
                     itemheadlineView.setText(currentItem.getItemHeadline());
                     // TODO handle billeder og lyd

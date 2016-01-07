@@ -72,6 +72,7 @@ public class ItemActivity extends AppCompatActivity{
         item = new Item();
         Intent intent = getIntent();
         if(intent.hasExtra("item")){
+
             item = intent.getParcelableExtra("item");
         }
 
