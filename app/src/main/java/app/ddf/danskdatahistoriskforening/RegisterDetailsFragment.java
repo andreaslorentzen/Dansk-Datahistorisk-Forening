@@ -28,7 +28,6 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
     LinearLayout dateReceiveWrapper;
 
     public static TextView currentDateField;
-    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -46,9 +45,9 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
 
 
 
-        dateFrom.setText(formatter.format(new Date()));
-        dateTo.setText(formatter.format(new Date()));
-        dateReceive.setText(formatter.format(new Date()));
+        dateFrom.setText(Model.getFormatter().format(new Date()));
+        dateTo.setText(Model.getFormatter().format(new Date()));
+        dateReceive.setText(Model.getFormatter().format(new Date()));
 
         dateFromWrapper.setOnClickListener(this);
         dateToWrapper.setOnClickListener(this);
@@ -81,17 +80,17 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
 
     public void setDateFrom(Date date) {
         if(date != null)
-            this.dateFrom.setText(formatter.format(date));
+            this.dateFrom.setText(Model.getFormatter().format(date));
     }
 
     public void setDateTo(Date date) {
         if(date != null)
-            this.dateTo.setText(formatter.format(date));
+            this.dateTo.setText(Model.getFormatter().format(date));
     }
 
     public void setDateReceive(Date date) {
         if(date != null)
-            this.dateReceive.setText(formatter.format(date));
+            this.dateReceive.setText(Model.getFormatter().format(date));
     }
 
     public void setDonator(String donator) {
