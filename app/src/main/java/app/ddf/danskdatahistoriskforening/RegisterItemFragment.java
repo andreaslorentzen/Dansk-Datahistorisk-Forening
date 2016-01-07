@@ -58,7 +58,6 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
     @Override
     public void onDetach() {
         super.onDetach();
-        rg.requestStop();
     }
 
     @Override
