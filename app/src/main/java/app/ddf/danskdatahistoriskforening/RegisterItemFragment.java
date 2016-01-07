@@ -80,8 +80,7 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
             }
         }
         else if(v == micButton){
-            Intent i = new Intent(getActivity(), RecordingActivity.class);
-            startActivity(i);
+
         }
         else { //image tapped
                 int index = -1;
