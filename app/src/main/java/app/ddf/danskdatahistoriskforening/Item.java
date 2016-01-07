@@ -1,15 +1,18 @@
 package app.ddf.danskdatahistoriskforening;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.URI;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Item implements Parcelable{
@@ -23,7 +26,8 @@ public class Item implements Parcelable{
     private String donator;
     private String producer;
     private String postalCode;
-    private DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    private ArrayList<Uri> pictures;
+    private ArrayList<Uri> recordings;
 
     public Item(){}
 
@@ -74,9 +78,9 @@ public class Item implements Parcelable{
         String itemDatingToString = in.readString();
 
         try {
-            this.itemRecieved = ((itemRecievedString == null) ? null : formatter.parse(itemRecievedString));
-            this.itemDatingFrom = ((itemDatingFromString == null) ? null : formatter.parse(itemDatingFromString));
-            this.itemDatingTo = ((itemDatingToString == null) ? null : formatter.parse(itemDatingToString));
+            this.itemRecieved = ((itemRecievedString == null) ? null : Model.getFormatter().parse(itemRecievedString));
+            this.itemDatingFrom = ((itemDatingFromString == null) ? null : Model.getFormatter().parse(itemDatingFromString));
+            this.itemDatingTo = ((itemDatingToString == null) ? null : Model.getFormatter().parse(itemDatingToString));
         } catch (ParseException e){
             e.printStackTrace();
             return;
@@ -142,7 +146,7 @@ public class Item implements Parcelable{
         return itemRecieved;
     }
 
-    public String getItemRecievedAsString() {return ((this.itemRecieved == null) ? null : formatter.format(this.itemRecieved));}
+    public String getItemRecievedAsString() {return ((this.itemRecieved == null) ? null : Model.getFormatter().format(this.itemRecieved));}
 
     public void setItemRecieved(Date itemRecieved) {
         this.itemRecieved = itemRecieved;
@@ -152,7 +156,7 @@ public class Item implements Parcelable{
         return itemDatingFrom;
     }
 
-    public String getItemDatingFromAsString() {return ((this.itemDatingFrom == null) ? null : formatter.format(this.itemDatingFrom));}
+    public String getItemDatingFromAsString() {return ((this.itemDatingFrom == null) ? null : Model.getFormatter().format(this.itemDatingFrom));}
 
     public void setItemDatingFrom(Date itemDatingFrom) {
         this.itemDatingFrom = itemDatingFrom;
@@ -162,7 +166,7 @@ public class Item implements Parcelable{
         return itemDatingTo;
     }
 
-    public String getItemDatingToAsString() {return ((this.itemDatingTo == null) ? null : formatter.format(this.itemDatingTo));}
+    public String getItemDatingToAsString() {return ((this.itemDatingTo == null) ? null : Model.getFormatter().format(this.itemDatingTo));}
 
     public void setItemDatingTo(Date itemDatingTo) {
         this.itemDatingTo = itemDatingTo;
@@ -190,5 +194,31 @@ public class Item implements Parcelable{
 
     public void setPostalCode(String postalCode) {
         this.postalCode = postalCode;
+    }
+
+    public ArrayList<Uri> getPictures(){return this.pictures;}
+
+    public void setPictures(ArrayList<Uri> pictures){this.pictures = pictures;}
+
+    public void addToPictures(Uri picture){
+        if(pictures == null){
+            pictures = new ArrayList<Uri>();
+            pictures.add(picture);
+        } else{
+            pictures.add(picture);
+        }
+    }
+
+    public ArrayList<Uri> getRecordings(){return this.recordings;}
+
+    public void setRecordings(ArrayList<Uri> recordings){this.recordings = recordings;}
+
+    public void addToRecordings(Uri recording){
+        if(recordings == null){
+            recordings = new ArrayList<Uri>();
+            recordings.add(recording);
+        } else{
+            recordings.add(recording);
+        }
     }
 }

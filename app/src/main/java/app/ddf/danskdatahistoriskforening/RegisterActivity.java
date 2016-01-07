@@ -1,13 +1,20 @@
 package app.ddf.danskdatahistoriskforening;
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.util.Pair;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +25,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
+
+import java.text.ParseException;
 
 public class RegisterActivity extends AppCompatActivity{
 
@@ -105,11 +115,25 @@ public class RegisterActivity extends AppCompatActivity{
         }
     }
 
+
     private void save() {
         //TODO store textfield content in item
         Log.d("fejl", "start save activity");
 
         item.setItemHeadline(itemFragment.getItemTitle());
+        for(Pair<ImageView, Uri> pair : itemFragment.imageUris){
+            item.addToPictures(pair.second);
+        }
+        try {
+            item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
+            item.setDonator(detailsFragment.donator.getText().toString());
+            item.setProducer(detailsFragment.producer.getText().toString());
+            item.setItemDatingFrom(Model.getFormatter().parse(detailsFragment.dateFrom.getText().toString()));
+            item.setItemDatingTo(Model.getFormatter().parse(detailsFragment.dateTo.getText().toString()));
+        } catch(ParseException e){
+            e.printStackTrace();
+            // TODO try to recover somehow
+        }
         item.setItemDescription(descriptionFragment.getItemDescription());
 
         Log.d("fejl", item.getItemHeadline());
@@ -165,6 +189,8 @@ public class RegisterActivity extends AppCompatActivity{
             case 4:
                 Toast.makeText(this, "Kunne ikke forbinde til serveren", Toast.LENGTH_LONG).show();
                 break;
+            case 5:
+                Toast.makeText(this, "Server problem", Toast.LENGTH_LONG).show(); // JSON problem
             default:
                 Toast.makeText(this, "Noget gik galt", Toast.LENGTH_LONG).show();
         }
