@@ -1,12 +1,17 @@
 package app.ddf.danskdatahistoriskforening;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -14,24 +19,18 @@ import android.widget.Button;
 
 import java.util.ArrayList;
 
-public class ImageviewerActivity extends AppCompatActivity implements View.OnClickListener {
+public class ImageviewerActivity extends AppCompatActivity implements View.OnClickListener, ConfirmDeletionDialogFragment.ConfirmDeletionListener{
     Button backButton;
     Button deleteButton;
     ViewPager viewPager;
     ImageviewerPageAdapter pageAdapter;
 
-    Intent result;
-
     ArrayList<Uri> imageUris;
-    ArrayList<Uri> imagesToRemove;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_imageviewer);
-
-        result = new Intent();
 
         Intent intent = getIntent();
 
@@ -65,28 +64,43 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
         else if(v == deleteButton){
             int index = viewPager.getCurrentItem();
 
-
-
-            imageUris.remove(index);
-
-            if(imageUris.size() < 1){ //all images have been removed
-                onBackPressed();
-            }
-            else {
-                pageAdapter.notifyDataSetChanged();
-                //workaround to force redraw of viewpager
-                viewPager.setAdapter(pageAdapter);
-            }
+            ConfirmDeletionDialogFragment dialog = new ConfirmDeletionDialogFragment();
+            dialog.setTitle(imageUris.get(index).getPath());
+            dialog.setIndex(index);
+            dialog.show(getSupportFragmentManager(), "ConfirmDeletionDialog");
         }
     }
 
     @Override
     public void onBackPressed() {
+        Intent result = new Intent();
         result.putExtra("remainingURIs", imageUris);
         setResult(Activity.RESULT_OK, result);
 
         super.onBackPressed();
     }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        int index = ((ConfirmDeletionDialogFragment) dialog).getIndex();
+
+        imageUris.remove(index);
+
+        if(imageUris.size() < 1){ //all images have been removed
+            onBackPressed();
+        }
+        else {
+            pageAdapter.notifyDataSetChanged();
+            //workaround to force redraw of viewpager
+            viewPager.setAdapter(pageAdapter);
+        }
+    }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        //no change required
+    }
+
 
     private class ImageviewerPageAdapter extends FragmentStatePagerAdapter{
         public ImageviewerPageAdapter(FragmentManager fm){
