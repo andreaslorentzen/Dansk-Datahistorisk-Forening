@@ -1,12 +1,16 @@
 package app.ddf.danskdatahistoriskforening;
 
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.DialogFragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -15,7 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
-public class RegisterDetailsFragment extends Fragment implements View.OnClickListener{
+public class RegisterDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener{
 
     TextView dateFrom;
     TextView dateTo;
@@ -28,7 +32,11 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
     LinearLayout dateReceiveWrapper;
 
     public static TextView currentDateField;
-    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    private String currentlyChanging;
+
+    private boolean receivedChanged = false;
+    private boolean dateFromChanged = false;
+    private boolean dateToChanged = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -44,11 +52,9 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
         dateFromWrapper = (LinearLayout) layout.findViewById(R.id.DateFromWrapper);
         dateToWrapper = (LinearLayout) layout.findViewById(R.id.DateToWrapper);
 
-
-
-        dateFrom.setText(formatter.format(new Date()));
-        dateTo.setText(formatter.format(new Date()));
-        dateReceive.setText(formatter.format(new Date()));
+        dateFrom.setText(Model.getFormatter().format(new Date()));
+        dateTo.setText(Model.getFormatter().format(new Date()));
+        dateReceive.setText(Model.getFormatter().format(new Date()));
 
         dateFromWrapper.setOnClickListener(this);
         dateToWrapper.setOnClickListener(this);
@@ -67,31 +73,45 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
     @Override
     public void onClick(View v) {
         if(v == dateReceiveWrapper || v == dateFromWrapper || v == dateToWrapper){
-            if(v == dateReceiveWrapper)
+            if(v == dateReceiveWrapper) {
                 currentDateField = dateReceive;
-            else if(v == dateFromWrapper)
+                currentlyChanging = "dateReceive";
+            }else if(v == dateFromWrapper) {
                 currentDateField = dateFrom;
-            else if(v == dateToWrapper)
+                currentlyChanging = "dateFrom";
+            }else if(v == dateToWrapper) {
                 currentDateField = dateTo;
-
-            DialogFragment datePicker = new DatePickerFragment();
+                currentlyChanging = "dateTo";
+            }
+            DatePickerFragment datePicker = new DatePickerFragment();
+            datePicker.setOnDateSetListener(this);
             datePicker.show(getActivity().getSupportFragmentManager(), "datePicker");
         }
     }
 
+    public void dateChanged(){
+        System.out.println("It WORKS");
+        if(currentlyChanging.equals("dateReceive"))
+            receivedChanged = true;
+        else if(currentlyChanging.equals("dateFrom"))
+            dateFromChanged = true;
+        else if(currentlyChanging.equals("dateTo"))
+            dateToChanged = true;
+    }
+
     public void setDateFrom(Date date) {
         if(date != null)
-            this.dateFrom.setText(formatter.format(date));
+            this.dateFrom.setText(Model.getFormatter().format(date));
     }
 
     public void setDateTo(Date date) {
         if(date != null)
-            this.dateTo.setText(formatter.format(date));
+            this.dateTo.setText(Model.getFormatter().format(date));
     }
 
     public void setDateReceive(Date date) {
         if(date != null)
-            this.dateReceive.setText(formatter.format(date));
+            this.dateReceive.setText(Model.getFormatter().format(date));
     }
 
     public void setDonator(String donator) {
@@ -100,5 +120,23 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
 
     public void setProducer(String producer) {
         this.producer.setText(producer);
+    }
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        currentDateField.setText("" + year + "-" + (((monthOfYear + 1) < 10) ? "0"+(monthOfYear+1) : (monthOfYear+1)) + "-" + dayOfMonth);
+        dateChanged();
+    }
+
+    public boolean hasReceiveChanged(){
+        return receivedChanged;
+    }
+
+    public boolean hasDateFromChanged(){
+        return dateFromChanged;
+    }
+
+    public boolean hasDateToChanged(){
+        return dateToChanged;
     }
 }
