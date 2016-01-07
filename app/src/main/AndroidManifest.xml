@@ -21,9 +21,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".item.ItemActivity"></activity>
-        <activity android:name=".image.ImageviewerActivity"></activity>
-        <activity android:name=".item.RecordingActivity"></activity>
+        <activity android:name=".item.ItemActivity" />
+        <activity android:name=".image.ImageviewerActivity" />
+        <activity android:name=".item.RecordingActivity" />
     </application>
 
 </manifest>

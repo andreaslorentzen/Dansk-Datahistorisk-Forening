@@ -1,6 +1,7 @@
 package app.ddf.danskdatahistoriskforening.main;
 
 
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,7 +19,7 @@ import java.util.Stack;
 
 import app.ddf.danskdatahistoriskforening.R;
 
-public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener{
+public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener {
 
     ListView itemList;
     JSONArray items;
@@ -38,6 +39,10 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
         itemList.setOnItemClickListener(this);
         stackTitles.push(itemTitles);
         updateItemList(itemTitles);
+
+        FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fab);
+        fab.setOnClickListener(this);
+
         return layout;
     }
 
@@ -92,5 +97,10 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     public void onItemClick(AdapterView<?> aV, View v, int position, long l){
         Log.d("ItemListFragment", "OnItemClick");
         ((MainActivity)getActivity()).setFragmentDetails(position);
+    }
+
+    @Override
+    public void onClick(View v) {
+        ((MainActivity)getActivity()).startRegister();
     }
 }
