@@ -23,7 +23,7 @@ import java.text.ParseException;
 
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.Model;
-import app.ddf.danskdatahistoriskforening.PagerSlidingTabStrip;
+import app.ddf.danskdatahistoriskforening.helper.PagerSlidingTabStrip;
 import app.ddf.danskdatahistoriskforening.R;
 
 public class ItemActivity extends AppCompatActivity{
@@ -46,9 +46,9 @@ public class ItemActivity extends AppCompatActivity{
     private PagerAdapter mPagerAdapter;
 
 
-    private RegisterItemFragment itemFragment = new RegisterItemFragment();
-    private RegisterDetailsFragment detailsFragment = new RegisterDetailsFragment();
-    private RegisterDescriptionFragment descriptionFragment = new RegisterDescriptionFragment();
+    private ItemFragment itemFragment = new ItemFragment();
+    private ItemDetailsFragment detailsFragment = new ItemDetailsFragment();
+    private ItemDescriptionFragment descriptionFragment = new ItemDescriptionFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -22,8 +22,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".item.ItemActivity"></activity>
-        <activity android:name=".ImageviewerActivity"></activity>
-        <activity android:name=".RecordingActivity"></activity>
+        <activity android:name=".image.ImageviewerActivity"></activity>
+        <activity android:name=".item.RecordingActivity"></activity>
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.item;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -10,7 +10,8 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
-import app.ddf.danskdatahistoriskforening.item.RegisterDetailsFragment;
+import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.item.ItemDetailsFragment;
 
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener{
 
@@ -24,7 +25,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
     public Dialog onCreateDialog(Bundle savedInstanceBundle){
         Date chosenDate;
         try {
-            chosenDate = Model.getFormatter().parse(RegisterDetailsFragment.currentDateField.getText().toString());
+            chosenDate = Model.getFormatter().parse(ItemDetailsFragment.currentDateField.getText().toString());
         } catch (ParseException e){
             e.printStackTrace();
             return null;

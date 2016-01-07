@@ -1,9 +1,5 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.item;
 
-import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,7 +7,8 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import java.io.File;
+import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.helper.VoiceRecorder;
 
 public class RecordingActivity extends AppCompatActivity implements View.OnClickListener {
     ImageButton pauseButton;

@@ -13,13 +13,12 @@ import android.widget.TextView;
 
 import java.util.Date;
 
-import app.ddf.danskdatahistoriskforening.DatePickerFragment;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 
 
-public class RegisterDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener{
+public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener{
 
     TextView dateFrom;
     TextView dateTo;
@@ -40,7 +39,7 @@ public class RegisterDetailsFragment extends Fragment implements View.OnClickLis
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View layout = inflater.inflate(R.layout.fragment_register_details, container, false);
+        View layout = inflater.inflate(R.layout.fragment_item_details, container, false);
 
         producer = (TextView) layout.findViewById(R.id.Producer);
         donator = (TextView) layout.findViewById(R.id.Donator);

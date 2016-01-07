@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         startFragment = new FrontFragment();
         listFragment = new ItemListFragment();
-        detailsFragment = new ItemDetails();
+        detailsFragment = new ItemShowFragment();
 
         getSupportFragmentManager().beginTransaction()
             .replace(R.id.frame, startFragment)
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             return;
             //TODO DO SOMETHING USEFULL
         }
-        ((ItemDetails) detailsFragment).setDetailsURI(detailsURI);
+        ((ItemShowFragment) detailsFragment).setDetailsURI(detailsURI);
         searchItem.setVisible(false);
         editModeItem.setVisible(true);
     }
@@ -186,8 +186,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
         else if(item == editModeItem){
             Intent i = new Intent(this, ItemActivity.class);
-            System.out.println(((ItemDetails) detailsFragment).currentItem.toJSON().toString());
-            i.putExtra("item", ((ItemDetails) detailsFragment).currentItem);
+            System.out.println(((ItemShowFragment) detailsFragment).currentItem.toJSON().toString());
+            i.putExtra("item", ((ItemShowFragment) detailsFragment).currentItem);
             startActivity(i);
         }
         return true;

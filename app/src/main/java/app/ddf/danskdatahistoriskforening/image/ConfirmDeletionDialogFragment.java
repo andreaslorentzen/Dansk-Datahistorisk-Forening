@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.image;
 
 import android.app.Activity;
 import android.app.Dialog;

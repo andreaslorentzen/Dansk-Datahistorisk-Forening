@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.helper;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
