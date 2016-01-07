@@ -1,36 +1,27 @@
 package app.ddf.danskdatahistoriskforening;
 
-import android.content.ContentUris;
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Environment;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.content.CursorLoader;
 import android.support.v4.util.Pair;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.text.ParseException;
 
-public class RegisterActivity extends AppCompatActivity{
+public class ItemActivity extends AppCompatActivity{
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
@@ -145,7 +136,7 @@ public class RegisterActivity extends AppCompatActivity{
             new AsyncTask<Item, Void, Integer>(){
                 @Override
                 protected Integer doInBackground(Item... params){
-                    return Model.getDAO().updateItem(RegisterActivity.this, params[0]);
+                    return Model.getDAO().updateItem(ItemActivity.this, params[0]);
                 }
 
                 @Override
@@ -175,7 +166,7 @@ public class RegisterActivity extends AppCompatActivity{
             new AsyncTask<Item, Void, Integer>(){
                 @Override
                 protected Integer doInBackground(Item... params){
-                    return Model.getDAO().saveItemToDB(RegisterActivity.this, params[0]);
+                    return Model.getDAO().saveItemToDB(ItemActivity.this, params[0]);
                 }
 
                 @Override

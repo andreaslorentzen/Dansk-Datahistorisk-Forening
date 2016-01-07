@@ -1,7 +1,6 @@
 package app.ddf.danskdatahistoriskforening;
 
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
@@ -9,11 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -128,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void startRegister() {
-        Intent i = new Intent(this, RegisterActivity.class);
+        Intent i = new Intent(this, ItemActivity.class);
         startActivity(i);
     }
 
@@ -185,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             setFragmentList();
         }
         else if(item == editModeItem){
-            Intent i = new Intent(this, RegisterActivity.class);
+            Intent i = new Intent(this, ItemActivity.class);
             System.out.println(((ItemDetails) detailsFragment).currentItem.toJSON().toString());
             i.putExtra("item", ((ItemDetails) detailsFragment).currentItem);
             startActivity(i);

@@ -15,7 +15,7 @@ public class RegisterDescriptionFragment extends Fragment {
 
         itemDescription = (EditText) layout.findViewById(R.id.itemDescription);
 
-        Item item = ((RegisterActivity) getActivity()).getItem();
+        Item item = ((ItemActivity) getActivity()).getItem();
         setItemDescription(item.getItemDescription());
 
         return layout;

@@ -21,7 +21,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".RegisterActivity"></activity>
+        <activity android:name=".ItemActivity"></activity>
         <activity android:name=".ImageviewerActivity"></activity>
         <activity android:name=".RecordingActivity"></activity>
     </application>

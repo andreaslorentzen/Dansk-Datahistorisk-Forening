@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
@@ -15,16 +14,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import java.io.File;
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class RegisterItemFragment extends Fragment implements View.OnClickListener{
 
@@ -43,7 +38,7 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
         micButton.setOnClickListener(this);
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
 
-        Item item = ((RegisterActivity) getActivity()).getItem();
+        Item item = ((ItemActivity) getActivity()).getItem();
         itemTitle.setText(item.getItemHeadline());
         //TODO indsæt billeder, lyd
 
@@ -70,7 +65,7 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
 
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-                getActivity().startActivityForResult(intent, RegisterActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+                getActivity().startActivityForResult(intent, ItemActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
             }
             else{
                 Toast.makeText(getActivity(), "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
@@ -101,14 +96,14 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
                 Intent intent = new Intent(getActivity(), ImageviewerActivity.class);
                 intent.putExtra("imageURIs", uris);
                 intent.putExtra("index", index);
-                getActivity().startActivityForResult(intent, RegisterActivity.IMAGEVIEWER_REQUEST_CODE);
+                getActivity().startActivityForResult(intent, ItemActivity.IMAGEVIEWER_REQUEST_CODE);
         }
 
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == RegisterActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
+        if (requestCode == ItemActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 // Image captured and saved to fileUri specified in the Intent
                 ImageView image = imageUris.get(imageUris.size()-1).first;
@@ -134,7 +129,7 @@ public class RegisterItemFragment extends Fragment implements View.OnClickListen
                 Toast.makeText(getActivity(), "Der opstod en fejl under brug af kameraet" , Toast.LENGTH_LONG).show();
             }
         }
-        else if(requestCode == RegisterActivity.IMAGEVIEWER_REQUEST_CODE){
+        else if(requestCode == ItemActivity.IMAGEVIEWER_REQUEST_CODE){
             if(resultCode == Activity.RESULT_OK){
                 ArrayList<Uri> remainingURIs = data.getParcelableArrayListExtra("remainingURIs");
 
