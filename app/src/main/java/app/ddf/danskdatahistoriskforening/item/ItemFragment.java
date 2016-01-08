@@ -4,8 +4,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
@@ -17,8 +20,11 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import app.ddf.danskdatahistoriskforening.image.ImageviewerActivity;
@@ -26,13 +32,20 @@ import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 import app.ddf.danskdatahistoriskforening.R;
 
-public class ItemFragment extends Fragment implements View.OnClickListener{
+public class ItemFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
     ImageButton cameraButton;
     ImageButton micButton;
     EditText itemTitle;
     LinearLayout imageContatiner;
     ArrayList<Pair<ImageView,Uri>> imageUris;
+    ImageButton audioButton;
+    SeekBar seekBar;
+    MediaPlayer mPlayer;
+    Handler mHandler;
+    TextView durText;
+    TextView posText;
+    TextView audioText;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -43,6 +56,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
         micButton.setOnClickListener(this);
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
 
+
         Item item = ((ItemActivity) getActivity()).getItem();
         itemTitle.setText(item.getItemHeadline());
         //TODO indsæt billeder, lyd
@@ -51,13 +65,53 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
         imageContatiner = (LinearLayout) layout.findViewById(R.id.imageContainer);
         imageUris = new ArrayList<>();
 
+        // AUDIO
+        posText = (TextView) layout.findViewById(R.id.posText);
+        durText = (TextView) layout.findViewById(R.id.durText);
+        audioText = (TextView) layout.findViewById(R.id.audioText);
+        audioButton = (ImageButton) layout.findViewById(R.id.audioButton);
+        seekBar = (SeekBar) layout.findViewById(R.id.seekBar);
+        seekBar.setOnSeekBarChangeListener(this);
+        audioButton.setOnClickListener(this);
+        mHandler=  new Handler();
+        setAudioPlayer(); // sets mPlayer
         return layout;
     }
+
+
 
     // shit like this maybe
     @Override
     public void onDetach() {
         super.onDetach();
+        killAudioPlayer(); // stop mPlayer and mHandler
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        killAudioPlayer(); // stop mPlayer and mHandler
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setAudioPlayer(); // resets mPlayer
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        if (mPlayer != null && fromUser) {
+            mPlayer.seekTo(progress);
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
     }
 
     @Override
@@ -75,12 +129,23 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
             else{
                 Toast.makeText(getActivity(), "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
             }
-        }
-        if(v == micButton){
+        } else if(v == micButton){
             Intent i = new Intent(getActivity(), RecordingActivity.class);
             startActivity(i);
-        }
-        else { //image tapped
+        } else if(v == audioButton) {
+            if (mPlayer != null) {
+                if (mPlayer.isPlaying()) {
+                    audioButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+                    mPlayer.pause();
+                    mHandler.removeCallbacks(timerRunnable);
+                } else {
+                    audioButton.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
+                    mPlayer.start();
+                    mHandler.postDelayed(timerRunnable, 0);
+                }
+            } else
+                Toast.makeText(getActivity(), "Audio file not found - start recording!", Toast.LENGTH_LONG).show();
+        } else { //image tapped
                 int index = -1;
                 ArrayList<Uri> uris = new ArrayList<>();
                 for(int i = 0; i<imageUris.size(); i++){
@@ -91,20 +156,19 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
 
                     uris.add(imageUris.get(i).second);
                 }
-
                 if(index < 0){
                     //none of the imageViews matched
                     Log.d("ddf", "no imageView matched");
                     return;
                 }
-
                 Intent intent = new Intent(getActivity(), ImageviewerActivity.class);
                 intent.putExtra("imageURIs", uris);
                 intent.putExtra("index", index);
                 getActivity().startActivityForResult(intent, ItemActivity.IMAGEVIEWER_REQUEST_CODE);
         }
-
     }
+
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -163,6 +227,59 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
                 imageUris = temp;
             }
         }
+    }
+
+    Runnable timerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            String posString = RecordingActivity.millisToPlayback(mPlayer.getCurrentPosition());
+            posText.setText(posString.substring(0, posString.length() - 3));
+            seekBar.setProgress(mPlayer.getCurrentPosition());
+            if (!mPlayer.isPlaying()) {
+                killAudioPlayer();
+                return;
+            }
+            mHandler.postDelayed(this, 500);
+        }
+    };
+
+    private void killAudioPlayer() {
+        audioButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+        mHandler.removeCallbacks(timerRunnable);
+        if (mPlayer == null)
+            return;
+        if (mPlayer.isPlaying())
+            mPlayer.stop();
+
+    }
+    private void setAudioPlayer() {
+        MediaPlayer oldPlayer = mPlayer;
+        String filePath = LocalMediaStorage.getOutputMediaFileUri(2).getPath();
+        File mainFile = new File(filePath);
+        if (!mainFile.exists()) {
+            durText.setText("");
+            posText.setText("");
+            audioText.setText("No audio file existing.");
+            seekBar.setProgress(0);
+            seekBar.setEnabled(false);
+            audioButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+            if (mPlayer!=null) {
+                mPlayer.release();
+                mPlayer = null;
+            }
+            return;
+        }
+        seekBar.setEnabled(true);
+        audioText.setText("");
+        mPlayer = MediaPlayer.create(getActivity(), Uri.parse(filePath));
+        seekBar.setMax(mPlayer.getDuration());
+        String durString = RecordingActivity.millisToPlayback(mPlayer.getDuration());
+        durText.setText(durString.substring(0, durString.length() - 3));
+        if (oldPlayer != null) {
+            mPlayer.seekTo(oldPlayer.getCurrentPosition());
+            oldPlayer.release();
+        } else
+            posText.setText("0:00:00");
     }
 
     public String getItemTitle(){
