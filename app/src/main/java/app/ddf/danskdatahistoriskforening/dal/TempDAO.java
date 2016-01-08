@@ -1,13 +1,18 @@
 package app.ddf.danskdatahistoriskforening.dal;
 
 import android.content.Context;
+import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,9 +22,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 
 import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
 /**
  * Created by mathias on 30/12/15.
@@ -176,6 +183,26 @@ public class TempDAO implements IDAO {
                     isJsonNull(producer) ? null : producer,
                     isJsonNull(postnummer) ? null : postnummer
             );
+
+            JSONObject images = item.getJSONObject("images");
+            if (images != null){
+                JSONObject image;
+                int i = 0;
+                while((image = images.optJSONObject("image_" + i)) != null){
+                    currentItem.addToPictures(getFile(image.getString("href"), LocalMediaStorage.MEDIA_TYPE_IMAGE));
+                    i++;
+                }
+            }
+
+            JSONObject audios = item.getJSONObject("audios");
+            if (audios != null){
+                JSONObject audio;
+                int i = 0;
+                while((audio = audios.optJSONObject("audio_" + i)) != null){
+                    currentItem.addToRecordings(getFile(audio.getString("href"), LocalMediaStorage.MEDIA_TYPE_AUDIO));
+                    i++;
+                }
+            }
             return currentItem;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -299,4 +326,37 @@ public class TempDAO implements IDAO {
         }
     }
 
+
+    public Uri getFile(String filePath, int type){
+
+        File fileToSave = null;
+        try{
+            URL url = new URL(filePath);
+            URLConnection conn = url.openConnection();
+
+            InputStream is = conn.getInputStream();
+            BufferedInputStream input = new BufferedInputStream(is);
+
+            fileToSave = LocalMediaStorage.getOutputMediaFile(type);
+            OutputStream output = new FileOutputStream(fileToSave);
+
+            byte[] data = new byte[1024];
+            int count;
+            while ((count = input.read(data)) != -1) {
+                output.write(data, 0, count);
+            }
+
+            output.flush();
+            input.close();
+            output.close();
+
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        if(fileToSave == null){
+            return null;
+        }else{
+            return Uri.fromFile(fileToSave);
+        }
+    }
 }
