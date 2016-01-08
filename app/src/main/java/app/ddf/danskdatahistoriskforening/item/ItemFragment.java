@@ -103,8 +103,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (mPlayer != null && fromUser) {
             mPlayer.seekTo(progress);
-            String posString = RecordingActivity.millisToPlayback(mPlayer.getCurrentPosition());
-            posText.setText(posString.substring(0, posString.length() - 3));
+            setAudioText(posText, mPlayer.getCurrentPosition());
         }
     }
 
@@ -234,16 +233,22 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
     Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
-            String posString = RecordingActivity.millisToPlayback(mPlayer.getCurrentPosition());
-            posText.setText(posString.substring(0, posString.length() - 3));
-            seekBar.setProgress(mPlayer.getCurrentPosition());
             if (!mPlayer.isPlaying()) {
+                setAudioText(posText, mPlayer.getDuration());
                 killAudioPlayer();
+                seekBar.setProgress(mPlayer.getDuration());
                 return;
             }
+            setAudioText(posText, mPlayer.getCurrentPosition());
+            seekBar.setProgress(mPlayer.getCurrentPosition());
             mHandler.postDelayed(this, 500);
         }
     };
+
+    private void setAudioText(TextView vt, int millis) {
+        String posString = RecordingActivity.millisToPlayback(millis);
+        vt.setText(posString.substring(0, posString.length() - 3));
+    }
 
     private void killAudioPlayer() {
         audioButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
@@ -275,8 +280,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         audioText.setText("");
         mPlayer = MediaPlayer.create(getActivity(), Uri.parse(filePath));
         seekBar.setMax(mPlayer.getDuration());
-        String durString = RecordingActivity.millisToPlayback(mPlayer.getDuration());
-        durText.setText(durString.substring(0, durString.length() - 3));
+        setAudioText(durText, mPlayer.getDuration());
         if (oldPlayer != null) {
             mPlayer.seekTo(oldPlayer.getCurrentPosition());
             oldPlayer.release();
