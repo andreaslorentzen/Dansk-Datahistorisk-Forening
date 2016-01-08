@@ -6,12 +6,14 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 
 public class ImageviewerFragment extends Fragment {
     private Uri imageUri;
@@ -22,13 +24,24 @@ public class ImageviewerFragment extends Fragment {
         View layout = inflater.inflate(R.layout.fragment_imageviewer, container, false);
 
         ImageView image = (ImageView) layout.findViewById(R.id.imageviewfragment_imageview);
-        BitmapFactory.Options options = new BitmapFactory.Options();
+        image.setBackgroundColor(Color.BLACK);
+
+        //use screen dimensions as aproximation for imageView dimensions
+        DisplayMetrics metrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        BitmapEncoder.decodeFile(image, imageUri, metrics.widthPixels, metrics.heightPixels);
+
+/*        BitmapFactory.Options options = new BitmapFactory.Options();
 
         //this may be too big memorywise, but the page adapter should destroy old fragments as needed
         options.inSampleSize = 2;
         Bitmap bitmap = BitmapFactory.decodeFile(imageUri.getPath(), options);
-        image.setBackgroundColor(Color.BLACK);
-        image.setImageBitmap(bitmap);
+
+
+        image.setImageBitmap(bitmap);*/
+
+
 
         return layout;
     }
