@@ -42,7 +42,7 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
 
         itemList = (ListView) layout.findViewById(R.id.itemList);
         itemList.setOnItemClickListener(this);
-        adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles);
+        ArrayAdapter adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles);
         itemList.setAdapter(adapter);
 
         FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fab);
@@ -51,19 +51,12 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
         return layout;
     }
 
-    // shit like this maybe
-    @Override
-    public void onDetach() {
-        super.onDetach();
-    }
-
-    ArrayAdapter adapter;
 
     public void updateItemList(List<String> titles){
         itemTitles = titles;
         if(getActivity() != null){
-            adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles);
-            itemList.setAdapter(adapter);
+       //     adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles);
+        //    itemList.setAdapter(adapter);
         }
     }
 
