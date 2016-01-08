@@ -103,6 +103,8 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (mPlayer != null && fromUser) {
             mPlayer.seekTo(progress);
+            String posString = RecordingActivity.millisToPlayback(mPlayer.getCurrentPosition());
+            posText.setText(posString.substring(0, posString.length() - 3));
         }
     }
 
