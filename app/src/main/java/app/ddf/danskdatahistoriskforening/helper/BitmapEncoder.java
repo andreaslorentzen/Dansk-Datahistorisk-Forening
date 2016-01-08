@@ -3,9 +3,12 @@ package app.ddf.danskdatahistoriskforening.helper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import java.lang.ref.WeakReference;
 
 public class BitmapEncoder {
 
@@ -22,8 +25,8 @@ public class BitmapEncoder {
             final int halfWidth = width / 2;
 
             // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight && (halfWidth / inSampleSize) > reqWidth) {
+            //only either width or height needs to be required size as picture is not stretched to fill ImageView
+            while ((halfHeight / inSampleSize) > reqHeight || (halfWidth / inSampleSize) > reqWidth) {
                 inSampleSize *= 2;
             }
         }
@@ -32,7 +35,7 @@ public class BitmapEncoder {
     }
 
     //set ImageView content from URI
-    public static void decodeFile(ImageView image, Uri uri, int width, int height){
+    private static Bitmap decodeFile(Uri uri, int width, int height){
         //decode full scale dimensions of image
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
@@ -48,8 +51,43 @@ public class BitmapEncoder {
         //decode from file and insert into ImageView
         options.inJustDecodeBounds = false;
         Bitmap bitmap = BitmapFactory.decodeFile(uri.getPath(), options);
-        image.setImageBitmap(bitmap);
 
         Log.d("bitmap", "bitmap width: " + options.outWidth + " bitmap height: " + options.outHeight);
+
+        return bitmap;
+    }
+
+    //http://developer.android.com/training/displaying-bitmaps/process-bitmap.html
+    public static class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
+        private final WeakReference<ImageView> imageViewReference;
+        private Uri uri;
+        private int width;
+        private int height;
+
+        public BitmapWorkerTask(ImageView imageView, Uri uri, int width, int height) {
+            // Use a WeakReference to ensure the ImageView can be garbage collected
+            imageViewReference = new WeakReference<ImageView>(imageView);
+
+            this.uri = uri;
+            this.width = width;
+            this.height = height;
+        }
+
+        // Decode image in background.
+        @Override
+        protected Bitmap doInBackground(Void... params) {
+            return decodeFile(uri, width, height);
+        }
+
+        // Once complete, see if ImageView is still around and set bitmap.
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            if (imageViewReference != null && bitmap != null) {
+                final ImageView imageView = imageViewReference.get();
+                if (imageView != null) {
+                    imageView.setImageBitmap(bitmap);
+                }
+            }
+        }
     }
 }

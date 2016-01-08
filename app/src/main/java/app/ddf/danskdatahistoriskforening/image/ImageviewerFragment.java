@@ -30,18 +30,8 @@ public class ImageviewerFragment extends Fragment {
         DisplayMetrics metrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-        BitmapEncoder.decodeFile(image, imageUri, metrics.widthPixels, metrics.heightPixels);
-
-/*        BitmapFactory.Options options = new BitmapFactory.Options();
-
-        //this may be too big memorywise, but the page adapter should destroy old fragments as needed
-        options.inSampleSize = 2;
-        Bitmap bitmap = BitmapFactory.decodeFile(imageUri.getPath(), options);
-
-
-        image.setImageBitmap(bitmap);*/
-
-
+        (new BitmapEncoder.BitmapWorkerTask(image, imageUri, metrics.widthPixels, metrics.heightPixels)).execute();
+        //BitmapEncoder.decodeFile(image, imageUri, metrics.widthPixels, metrics.heightPixels);
 
         return layout;
     }
