@@ -27,7 +27,7 @@ import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener {
 
     Toolbar mainToolbar;
 
@@ -43,10 +43,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-
-        Log.d("MAni", "" + (editButton == null));
 
         if(savedInstanceState == null) {
 
@@ -70,7 +66,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         editButton.setOnMenuItemClickListener(this);
 
         searchButton = menu.findItem(R.id.action_search);
-        searchButton.setOnMenuItemClickListener(this);
+    //    searchButton.setOnMenuItemClickListener(this);
+        MenuItemCompat.setOnActionExpandListener(searchButton, this);
+
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         searchView = (SearchView) MenuItemCompat.getActionView(searchButton);
@@ -176,8 +174,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         searchVisible = isSerSearchVisible;
         searchButton.setVisible(isSerSearchVisible);
         editButton.setVisible(!isSerSearchVisible);
-     //   if(!isSerSearchVisible)
-       //     MenuItemCompat.collapseActionView(searchButton);
+        if(!isSerSearchVisible)
+            MenuItemCompat.collapseActionView(searchButton);
     }
 
     @Override
@@ -187,9 +185,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextChange(String newText) {
+        System.out.println("s: "+newText);
         Model.getInstance().setCurrentSearch(newText);
      //   ItemListFragment.searchItemList(newText);
-        return false;
+        return true;
     }
 
     @Override
@@ -207,4 +206,16 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         return true;
     }
 
+    @Override
+    public boolean onMenuItemActionExpand(MenuItem item) {
+        System.out.println("menu");
+        setFragmentList();
+        return true;
+    }
+
+    @Override
+    public boolean onMenuItemActionCollapse(MenuItem item) {
+        Model.getInstance().setCurrentSearch(null);
+        return true;
+    }
 }
