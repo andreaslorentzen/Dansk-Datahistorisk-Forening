@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if(getSupportFragmentManager().getBackStackEntryCount() == 0){
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.frame, new ItemListFragment())
-                    .addToBackStack(null)
+                    .addToBackStack("list")
                     .commit();
         }
     }
@@ -181,7 +181,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public boolean onQueryTextChange(String newText) {
 
         Model.getInstance().setCurrentSearch(newText);
-        //   ItemListFragment.searchItemList(newText);
+        if(getSupportFragmentManager().getBackStackEntryCount()>0){
+            List<Fragment> fragments = getSupportFragmentManager().getFragments();
+            ((ItemListFragment)fragments.get(1)).searchItemList();
+        }
+
         return true;
     }
 
@@ -211,11 +215,17 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if(getSupportFragmentManager().getBackStackEntryCount() == 1){
-            Model.getInstance().setSearchButtonVisible(true);
-            String query = Model.getInstance().getCurrentSearch();
-            updateSearchVisibility();
-            searchView.setQuery(query, false);
+
+        switch (getSupportFragmentManager().getBackStackEntryCount()){
+            case 0:
+
+                break;
+            case 1:
+                Model.getInstance().setSearchButtonVisible(true);
+                String query = Model.getInstance().getCurrentSearch();
+                updateSearchVisibility();
+                searchView.setQuery(query, false);
+                break;
         }
     }
 }
