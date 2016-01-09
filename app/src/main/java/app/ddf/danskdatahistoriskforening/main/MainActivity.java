@@ -27,14 +27,13 @@ import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener {
 
     Toolbar mainToolbar;
 
     MenuItem searchButton;
     MenuItem editButton;
     SearchView searchView;
-    boolean searchVisible = true;
 
     private static final String URL = "http://78.46.187.172:4019/items";
 
@@ -43,10 +42,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-
-        Log.d("MAni", "" + (editButton == null));
 
         if(savedInstanceState == null) {
 
@@ -59,7 +54,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
         mainToolbar.setNavigationIcon(null);
         setSupportActionBar(mainToolbar);
-
     }
 
     @Override
@@ -70,28 +64,16 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         editButton.setOnMenuItemClickListener(this);
 
         searchButton = menu.findItem(R.id.action_search);
-        searchButton.setOnMenuItemClickListener(this);
+        MenuItemCompat.setOnActionExpandListener(searchButton, this);
 
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         searchView = (SearchView) MenuItemCompat.getActionView(searchButton);
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(false);
+
+        updateSearchVisibility();
+
+        searchView.setQuery(Model.getInstance().getCurrentSearch(), false);
+
         searchView.setOnQueryTextListener(this);
-
-        String searchQuery = Model.getInstance().getCurrentSearch();
-        if(searchQuery != null){
-            MenuItemCompat.expandActionView(searchButton);
-            searchView.setQuery(searchQuery, false);
-        }
-
-        if(searchVisible){
-            searchButton.setVisible(true);
-            editButton.setVisible(false);
-        }
-        else{
-            searchButton.setVisible(false);
-            editButton.setVisible(true);
-        }
 
         return true;
     }
@@ -141,17 +123,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentList(){
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
-        if(fragments != null && fragments.size() > 0){
-            if(fragments.get(fragments.size()-1) instanceof  ItemListFragment){
-                return;
-            }
+        if(getSupportFragmentManager().getBackStackEntryCount() == 0){
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.frame, new ItemListFragment())
+                    .addToBackStack("list")
+                    .commit();
         }
-        getSupportFragmentManager().beginTransaction()
-            .replace(R.id.frame, new ItemListFragment())
-            .addToBackStack(null)
-            .commit();
-
     }
 
     public void setFragmentDetails(int position) {
@@ -165,6 +142,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     .replace(R.id.frame, new ItemShowFragment())
                     .addToBackStack(null)
                     .commit();
+            boolean expanded = Model.getInstance().isSearchExpanded();
+            String query = Model.getInstance().getCurrentSearch();
+            Model.getInstance().setSearchButtonVisible(false);
+            updateSearchVisibility();
+            Model.getInstance().setSearchExpanded(expanded);
+            Model.getInstance().setCurrentSearch(query);
         } catch(JSONException e){
             e.printStackTrace();
             return;
@@ -172,12 +155,21 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
     }
 
-    public void setSearchVisible(boolean isSerSearchVisible){
-        searchVisible = isSerSearchVisible;
+    private void updateSearchVisibility(){
+        boolean isSerSearchVisible = Model.getInstance().isSearchButtonVisible();
         searchButton.setVisible(isSerSearchVisible);
         editButton.setVisible(!isSerSearchVisible);
-     //   if(!isSerSearchVisible)
-       //     MenuItemCompat.collapseActionView(searchButton);
+
+        if(!isSerSearchVisible){
+            MenuItemCompat.collapseActionView(searchButton);
+        }
+        else{
+            if(Model.getInstance().isSearchExpanded()) {
+                if (!MenuItemCompat.isActionViewExpanded(searchButton))
+                    MenuItemCompat.expandActionView(searchButton);
+            }
+        }
+
     }
 
     @Override
@@ -187,19 +179,19 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextChange(String newText) {
+
         Model.getInstance().setCurrentSearch(newText);
-     //   ItemListFragment.searchItemList(newText);
-        return false;
+        if(getSupportFragmentManager().getBackStackEntryCount()>0){
+            List<Fragment> fragments = getSupportFragmentManager().getFragments();
+            ((ItemListFragment)fragments.get(1)).searchItemList();
+        }
+
+        return true;
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        System.out.println("menu");
-        if(item == searchButton){
-            System.out.println("menu");
-            setFragmentList();
-        }
-        else if(item == editButton){
+        if(item == editButton){
             Intent i = new Intent(this, ItemActivity.class);
             i.putExtra("item", Model.getInstance().getCurrentItem());
             startActivity(i);
@@ -207,4 +199,33 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         return true;
     }
 
+    @Override
+    public boolean onMenuItemActionExpand(MenuItem item) {
+        Model.getInstance().setSearchExpanded(true);
+        setFragmentList();
+        return true;
+    }
+
+    @Override
+    public boolean onMenuItemActionCollapse(MenuItem item) {
+        Model.getInstance().setSearchExpanded(false);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        switch (getSupportFragmentManager().getBackStackEntryCount()){
+            case 0:
+
+                break;
+            case 1:
+                Model.getInstance().setSearchButtonVisible(true);
+                String query = Model.getInstance().getCurrentSearch();
+                updateSearchVisibility();
+                searchView.setQuery(query, false);
+                break;
+        }
+    }
 }
