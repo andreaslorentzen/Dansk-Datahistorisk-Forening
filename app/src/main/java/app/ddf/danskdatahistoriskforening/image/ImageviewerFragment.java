@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
@@ -26,11 +27,13 @@ public class ImageviewerFragment extends Fragment {
         ImageView image = (ImageView) layout.findViewById(R.id.imageviewfragment_imageview);
         image.setBackgroundColor(Color.BLACK);
 
+        ProgressBar progressBar = (ProgressBar) layout.findViewById(R.id.imageviewfragment_progress);
+
         //use screen dimensions as approximation for imageView dimensions
         DisplayMetrics metrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-        BitmapEncoder.loadBitmapFromURI(image, imageUri, metrics.widthPixels, metrics.heightPixels);
+        BitmapEncoder.loadBitmapFromURI(image, imageUri, metrics.widthPixels, metrics.heightPixels, progressBar);
 
         return layout;
     }

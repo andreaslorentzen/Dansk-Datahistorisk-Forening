@@ -9,4 +9,12 @@
         android:layout_height="fill_parent"
         android:id="@+id/imageviewfragment_imageview"
         android:layout_gravity="left|top" />
+    
+    <ProgressBar
+        android:id="@+id/imageviewfragment_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:visibility="visible"/>
 </FrameLayout>

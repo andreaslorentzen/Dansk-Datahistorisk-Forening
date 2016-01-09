@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
@@ -21,7 +22,7 @@ public class BitmapEncoder {
 
     public static void loadBitmapFromURI(ImageView image, Uri uri, int width, int height, ProgressBar progressBar){
         if(cancelPotentialWork(image, uri)) {
-            BitmapWorkerTask task = new BitmapWorkerTask(image, uri, width, height);
+            BitmapWorkerTask task = new BitmapWorkerTask(image, uri, width, height, progressBar);
             AsyncLoadingDrawable drawable = new AsyncLoadingDrawable(task);
             image.setImageDrawable(drawable);
 
@@ -77,6 +78,7 @@ public class BitmapEncoder {
     //http://developer.android.com/training/displaying-bitmaps/process-bitmap.html
     private static class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
         private final WeakReference<ImageView> imageViewReference;
+        private final WeakReference<ProgressBar> progressBarWeakReference;
         private Uri uri = null;
         private int width;
         private int height;
@@ -85,24 +87,31 @@ public class BitmapEncoder {
             return uri;
         }
 
-        public BitmapWorkerTask(ImageView imageView, Uri uri, int width, int height) {
+        public BitmapWorkerTask(ImageView imageView, Uri uri, int width, int height, ProgressBar progressBar) {
             // Use a WeakReference to ensure the ImageView can be garbage collected
             imageViewReference = new WeakReference<ImageView>(imageView);
+            progressBarWeakReference = new WeakReference<ProgressBar>(progressBar);
 
             this.uri = uri;
             this.width = width;
             this.height = height;
+
+            //show progress bar if any
+            if(progressBar != null){
+                progressBar.setIndeterminate(true);
+                progressBar.setVisibility(View.VISIBLE);
+            }
         }
 
         // Decode image in background.
         @Override
         protected Bitmap doInBackground(Void... params){
             //simulate slow loading
-            try {
+            /*try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }*/
 
             return decodeFile(uri, width, height);
         }
@@ -114,10 +123,17 @@ public class BitmapEncoder {
                 bitmap = null;
             }
 
-            if (imageViewReference != null && bitmap != null) {
+            if (imageViewReference != null && progressBarWeakReference != null && bitmap != null) {
                 final ImageView imageView = imageViewReference.get();
                 final BitmapWorkerTask task = getTaskFromImage(imageView);
+                final ProgressBar progressBar = progressBarWeakReference.get();
 
+                //hide progressbar if any
+                if(task == this &&  progressBar != null){
+                    progressBar.setVisibility(View.GONE);
+                }
+
+                //set final image
                 if (task == this && imageView != null) {
                     imageView.setImageBitmap(bitmap);
                 }
