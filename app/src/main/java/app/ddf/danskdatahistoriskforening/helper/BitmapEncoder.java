@@ -110,9 +110,15 @@ public class BitmapEncoder {
                 e.printStackTrace();
             }
 
+            if(isCancelled()){
+                bitmap = null;
+            }
+
             if (imageViewReference != null && bitmap != null) {
                 final ImageView imageView = imageViewReference.get();
-                if (imageView != null) {
+                final BitmapWorkerTask task = getTaskFromImage(imageView);
+
+                if (task == this && imageView != null) {
                     imageView.setImageBitmap(bitmap);
                 }
             }
@@ -139,14 +145,7 @@ public class BitmapEncoder {
 
     //checks if task is already being peformed or if imageview is being reused and cancels old task if necessary
     private static boolean cancelPotentialWork(ImageView image, Uri uri){
-        BitmapWorkerTask runningTask = null;
-
-        if(image != null) {
-            final Drawable drawable = image.getDrawable();
-            if(drawable instanceof AsyncLoadingDrawable){
-                runningTask = ((AsyncLoadingDrawable) drawable).getTask();
-            }
-        }
+        BitmapWorkerTask runningTask = getTaskFromImage(image);
 
         //imageView is associated with a running task
         if(runningTask != null){
@@ -162,5 +161,16 @@ public class BitmapEncoder {
         }
 
         return true;
+    }
+
+    private static BitmapWorkerTask getTaskFromImage(ImageView image){
+        if(image != null) {
+            final Drawable drawable = image.getDrawable();
+            if(drawable instanceof AsyncLoadingDrawable){
+                return ((AsyncLoadingDrawable) drawable).getTask();
+            }
+        }
+
+        return null;
     }
 }
