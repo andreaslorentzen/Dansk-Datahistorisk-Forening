@@ -2,10 +2,12 @@ package app.ddf.danskdatahistoriskforening.helper;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
@@ -58,7 +60,7 @@ public class BitmapEncoder {
     }
 
     //http://developer.android.com/training/displaying-bitmaps/process-bitmap.html
-    public static class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
+    private static class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
         private final WeakReference<ImageView> imageViewReference;
         private Uri uri;
         private int width;
@@ -89,5 +91,24 @@ public class BitmapEncoder {
                 }
             }
         }
+    }
+
+    //http://developer.android.com/training/displaying-bitmaps/process-bitmap.html#concurrency
+    //http://android-developers.blogspot.dk/2010/07/multithreading-for-performance.html
+
+    //temporary drawable which will associate an ImageView with the last task executed
+    private class AsyncLoadingDrawable extends ColorDrawable{
+
+    }
+
+    public static void loadBitmapFromURI(ImageView image, Uri uri, int width, int height){
+        loadBitmapFromURI(image, uri, width, height, null);
+    }
+
+    public static void loadBitmapFromURI(ImageView image, Uri uri, int width, int height, ProgressBar progressBar){
+        BitmapWorkerTask task = new BitmapWorkerTask(image, uri, width, height);
+
+
+        task.execute();
     }
 }

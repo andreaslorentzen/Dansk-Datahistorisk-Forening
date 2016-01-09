@@ -30,8 +30,7 @@ public class ImageviewerFragment extends Fragment {
         DisplayMetrics metrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-        (new BitmapEncoder.BitmapWorkerTask(image, imageUri, metrics.widthPixels, metrics.heightPixels)).execute();
-        //BitmapEncoder.decodeFile(image, imageUri, metrics.widthPixels, metrics.heightPixels);
+        BitmapEncoder.loadBitmapFromURI(image, imageUri, metrics.widthPixels, metrics.heightPixels);
 
         return layout;
     }
