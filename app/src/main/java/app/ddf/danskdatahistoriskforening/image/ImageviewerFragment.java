@@ -26,7 +26,7 @@ public class ImageviewerFragment extends Fragment {
         ImageView image = (ImageView) layout.findViewById(R.id.imageviewfragment_imageview);
         image.setBackgroundColor(Color.BLACK);
 
-        //use screen dimensions as aproximation for imageView dimensions
+        //use screen dimensions as approximation for imageView dimensions
         DisplayMetrics metrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
 

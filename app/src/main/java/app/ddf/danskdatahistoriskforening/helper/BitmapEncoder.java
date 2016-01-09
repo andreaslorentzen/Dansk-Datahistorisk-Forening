@@ -2,17 +2,32 @@ package app.ddf.danskdatahistoriskforening.helper;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 
 public class BitmapEncoder {
+
+    public static void loadBitmapFromURI(ImageView image, Uri uri, int width, int height){
+        loadBitmapFromURI(image, uri, width, height, null);
+    }
+
+    public static void loadBitmapFromURI(ImageView image, Uri uri, int width, int height, ProgressBar progressBar){
+        if(cancelPotentialWork(image, uri)) {
+            BitmapWorkerTask task = new BitmapWorkerTask(image, uri, width, height);
+            AsyncLoadingDrawable drawable = new AsyncLoadingDrawable(task);
+            image.setImageDrawable(drawable);
+
+            task.execute();
+        }
+    }
 
     //http://developer.android.com/training/displaying-bitmaps/load-bitmap.html#load-bitmap
     //calculate desired scaling of bitmap
@@ -62,9 +77,13 @@ public class BitmapEncoder {
     //http://developer.android.com/training/displaying-bitmaps/process-bitmap.html
     private static class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
         private final WeakReference<ImageView> imageViewReference;
-        private Uri uri;
+        private Uri uri = null;
         private int width;
         private int height;
+
+        public Uri getUri(){
+            return uri;
+        }
 
         public BitmapWorkerTask(ImageView imageView, Uri uri, int width, int height) {
             // Use a WeakReference to ensure the ImageView can be garbage collected
@@ -77,13 +96,20 @@ public class BitmapEncoder {
 
         // Decode image in background.
         @Override
-        protected Bitmap doInBackground(Void... params) {
+        protected Bitmap doInBackground(Void... params){
             return decodeFile(uri, width, height);
         }
 
         // Once complete, see if ImageView is still around and set bitmap.
         @Override
         protected void onPostExecute(Bitmap bitmap) {
+            //simulate slow loading
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
             if (imageViewReference != null && bitmap != null) {
                 final ImageView imageView = imageViewReference.get();
                 if (imageView != null) {
@@ -97,18 +123,44 @@ public class BitmapEncoder {
     //http://android-developers.blogspot.dk/2010/07/multithreading-for-performance.html
 
     //temporary drawable which will associate an ImageView with the last task executed
-    private class AsyncLoadingDrawable extends ColorDrawable{
+    private static class AsyncLoadingDrawable extends ColorDrawable{
+        private final WeakReference<BitmapWorkerTask> taskWeakReference;
 
+        public AsyncLoadingDrawable(BitmapWorkerTask task){
+            super(Color.BLUE);
+
+            this.taskWeakReference = new WeakReference<>(task);
+        }
+
+        public BitmapWorkerTask getTask(){
+            return taskWeakReference.get();
+        }
     }
 
-    public static void loadBitmapFromURI(ImageView image, Uri uri, int width, int height){
-        loadBitmapFromURI(image, uri, width, height, null);
-    }
+    //checks if task is already being peformed or if imageview is being reused and cancels old task if necessary
+    private static boolean cancelPotentialWork(ImageView image, Uri uri){
+        BitmapWorkerTask runningTask = null;
 
-    public static void loadBitmapFromURI(ImageView image, Uri uri, int width, int height, ProgressBar progressBar){
-        BitmapWorkerTask task = new BitmapWorkerTask(image, uri, width, height);
+        if(image != null) {
+            final Drawable drawable = image.getDrawable();
+            if(drawable instanceof AsyncLoadingDrawable){
+                runningTask = ((AsyncLoadingDrawable) drawable).getTask();
+            }
+        }
 
+        //imageView is associated with a running task
+        if(runningTask != null){
+            //running task differs from current task or
+            // parameters have not been set (should not happen... but just in case)
+            if(runningTask.getUri() == null || runningTask.getUri() != uri){
+                runningTask.cancel(true);
+            }
+            //running task is doing identical work
+            else{
+                return false;
+            }
+        }
 
-        task.execute();
+        return true;
     }
 }
