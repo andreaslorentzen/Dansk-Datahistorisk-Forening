@@ -19,6 +19,11 @@ public class LocalMediaStorage {
     /** Create a file Uri for saving an image or video */
     public static Uri getOutputMediaFileUri(int type){
         File folder = getOutputMediaFolder();
+
+        if(folder == null){
+            return null;
+        }
+
         File file = getOutputMediaFile(type, folder);
 
         if(file == null){

@@ -2,6 +2,7 @@ package app.ddf.danskdatahistoriskforening.image;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.content.Intent;
@@ -83,8 +84,7 @@ public class ImageviewerDeleteActivity extends AppCompatActivity implements View
     public void onDialogPositiveClick(DialogFragment dialog) {
         int index = ((ConfirmDeletionDialogFragment) dialog).getIndex();
 
-        File file = new File(imageUris.get(index).getPath());
-        file.delete();
+        (new FileDeleterAsyncTask()).execute(imageUris.get(index));
 
         imageUris.remove(index);
 
@@ -120,6 +120,19 @@ public class ImageviewerDeleteActivity extends AppCompatActivity implements View
         @Override
         public int getCount() {
             return imageUris.size();
+        }
+    }
+
+    private class FileDeleterAsyncTask extends AsyncTask<Uri, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Uri... params) {
+            Uri uri = params[0];
+
+            File file = new File(uri.getPath());
+            file.delete();
+
+            return null;
         }
     }
 }
