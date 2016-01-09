@@ -18,7 +18,7 @@ import java.util.ArrayList;
 
 import app.ddf.danskdatahistoriskforening.R;
 
-public class ImageviewerActivity extends AppCompatActivity implements View.OnClickListener, ConfirmDeletionDialogFragment.ConfirmDeletionListener{
+public class ImageviewerDeleteActivity extends AppCompatActivity implements View.OnClickListener, ConfirmDeletionDialogFragment.ConfirmDeletionListener{
     Button backButton;
     Button deleteButton;
     ViewPager viewPager;
@@ -29,7 +29,7 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_imageviewer);
+        setContentView(R.layout.activity_imageviewer_delete);
 
         Intent intent = getIntent();
 

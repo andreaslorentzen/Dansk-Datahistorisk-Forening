@@ -2,8 +2,6 @@ package app.ddf.danskdatahistoriskforening.item;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -22,7 +20,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
-import app.ddf.danskdatahistoriskforening.image.ImageviewerActivity;
+import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 import app.ddf.danskdatahistoriskforening.R;
@@ -102,7 +100,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
                     return;
                 }
 
-                Intent intent = new Intent(getActivity(), ImageviewerActivity.class);
+                Intent intent = new Intent(getActivity(), ImageviewerDeleteActivity.class);
                 intent.putExtra("imageURIs", uris);
                 intent.putExtra("index", index);
                 getActivity().startActivityForResult(intent, ItemActivity.IMAGEVIEWER_REQUEST_CODE);

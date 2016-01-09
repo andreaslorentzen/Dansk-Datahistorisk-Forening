@@ -97,12 +97,6 @@ public class BitmapEncoder {
         // Decode image in background.
         @Override
         protected Bitmap doInBackground(Void... params){
-            return decodeFile(uri, width, height);
-        }
-
-        // Once complete, see if ImageView is still around and set bitmap.
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
             //simulate slow loading
             try {
                 Thread.sleep(1000);
@@ -110,6 +104,12 @@ public class BitmapEncoder {
                 e.printStackTrace();
             }
 
+            return decodeFile(uri, width, height);
+        }
+
+        // Once complete, see if ImageView is still around and set bitmap.
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
             if(isCancelled()){
                 bitmap = null;
             }
@@ -133,7 +133,7 @@ public class BitmapEncoder {
         private final WeakReference<BitmapWorkerTask> taskWeakReference;
 
         public AsyncLoadingDrawable(BitmapWorkerTask task){
-            super(Color.BLUE);
+            super(Color.BLACK);
 
             this.taskWeakReference = new WeakReference<>(task);
         }
