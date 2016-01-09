@@ -112,6 +112,7 @@ public class ImageviewerDeleteActivity extends AppCompatActivity implements View
         public Fragment getItem(int position) {
             ImageviewerFragment fragment = new ImageviewerFragment();
             fragment.setImageUri(imageUris.get(position));
+            fragment.setHeaderData(position + 1, imageUris.size());
 
             return fragment;
         }

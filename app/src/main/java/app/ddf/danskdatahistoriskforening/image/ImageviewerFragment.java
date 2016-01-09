@@ -12,12 +12,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 
 public class ImageviewerFragment extends Fragment {
     private Uri imageUri;
+    private int position;
+    private int total;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -28,6 +31,9 @@ public class ImageviewerFragment extends Fragment {
         image.setBackgroundColor(Color.BLACK);
 
         ProgressBar progressBar = (ProgressBar) layout.findViewById(R.id.imageviewfragment_progress);
+
+        TextView header = (TextView) layout.findViewById(R.id.imageviewfragment_header);
+        header.append(position + " af " + total);
 
         //use screen dimensions as approximation for imageView dimensions
         DisplayMetrics metrics = new DisplayMetrics();
@@ -40,5 +46,10 @@ public class ImageviewerFragment extends Fragment {
 
     public void setImageUri(Uri uri){
         imageUri = uri;
+    }
+
+    public void setHeaderData(int position, int total){
+        this.position = position;
+        this.total = total;
     }
 }
