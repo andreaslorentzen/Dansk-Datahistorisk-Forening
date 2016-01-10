@@ -19,13 +19,9 @@ import java.util.ArrayList;
 
 import app.ddf.danskdatahistoriskforening.R;
 
-public class ImageviewerDeleteActivity extends AppCompatActivity implements View.OnClickListener, ConfirmDeletionDialogFragment.ConfirmDeletionListener{
+public class ImageviewerDeleteActivity extends AbstractImageViewer implements View.OnClickListener, ConfirmDeletionDialogFragment.ConfirmDeletionListener{
     Button backButton;
     Button deleteButton;
-    ViewPager viewPager;
-    ImageviewerPageAdapter pageAdapter;
-
-    ArrayList<Uri> imageUris;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +45,6 @@ public class ImageviewerDeleteActivity extends AppCompatActivity implements View
         deleteButton.setOnClickListener(this);
 
         viewPager = (ViewPager) findViewById(R.id.imageview_viewpager);
-        pageAdapter = new ImageviewerPageAdapter(getSupportFragmentManager());
         viewPager.setAdapter(pageAdapter);
 
         int index = intent.getIntExtra("index", 0);
@@ -101,26 +96,6 @@ public class ImageviewerDeleteActivity extends AppCompatActivity implements View
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
         //no change required
-    }
-
-    private class ImageviewerPageAdapter extends FragmentStatePagerAdapter{
-        public ImageviewerPageAdapter(FragmentManager fm){
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            ImageviewerFragment fragment = new ImageviewerFragment();
-            fragment.setImageUri(imageUris.get(position));
-            fragment.setHeaderData(position + 1, imageUris.size());
-
-            return fragment;
-        }
-
-        @Override
-        public int getCount() {
-            return imageUris.size();
-        }
     }
 
     private class FileDeleterAsyncTask extends AsyncTask<Uri, Void, Void>{
