@@ -2,8 +2,6 @@ package app.ddf.danskdatahistoriskforening.item;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -21,12 +19,16 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import app.ddf.danskdatahistoriskforening.image.ImageviewerActivity;
+import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
+import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 import app.ddf.danskdatahistoriskforening.R;
 
 public class ItemFragment extends Fragment implements View.OnClickListener{
+    //TODO calculate acceptable thumbnail dimensions based on screensize or available space
+    private final int MAX_THUMBNAIL_WIDTH = 150;
+    private final int MAX_THUMBNAIL_HEIGHT = 250;
 
     ImageButton cameraButton;
     ImageButton micButton;
@@ -98,7 +100,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
                     return;
                 }
 
-                Intent intent = new Intent(getActivity(), ImageviewerActivity.class);
+                Intent intent = new Intent(getActivity(), ImageviewerDeleteActivity.class);
                 intent.putExtra("imageURIs", uris);
                 intent.putExtra("index", index);
                 getActivity().startActivityForResult(intent, ItemActivity.IMAGEVIEWER_REQUEST_CODE);
@@ -112,13 +114,11 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
             if (resultCode == Activity.RESULT_OK) {
                 // Image captured and saved to fileUri specified in the Intent
                 ImageView image = imageUris.get(imageUris.size()-1).first;
-                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(150, 250);
+
+                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
                 image.setLayoutParams(sizeParameters);
 
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inSampleSize = 4;
-                Bitmap thumbnail = BitmapFactory.decodeFile(imageUris.get(imageUris.size() - 1).second.getPath(), options);
-                image.setImageBitmap(thumbnail);
+                BitmapEncoder.loadBitmapFromURI(image, imageUris.get(imageUris.size() - 1).second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
                 image.setOnClickListener(this);
 
                 //image.setImageURI(imageUris.get(imageUris.size()-1));

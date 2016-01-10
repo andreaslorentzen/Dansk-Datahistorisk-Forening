@@ -25,6 +25,11 @@ public class LocalMediaStorage {
 
     public static File getOutputMediaFile(int type){
         File folder = getOutputMediaFolder();
+
+        if(folder == null){
+            return null;
+        }
+
         File file = getOutputMediaFile(type, folder);
 
         if(file == null){

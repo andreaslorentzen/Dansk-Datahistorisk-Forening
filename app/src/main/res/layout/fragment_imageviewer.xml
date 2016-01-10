@@ -5,8 +5,29 @@
     tools:context=".image.ImageviewerFragment">
 
     <ImageView
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:id="@+id/imageviewfragment_imageview"
         android:layout_gravity="left|top" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Billede "
+        android:textColor="#ffffff"
+        android:background="#000000"
+        android:alpha="0.5"
+        android:id="@+id/imageviewfragment_header"
+        android:layout_gravity="center|top"
+        android:gravity="center"/>
+    
+    <ProgressBar
+        android:id="@+id/imageviewfragment_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:visibility="visible"/>
+
 </FrameLayout>
