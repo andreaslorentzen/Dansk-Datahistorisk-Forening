@@ -75,9 +75,6 @@ public class Model {
     }
 
     private String currentSearch;
-    private boolean searchExpanded;
-    private boolean searchButtonVisible = true;
-
 
     public String getCurrentSearch() {
         return currentSearch;
@@ -87,19 +84,4 @@ public class Model {
         this.currentSearch = currentSearch;
     }
 
-    public boolean isSearchExpanded() {
-        return searchExpanded;
-    }
-
-    public void setSearchExpanded(boolean searchExpanded) {
-        this.searchExpanded = searchExpanded;
-    }
-
-    public boolean isSearchButtonVisible() {
-        return searchButtonVisible;
-    }
-
-    public void setSearchButtonVisible(boolean searchButtonVisible) {
-        this.searchButtonVisible = searchButtonVisible;
-    }
 }

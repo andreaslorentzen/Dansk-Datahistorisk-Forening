@@ -1,19 +1,15 @@
 package app.ddf.danskdatahistoriskforening.main;
 
-import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +31,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     MenuItem editButton;
     SearchView searchView;
 
-    private static final String URL = "http://78.46.187.172:4019/items";
+    private boolean isSearchExpanded;
+    private boolean searchButtonVisible = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +45,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.frame, new FrontFragment())
                     .commit();
-
+        }
+        else{
+            setSearchExpanded(savedInstanceState.getBoolean("isSearchExpanded"));
+            setSearchButtonVisible(savedInstanceState.getBoolean("isSearchButtonVisible", true));
 
         }
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        System.out.println("menu new");
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         editButton = menu.findItem(R.id.editModeItem);
@@ -117,6 +118,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         super.onResume();
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("isSearchExpanded", isSearchExpanded());
+        outState.putBoolean("isSearchButtonVisible", isSearchButtonVisible());
+    }
+
     public void startRegister() {
         Intent i = new Intent(this, ItemActivity.class);
         startActivity(i);
@@ -142,11 +150,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     .replace(R.id.frame, new ItemShowFragment())
                     .addToBackStack(null)
                     .commit();
-            boolean expanded = Model.getInstance().isSearchExpanded();
+            boolean expanded = isSearchExpanded();
             String query = Model.getInstance().getCurrentSearch();
-            Model.getInstance().setSearchButtonVisible(false);
+            setSearchButtonVisible(false);
             updateSearchVisibility();
-            Model.getInstance().setSearchExpanded(expanded);
+            setSearchExpanded(expanded);
             Model.getInstance().setCurrentSearch(query);
         } catch(JSONException e){
             e.printStackTrace();
@@ -156,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     private void updateSearchVisibility(){
-        boolean isSerSearchVisible = Model.getInstance().isSearchButtonVisible();
+        boolean isSerSearchVisible = isSearchButtonVisible();
         searchButton.setVisible(isSerSearchVisible);
         editButton.setVisible(!isSerSearchVisible);
 
@@ -164,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             MenuItemCompat.collapseActionView(searchButton);
         }
         else{
-            if(Model.getInstance().isSearchExpanded()) {
+            if(isSearchExpanded()) {
                 if (!MenuItemCompat.isActionViewExpanded(searchButton))
                     MenuItemCompat.expandActionView(searchButton);
             }
@@ -201,14 +209,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onMenuItemActionExpand(MenuItem item) {
-        Model.getInstance().setSearchExpanded(true);
+        setSearchExpanded(true);
         setFragmentList();
         return true;
     }
 
     @Override
     public boolean onMenuItemActionCollapse(MenuItem item) {
-        Model.getInstance().setSearchExpanded(false);
+        setSearchExpanded(false);
         return true;
     }
 
@@ -221,11 +229,28 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
                 break;
             case 1:
-                Model.getInstance().setSearchButtonVisible(true);
+                setSearchButtonVisible(true);
                 String query = Model.getInstance().getCurrentSearch();
                 updateSearchVisibility();
                 searchView.setQuery(query, false);
                 break;
         }
     }
+
+    public boolean isSearchExpanded() {
+        return isSearchExpanded;
+    }
+
+    public void setSearchExpanded(boolean searchExpanded) {
+        this.isSearchExpanded = searchExpanded;
+    }
+
+    public boolean isSearchButtonVisible() {
+        return searchButtonVisible;
+    }
+
+    public void setSearchButtonVisible(boolean searchButtonVisible) {
+        this.searchButtonVisible = searchButtonVisible;
+    }
+
 }
