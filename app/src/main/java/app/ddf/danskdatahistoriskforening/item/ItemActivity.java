@@ -117,6 +117,7 @@ public class ItemActivity extends AppCompatActivity{
         for(Pair<ImageView, Uri> pair : itemFragment.imageUris) {
             item.addToPictures(pair.second);
         }
+        item.setRecordings(itemFragment.audioUris);
         item.setDonator(detailsFragment.donator.getText().toString());
         item.setProducer(detailsFragment.producer.getText().toString());
         item.setItemDescription(descriptionFragment.getItemDescription());
@@ -218,19 +219,18 @@ public class ItemActivity extends AppCompatActivity{
 
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
-        private Fragment[] fragments = new Fragment[3];
+        private Pair<String, Fragment>[] fragments = new Pair[3];
 
         public ScreenSlidePagerAdapter(FragmentManager fm) {
             super(fm);
-            fragments[0] = itemFragment;
-            fragments[1] = detailsFragment;
-            fragments[2] = descriptionFragment;
+            fragments[0] = new Pair<String, Fragment>("Genstand", itemFragment);
+            fragments[1] = new Pair<String, Fragment>("Beskrivelse", descriptionFragment);
+            fragments[2] = new Pair<String, Fragment>("Oplysninger", detailsFragment);
         }
 
         @Override
         public Fragment getItem(int position) {
-            return fragments[position];
-
+            return fragments[position].second;
         }
 
         @Override
@@ -240,16 +240,7 @@ public class ItemActivity extends AppCompatActivity{
 
         @Override
         public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "Genstand";
-                case 1:
-                    return "Oplysninger";
-                case 2:
-                    return "Beskrivelse";
-            }
-
-            return null;
+            return fragments[position].first;
         }
     }
 

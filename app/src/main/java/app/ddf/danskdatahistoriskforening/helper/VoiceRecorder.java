@@ -71,8 +71,8 @@ public class VoiceRecorder {
                 tempFile.renameTo(new File(LocalMediaStorage.getOutputMediaFileUri(2).getPath()));
                 return;
             }
-            final Movie movieA = MovieCreator.build(new FileDataSourceImpl(mainFile));
-            final Movie movieB = MovieCreator.build(new FileDataSourceImpl(tempFile));
+            final Movie movieA = MovieCreator.build(new FileDataSourceImpl(tempFile));
+            final Movie movieB = MovieCreator.build(new FileDataSourceImpl(mainFile));
             final Movie finalMovie = new Movie();
             final List<Track> movieOneTracks = movieA.getTracks();
             final List<Track> movieTwoTracks = movieB.getTracks();

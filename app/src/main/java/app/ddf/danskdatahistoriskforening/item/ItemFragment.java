@@ -2,8 +2,13 @@ package app.ddf.danskdatahistoriskforening.item;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
@@ -15,8 +20,11 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
@@ -24,9 +32,8 @@ import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 import app.ddf.danskdatahistoriskforening.R;
-import app.ddf.danskdatahistoriskforening.main.MainActivity;
 
-public class ItemFragment extends Fragment implements View.OnClickListener{
+public class ItemFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
     private final int MAX_THUMBNAIL_WIDTH = 150;
     private final int MAX_THUMBNAIL_HEIGHT = 250;
@@ -34,8 +41,16 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
     ImageButton cameraButton;
     ImageButton micButton;
     EditText itemTitle;
-    LinearLayout imageContatiner;
+    LinearLayout imageContainer;
     ArrayList<Pair<ImageView,Uri>> imageUris;
+    ArrayList<Uri> audioUris;
+    ImageButton audioButton;
+    SeekBar seekBar;
+    MediaPlayer mPlayer;
+    Handler mHandler;
+    TextView durText;
+    TextView posText;
+    TextView audioText;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -48,12 +63,44 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
 
         Item item = ((ItemActivity) getActivity()).getItem();
         itemTitle.setText(item.getItemHeadline());
-        //TODO indsæt billeder, lyd
+
+
+        //TODO indsæt lyd
 
         //((HorizontalScrollView) layout.findViewById(R.id.horizontalScrollView)).setFillViewport(true);
-        imageContatiner = (LinearLayout) layout.findViewById(R.id.imageContainer);
+        imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
         imageUris = new ArrayList<>();
 
+        ArrayList<Uri> uris = item.getPictures();
+        if(uris != null){
+            for(int i = 0; i<uris.size(); i++){
+                Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(getActivity()), uris.get(i));
+                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                uriImagePair.first.setLayoutParams(sizeParameters);
+
+                imageContainer.addView(uriImagePair.first);
+                imageUris.add(uriImagePair);
+
+                BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                uriImagePair.first.setOnClickListener(this);
+            }
+        }
+        else{
+            Log.d("updateImage", "no uris");
+        }
+
+        // AUDIO
+        posText = (TextView) layout.findViewById(R.id.posText);
+        durText = (TextView) layout.findViewById(R.id.durText);
+        audioText = (TextView) layout.findViewById(R.id.audioText);
+        audioButton = (ImageButton) layout.findViewById(R.id.audioButton);
+        seekBar = (SeekBar) layout.findViewById(R.id.seekBar);
+        seekBar.setOnSeekBarChangeListener(this);
+        audioButton.setOnClickListener(this);
+        mHandler=  new Handler();
+        if(savedInstanceState == null){
+            setAudioPlayer(); // sets mPlayer
+        }
         return layout;
     }
 
@@ -61,6 +108,35 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onDetach() {
         super.onDetach();
+        killAudioPlayer(); // stop mPlayer and mHandler
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        killAudioPlayer(); // stop mPlayer and mHandler
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setAudioPlayer(); // resets mPlayer
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        if (mPlayer != null && fromUser) {
+            mPlayer.seekTo(progress);
+            setAudioText(posText, mPlayer.getCurrentPosition());
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
     }
 
     @Override
@@ -78,12 +154,23 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
             else{
                 Toast.makeText(getActivity(), "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
             }
-        }
-        if(v == micButton){
+        } else if(v == micButton){
             Intent i = new Intent(getActivity(), RecordingActivity.class);
             startActivity(i);
-        }
-        else { //image tapped
+        } else if(v == audioButton) {
+            if (mPlayer != null) {
+                if (mPlayer.isPlaying()) {
+                    audioButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+                    mPlayer.pause();
+                    mHandler.removeCallbacks(timerRunnable);
+                } else {
+                    audioButton.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
+                    mPlayer.start();
+                    mHandler.postDelayed(timerRunnable, 0);
+                }
+            } else
+                Toast.makeText(getActivity(), "Audio file not found - start recording!", Toast.LENGTH_LONG).show();
+        } else { //image tapped
                 int index = -1;
                 ArrayList<Uri> uris = new ArrayList<>();
                 for(int i = 0; i<imageUris.size(); i++){
@@ -123,7 +210,8 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
                 image.setOnClickListener(this);
 
                 //image.setImageURI(imageUris.get(imageUris.size()-1));
-                imageContatiner.addView(image);
+                imageContainer.addView(image);
+
                 if(((ItemActivity)getActivity()).getItem() != null) {
                     ((ItemActivity) getActivity()).getItem().addToAddedPictures(imageUris.get(imageUris.size() -1).second);
                 }
@@ -147,7 +235,8 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
                 }
 
                 //update image list and reconstruct imageContainer
-                imageContatiner.removeAllViews();
+                imageContainer.removeAllViews();
+
                 if(((ItemActivity)getActivity()).getItem() != null){
                     ((ItemActivity)getActivity()).getItem().setPicturesChanged(true);
                 }
@@ -164,13 +253,74 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
                     }
                     else{
                         //image still exists
-                        imageContatiner.addView((ImageView)listItem.first);
+                        imageContainer.addView((ImageView) listItem.first);
                     }
                 }
 
                 imageUris = temp;
             }
         }
+    }
+
+    Runnable timerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!mPlayer.isPlaying()) {
+                setAudioText(posText, mPlayer.getDuration());
+                killAudioPlayer();
+                seekBar.setProgress(mPlayer.getDuration());
+                return;
+            }
+            setAudioText(posText, mPlayer.getCurrentPosition());
+            seekBar.setProgress(mPlayer.getCurrentPosition());
+            mHandler.postDelayed(this, 500);
+        }
+    };
+
+    private void setAudioText(TextView vt, int millis) {
+        String posString = RecordingActivity.millisToPlayback(millis);
+        vt.setText(posString.substring(0, posString.length() - 3));
+    }
+
+    private void killAudioPlayer() {
+        audioButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+        mHandler.removeCallbacks(timerRunnable);
+        if (mPlayer == null)
+            return;
+        if (mPlayer.isPlaying())
+            mPlayer.stop();
+
+    }
+    private void setAudioPlayer() {
+        MediaPlayer oldPlayer = mPlayer;
+        String filePath = LocalMediaStorage.getOutputMediaFileUri(2).getPath();
+        File mainFile = new File(filePath);
+        if (!mainFile.exists()) {
+            durText.setText("");
+            posText.setText("");
+            audioText.setText("No audio file existing.");
+            seekBar.setProgress(0);
+            seekBar.setEnabled(false);
+            audioButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+            if (mPlayer!=null) {
+                mPlayer.release();
+                mPlayer = null;
+            }
+            return;
+        }
+        audioUris = new ArrayList<Uri>();
+        audioUris.add(LocalMediaStorage.getOutputMediaFileUri(2));
+        seekBar.setEnabled(true);
+        audioText.setText("");
+        mPlayer = MediaPlayer.create(getActivity(), Uri.parse(filePath));
+        seekBar.setMax(mPlayer.getDuration());
+        setAudioText(durText, mPlayer.getDuration());
+        if (oldPlayer != null) {
+            mPlayer.seekTo(oldPlayer.getCurrentPosition());
+            setAudioText(posText, mPlayer.getCurrentPosition());
+            oldPlayer.release();
+        } else
+            posText.setText("0:00:00");
     }
 
     public String getItemTitle(){

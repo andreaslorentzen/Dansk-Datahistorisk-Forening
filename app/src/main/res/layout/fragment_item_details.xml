@@ -72,7 +72,8 @@
                 android:id="@+id/Donator"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal" />
+                android:layout_gravity="center_horizontal"
+                android:singleLine="true" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -85,7 +86,8 @@
                 android:id="@+id/Producer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal" />
+                android:layout_gravity="center_horizontal"
+                android:singleLine="true" />
 
             <LinearLayout
                 android:orientation="horizontal"
