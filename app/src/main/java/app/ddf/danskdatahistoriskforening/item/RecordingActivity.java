@@ -56,15 +56,20 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         @Override
         public void run() {
             int time = (int) (System.currentTimeMillis() - startTime);
-            int hours = time/3600000;
-            time -= hours * 3600000;
-            int minuts = time/60000;
-            time -= minuts * 60000;
-            int seconds = time/1000;
-            time -= seconds * 1000;
-            int millis = time/1;
-            time_text.setText(hours +":"+  String.format("%02d", minuts)+":"+  String.format("%02d", seconds) +";"+String.format("%02d", millis).substring(0,2)    );
+            time_text.setText( millisToPlayback( time)    );
             timerHandler.postDelayed(this, 50);
         }
     };
+
+    public static String millisToPlayback(int time) {
+        int hours = time/3600000;
+        time -= hours * 3600000;
+        int minuts = time/60000;
+        time -= minuts * 60000;
+        int seconds = time/1000;
+        time -= seconds * 1000;
+        int millis = time/1;
+
+        return hours +":"+  String.format("%02d", minuts)+":"+  String.format("%02d", seconds) +";"+String.format("%02d", millis).substring(0,2);
+    }
 }
