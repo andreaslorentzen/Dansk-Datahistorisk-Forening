@@ -2,6 +2,7 @@ package app.ddf.danskdatahistoriskforening.image;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -18,28 +20,14 @@ import java.util.ArrayList;
 
 import app.ddf.danskdatahistoriskforening.R;
 
-public class ImageviewerActivity extends AppCompatActivity implements View.OnClickListener, ConfirmDeletionDialogFragment.ConfirmDeletionListener{
+public class ImageviewerDeleteActivity extends AbstractImageViewer implements View.OnClickListener, ConfirmDeletionDialogFragment.ConfirmDeletionListener{
     Button backButton;
     Button deleteButton;
-    ViewPager viewPager;
-    ImageviewerPageAdapter pageAdapter;
-
-    ArrayList<Uri> imageUris;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_imageviewer);
-
-        Intent intent = getIntent();
-
-        if(intent.hasExtra("imageURIs")){
-            imageUris = intent.getParcelableArrayListExtra("imageURIs");
-        }
-        else{
-            //should never happen... but just in case
-            imageUris = new ArrayList<>();
-        }
+        setContentView(R.layout.activity_imageviewer_delete);
 
         backButton = (Button) findViewById(R.id.imageview_back_button);
         backButton.setOnClickListener(this);
@@ -48,11 +36,40 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
         deleteButton.setOnClickListener(this);
 
         viewPager = (ViewPager) findViewById(R.id.imageview_viewpager);
-        pageAdapter = new ImageviewerPageAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(pageAdapter);
 
-        int index = intent.getIntExtra("index", 0);
+
+        if(savedInstanceState == null) {//avoid extra work and out of memory exceptions
+            Intent intent = getIntent();
+            if (intent.hasExtra("imageURIs")) {
+                imageUris = intent.getParcelableArrayListExtra("imageURIs");
+            } else {
+                //should never happen... but just in case
+                imageUris = new ArrayList<>();
+            }
+
+            int index;
+            index = intent.getIntExtra("index", 0);
+
+
+            viewPager.setAdapter(pageAdapter);
+
+            viewPager.setCurrentItem(index);
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        pageAdapter = new ImageviewerPageAdapter(getSupportFragmentManager());
+        imageUris = savedInstanceState.getParcelableArrayList("imageURIs");
+        int index = savedInstanceState.getInt("index");
+
+        pageAdapter.notifyDataSetChanged();
+        viewPager.setAdapter(pageAdapter);
         viewPager.setCurrentItem(index);
+
+        Log.d("RestoreActivity", "" + pageAdapter.getCount());
     }
 
     @Override
@@ -64,7 +81,11 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
             int index = viewPager.getCurrentItem();
 
             ConfirmDeletionDialogFragment dialog = new ConfirmDeletionDialogFragment();
-            dialog.setTitle(imageUris.get(index).getPath());
+
+            String path = imageUris.get(index).getPath();
+            int offset = path.lastIndexOf("/") + 1;
+
+            dialog.setTitle(path.substring(offset));
             dialog.setIndex(index);
             dialog.show(getSupportFragmentManager(), "ConfirmDeletionDialog");
         }
@@ -83,8 +104,7 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
     public void onDialogPositiveClick(DialogFragment dialog) {
         int index = ((ConfirmDeletionDialogFragment) dialog).getIndex();
 
-        File file = new File(imageUris.get(index).getPath());
-        file.delete();
+        (new FileDeleterAsyncTask()).execute(imageUris.get(index));
 
         imageUris.remove(index);
 
@@ -94,7 +114,10 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
         else {
             pageAdapter.notifyDataSetChanged();
             //workaround to force redraw of viewpager
+            pageAdapter = new ImageviewerPageAdapter(getSupportFragmentManager());
             viewPager.setAdapter(pageAdapter);
+
+            viewPager.setCurrentItem(Math.min(index, imageUris.size() - 1));
         }
     }
 
@@ -103,22 +126,16 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
         //no change required
     }
 
-    private class ImageviewerPageAdapter extends FragmentStatePagerAdapter{
-        public ImageviewerPageAdapter(FragmentManager fm){
-            super(fm);
-        }
+    private class FileDeleterAsyncTask extends AsyncTask<Uri, Void, Void>{
 
         @Override
-        public Fragment getItem(int position) {
-            ImageviewerFragment fragment = new ImageviewerFragment();
-            fragment.setImageUri(imageUris.get(position));
+        protected Void doInBackground(Uri... params) {
+            Uri uri = params[0];
 
-            return fragment;
-        }
+            File file = new File(uri.getPath());
+            file.delete();
 
-        @Override
-        public int getCount() {
-            return imageUris.size();
+            return null;
         }
     }
 }

@@ -27,17 +27,21 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 
-import app.ddf.danskdatahistoriskforening.image.ImageviewerActivity;
+import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
+import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 import app.ddf.danskdatahistoriskforening.R;
 
 public class ItemFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+    //TODO calculate acceptable thumbnail dimensions based on screensize or available space
+    private final int MAX_THUMBNAIL_WIDTH = 150;
+    private final int MAX_THUMBNAIL_HEIGHT = 250;
 
     ImageButton cameraButton;
     ImageButton micButton;
     EditText itemTitle;
-    LinearLayout imageContatiner;
+    LinearLayout imageContainer;
     ArrayList<Pair<ImageView,Uri>> imageUris;
     ArrayList<Uri> audioUris;
     ImageButton audioButton;
@@ -57,14 +61,33 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         micButton.setOnClickListener(this);
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
 
-
         Item item = ((ItemActivity) getActivity()).getItem();
         itemTitle.setText(item.getItemHeadline());
-        //TODO indsæt billeder, lyd
+
+
+        //TODO indsæt lyd
 
         //((HorizontalScrollView) layout.findViewById(R.id.horizontalScrollView)).setFillViewport(true);
-        imageContatiner = (LinearLayout) layout.findViewById(R.id.imageContainer);
+        imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
         imageUris = new ArrayList<>();
+
+        ArrayList<Uri> uris = item.getPictures();
+        if(uris != null){
+            for(int i = 0; i<uris.size(); i++){
+                Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(getActivity()), uris.get(i));
+                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                uriImagePair.first.setLayoutParams(sizeParameters);
+
+                imageContainer.addView(uriImagePair.first);
+                imageUris.add(uriImagePair);
+
+                BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                uriImagePair.first.setOnClickListener(this);
+            }
+        }
+        else{
+            Log.d("updateImage", "no uris");
+        }
 
         // AUDIO
         posText = (TextView) layout.findViewById(R.id.posText);
@@ -75,11 +98,11 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         seekBar.setOnSeekBarChangeListener(this);
         audioButton.setOnClickListener(this);
         mHandler=  new Handler();
-        setAudioPlayer(); // sets mPlayer
+        if(savedInstanceState == null){
+            setAudioPlayer(); // sets mPlayer
+        }
         return layout;
     }
-
-
 
     // shit like this maybe
     @Override
@@ -158,19 +181,20 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
 
                     uris.add(imageUris.get(i).second);
                 }
+
                 if(index < 0){
                     //none of the imageViews matched
                     Log.d("ddf", "no imageView matched");
                     return;
                 }
-                Intent intent = new Intent(getActivity(), ImageviewerActivity.class);
+
+                Intent intent = new Intent(getActivity(), ImageviewerDeleteActivity.class);
                 intent.putExtra("imageURIs", uris);
                 intent.putExtra("index", index);
                 getActivity().startActivityForResult(intent, ItemActivity.IMAGEVIEWER_REQUEST_CODE);
         }
+
     }
-
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -178,18 +202,19 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             if (resultCode == Activity.RESULT_OK) {
                 // Image captured and saved to fileUri specified in the Intent
                 ImageView image = imageUris.get(imageUris.size()-1).first;
-                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(150, 250);
+
+                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
                 image.setLayoutParams(sizeParameters);
 
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inSampleSize = 4;
-                Bitmap thumbnail = BitmapFactory.decodeFile(imageUris.get(imageUris.size() - 1).second.getPath(), options);
-                image.setImageBitmap(thumbnail);
+                BitmapEncoder.loadBitmapFromURI(image, imageUris.get(imageUris.size() - 1).second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
                 image.setOnClickListener(this);
 
                 //image.setImageURI(imageUris.get(imageUris.size()-1));
-                imageContatiner.addView(image);
+                imageContainer.addView(image);
 
+                if(((ItemActivity)getActivity()).getItem() != null) {
+                    ((ItemActivity) getActivity()).getItem().addToAddedPictures(imageUris.get(imageUris.size() -1).second);
+                }
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // User cancelled the image capture
                 //clean up
@@ -210,19 +235,25 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
                 }
 
                 //update image list and reconstruct imageContainer
-                imageContatiner.removeAllViews();
+                imageContainer.removeAllViews();
 
+                if(((ItemActivity)getActivity()).getItem() != null){
+                    ((ItemActivity)getActivity()).getItem().setPicturesChanged(true);
+                }
                 ArrayList temp = new ArrayList<Pair<ImageView, Uri>>(imageUris);
                 for(int i = 0; i<imageUris.size(); i++){
                     Pair listItem = imageUris.get(i);
 
                     if(!remainingURIs.contains(listItem.second)){
                         //image has been removed
+                        if(((ItemActivity) getActivity()).getItem() != null){
+                            ((ItemActivity) getActivity()).getItem().addDeletedPicture((Uri)listItem.second);
+                        }
                         temp.remove(listItem);
                     }
                     else{
                         //image still exists
-                        imageContatiner.addView((ImageView)listItem.first);
+                        imageContainer.addView((ImageView) listItem.first);
                     }
                 }
 
@@ -286,6 +317,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         setAudioText(durText, mPlayer.getDuration());
         if (oldPlayer != null) {
             mPlayer.seekTo(oldPlayer.getCurrentPosition());
+            setAudioText(posText, mPlayer.getCurrentPosition());
             oldPlayer.release();
         } else
             posText.setText("0:00:00");
