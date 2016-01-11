@@ -21,6 +21,27 @@ public class LocalMediaStorage {
     private static Context context;
 
     /** Create a file Uri for saving an image or video */
+    public static Uri getOutputMediaFileUri(String filename, int type){
+        File file = getOutputMediaFile(filename, type);
+
+        return Uri.fromFile(file);
+    }
+
+    public static File getOutputMediaFile(String filename, int type){
+        File folder = getOutputMediaFolder();
+
+        if(folder == null){
+            return null;
+        }
+
+        File file = getOutputMediaFile(filename, type, folder);
+
+        if(file == null){
+            return null;
+        }
+        return file;
+    }
+
     public static Uri getOutputMediaFileUri(int type){
         File file = getOutputMediaFile(type);
 
@@ -41,6 +62,7 @@ public class LocalMediaStorage {
         }
         return file;
     }
+
     /** Create a File for saving an image or video */
     public static File getOutputMediaFolder(){
         // To be safe, you should check that the SDCard is mounted
@@ -62,6 +84,29 @@ public class LocalMediaStorage {
             }
         }
         return mediaStorageDir;
+    }
+
+    private static File getOutputMediaFile(String filename, int type, File mediaStorageDir){
+        // Create a media file name
+        String timeStamp = ""+(new Date().getTime());
+        File mediaFile;
+        if (type == MEDIA_TYPE_IMAGE){
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    filename);
+        } else if(type == MEDIA_TYPE_AUDIO) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    filename);
+        } else if(type == MEDIA_TYPE_AUDIO_TEMP) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    filename);
+        } else if(type == MEDIA_TYPE_AUDIO_NEW) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    filename);
+        } else {
+            return null;
+        }
+
+        return mediaFile;
     }
 
     private static File getOutputMediaFile(int type, File mediaStorageDir){

@@ -303,11 +303,12 @@ public class TempDAO implements IDAO {
             URL url = new URL(requestURL);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setConnectTimeout(15000);
-            conn.setDoOutput(true);
             conn.setRequestMethod("DELETE");
+            conn.setDoOutput(true);
 
             // start the query
-            conn.connect();
+            conn.connect(); // hvad sker der her?
+            System.out.println("REQUEST METODE"+conn.getRequestMethod()+" "+requestURL);
         } catch(MalformedURLException |ProtocolException e){
             // SHOULD NEVER HAPPEN IN PRODUCTION
             e.printStackTrace();
@@ -384,7 +385,7 @@ public class TempDAO implements IDAO {
             InputStream is = conn.getInputStream();
             BufferedInputStream input = new BufferedInputStream(is);
 
-            fileToSave = LocalMediaStorage.getOutputMediaFile(type);
+            fileToSave = LocalMediaStorage.getOutputMediaFile(filePath.substring(filePath.lastIndexOf("/")), type);
 
             if(fileToSave == null)
                 return null;
