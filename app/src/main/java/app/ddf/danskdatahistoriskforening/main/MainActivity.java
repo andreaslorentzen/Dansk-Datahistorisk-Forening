@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean("isSearchExpanded", isSearchExpanded());
-        outState.putBoolean("isSearchButtonVisible", isSearchExpanded());
+        outState.putBoolean("isSearchButtonVisible", isSearchButtonVisible());
     }
 
     public void startRegister() {
