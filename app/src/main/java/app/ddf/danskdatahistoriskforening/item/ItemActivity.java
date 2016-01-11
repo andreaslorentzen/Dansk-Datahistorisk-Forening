@@ -114,7 +114,7 @@ public class ItemActivity extends AppCompatActivity{
     private void save() {
 
         item.setItemHeadline(itemFragment.getItemTitle());
-        for(Pair<ImageView, Uri> pair : itemFragment.imageUris){
+        for(Pair<ImageView, Uri> pair : itemFragment.imageUris) {
             item.addToPictures(pair.second);
         }
         item.setRecordings(itemFragment.audioUris);

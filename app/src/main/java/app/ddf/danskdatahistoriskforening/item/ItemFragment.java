@@ -212,6 +212,9 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
                 //image.setImageURI(imageUris.get(imageUris.size()-1));
                 imageContainer.addView(image);
 
+                if(((ItemActivity)getActivity()).getItem() != null) {
+                    ((ItemActivity) getActivity()).getItem().addToAddedPictures(imageUris.get(imageUris.size() -1).second);
+                }
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // User cancelled the image capture
                 //clean up
@@ -234,12 +237,18 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
                 //update image list and reconstruct imageContainer
                 imageContainer.removeAllViews();
 
+                if(((ItemActivity)getActivity()).getItem() != null){
+                    ((ItemActivity)getActivity()).getItem().setPicturesChanged(true);
+                }
                 ArrayList temp = new ArrayList<Pair<ImageView, Uri>>(imageUris);
                 for(int i = 0; i<imageUris.size(); i++){
                     Pair listItem = imageUris.get(i);
 
                     if(!remainingURIs.contains(listItem.second)){
                         //image has been removed
+                        if(((ItemActivity) getActivity()).getItem() != null){
+                            ((ItemActivity) getActivity()).getItem().addDeletedPicture((Uri)listItem.second);
+                        }
                         temp.remove(listItem);
                     }
                     else{

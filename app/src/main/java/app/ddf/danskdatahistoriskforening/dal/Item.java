@@ -5,6 +5,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.URI;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,6 +26,10 @@ public class Item implements Parcelable{
     private String postalCode;
     private ArrayList<Uri> pictures;
     private ArrayList<Uri> recordings;
+    private boolean picturesChanged;
+    private boolean recordingsChanged;
+    private ArrayList<Uri> deletedPictures;
+    private ArrayList<Uri> addedPictures;
 
     public Item(){}
 
@@ -81,9 +87,16 @@ public class Item implements Parcelable{
             e.printStackTrace();
             return;
         }
+
         this.donator = in.readString();
         this.producer = in.readString();
         this.postalCode = in.readString();
+        this.pictures = in.readArrayList(Uri.class.getClassLoader());
+        this.recordings = in.readArrayList(Uri.class.getClassLoader());
+        this.picturesChanged = in.readInt() == 1;
+        this.recordingsChanged = in.readInt() == 1;
+        this.deletedPictures = in.readArrayList(Uri.class.getClassLoader());
+        this.addedPictures = in.readArrayList(Uri.class.getClassLoader());
     }
 
     @Override
@@ -102,6 +115,12 @@ public class Item implements Parcelable{
         dest.writeString(donator);
         dest.writeString(producer);
         dest.writeString(postalCode);
+        dest.writeList(pictures);
+        dest.writeList(recordings);
+        dest.writeInt(picturesChanged ? 1 : 0);
+        dest.writeInt(recordingsChanged ? 1 : 0);
+        dest.writeList(deletedPictures);
+        dest.writeList(addedPictures);
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator(){
@@ -216,5 +235,45 @@ public class Item implements Parcelable{
         } else{
             recordings.add(recording);
         }
+    }
+
+    public boolean hasPicturesChanged() {
+        return picturesChanged;
+    }
+
+    public void setPicturesChanged(boolean picturesChanged) {
+        this.picturesChanged = picturesChanged;
+    }
+
+    public boolean isRecordingsChanged() {
+        return recordingsChanged;
+    }
+
+    public void setRecordingsChanged(boolean recordingsChanged) {
+        this.recordingsChanged = recordingsChanged;
+    }
+
+    public ArrayList<Uri> getDeletedPictures() {
+        return deletedPictures;
+    }
+
+    public void setDeletedPictures(ArrayList<Uri> deletedPictures) {
+        this.deletedPictures = deletedPictures;
+    }
+
+    public void addDeletedPicture(Uri uri){
+        deletedPictures.add(uri);
+    }
+
+    public ArrayList<Uri> getAddedPictures() {
+        return addedPictures;
+    }
+
+    public void setAddedPictures(ArrayList<Uri> addedPictures) {
+        this.addedPictures = addedPictures;
+    }
+
+    public void addToAddedPictures(Uri uri){
+
     }
 }
