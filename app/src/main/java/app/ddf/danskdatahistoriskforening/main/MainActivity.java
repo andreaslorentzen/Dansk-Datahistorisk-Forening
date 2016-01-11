@@ -20,6 +20,7 @@ import java.util.List;
 
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 
 
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        LocalMediaStorage.setContext(this);
         if(savedInstanceState == null) {
 
             getSupportFragmentManager().beginTransaction()
