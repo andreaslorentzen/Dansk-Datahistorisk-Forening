@@ -297,22 +297,26 @@ public class TempDAO implements IDAO {
 
     public void deleteFile(Uri file, int itemID){
         String requestURL = API + "/items/" + itemID + "/" + file.getLastPathSegment() + userIDString;
-
+        HttpURLConnection conn = null;
         try{
             //setup for the query
             URL url = new URL(requestURL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(15000);
-            conn.setDoOutput(true);
+            conn = (HttpURLConnection) url.openConnection();
+      //      conn.setConnectTimeout(15000);
             conn.setRequestMethod("DELETE");
 
             // start the query
-            conn.connect();
+            conn.getResponseCode();
+
         } catch(MalformedURLException |ProtocolException e){
             // SHOULD NEVER HAPPEN IN PRODUCTION
             e.printStackTrace();
         } catch(IOException e){
             e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 
@@ -384,7 +388,7 @@ public class TempDAO implements IDAO {
             InputStream is = conn.getInputStream();
             BufferedInputStream input = new BufferedInputStream(is);
 
-            fileToSave = LocalMediaStorage.getOutputMediaFile(type);
+            fileToSave = LocalMediaStorage.getOutputMediaFile(filePath.substring(filePath.lastIndexOf("/")), type);
 
             if(fileToSave == null)
                 return null;
