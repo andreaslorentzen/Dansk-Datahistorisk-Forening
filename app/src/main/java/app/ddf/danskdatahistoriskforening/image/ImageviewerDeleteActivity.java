@@ -81,7 +81,11 @@ public class ImageviewerDeleteActivity extends AbstractImageViewer implements Vi
             int index = viewPager.getCurrentItem();
 
             ConfirmDeletionDialogFragment dialog = new ConfirmDeletionDialogFragment();
-            dialog.setTitle(imageUris.get(index).getPath());
+
+            String path = imageUris.get(index).getPath();
+            int offset = path.lastIndexOf("/") + 1;
+
+            dialog.setTitle(path.substring(offset));
             dialog.setIndex(index);
             dialog.show(getSupportFragmentManager(), "ConfirmDeletionDialog");
         }

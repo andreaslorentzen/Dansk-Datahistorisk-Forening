@@ -30,6 +30,11 @@ public class ConfirmDeletionDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        if(savedInstanceState != null){
+            index = savedInstanceState.getInt("index");
+            title = savedInstanceState.getString("title");
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Er du sikker på at du vil slette det valgte billede?")
                 .setTitle(title)
@@ -63,5 +68,13 @@ public class ConfirmDeletionDialogFragment extends DialogFragment {
 
     public int getIndex() {
         return index;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString("title", title);
+        outState.putInt("index", index);
     }
 }
