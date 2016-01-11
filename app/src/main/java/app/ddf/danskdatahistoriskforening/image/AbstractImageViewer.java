@@ -42,4 +42,12 @@ public abstract class AbstractImageViewer extends AppCompatActivity {
             return imageUris.size();
         }
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelableArrayList("imageURIs", imageUris);
+        outState.putInt("index", viewPager.getCurrentItem());
+    }
 }

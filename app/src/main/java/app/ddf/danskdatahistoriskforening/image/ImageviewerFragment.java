@@ -54,6 +54,7 @@ public class ImageviewerFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
         outState.putParcelable("imageUri", imageUri);
         outState.putInt("position", position);
         outState.putInt("total", total);
