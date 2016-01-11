@@ -15,7 +15,7 @@
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-    <app.ddf.danskdatahistoriskforening.PagerSlidingTabStrip
+    <app.ddf.danskdatahistoriskforening.helper.PagerSlidingTabStrip
         android:id="@+id/tab_strip"
         android:layout_width="match_parent"
         android:layout_height="@dimen/tabs_height"
