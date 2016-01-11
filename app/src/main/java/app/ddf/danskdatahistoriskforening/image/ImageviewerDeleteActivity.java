@@ -29,17 +29,6 @@ public class ImageviewerDeleteActivity extends AbstractImageViewer implements Vi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_imageviewer_delete);
 
-        int index;
-
-        Intent intent = getIntent();
-        if (intent.hasExtra("imageURIs")) {
-            imageUris = intent.getParcelableArrayListExtra("imageURIs");
-        } else {
-            //should never happen... but just in case
-            imageUris = new ArrayList<>();
-        }
-        index = intent.getIntExtra("index", 0);
-
         backButton = (Button) findViewById(R.id.imageview_back_button);
         backButton.setOnClickListener(this);
 
@@ -47,9 +36,25 @@ public class ImageviewerDeleteActivity extends AbstractImageViewer implements Vi
         deleteButton.setOnClickListener(this);
 
         viewPager = (ViewPager) findViewById(R.id.imageview_viewpager);
-        viewPager.setAdapter(pageAdapter);
 
-        viewPager.setCurrentItem(index);
+
+        if(savedInstanceState == null) {//avoid extra work and out of memory exceptions
+            Intent intent = getIntent();
+            if (intent.hasExtra("imageURIs")) {
+                imageUris = intent.getParcelableArrayListExtra("imageURIs");
+            } else {
+                //should never happen... but just in case
+                imageUris = new ArrayList<>();
+            }
+
+            int index;
+            index = intent.getIntExtra("index", 0);
+
+
+            viewPager.setAdapter(pageAdapter);
+
+            viewPager.setCurrentItem(index);
+        }
     }
 
     @Override
@@ -108,7 +113,7 @@ public class ImageviewerDeleteActivity extends AbstractImageViewer implements Vi
             pageAdapter = new ImageviewerPageAdapter(getSupportFragmentManager());
             viewPager.setAdapter(pageAdapter);
 
-            viewPager.setCurrentItem(Math.min(index, imageUris.size()-1));
+            viewPager.setCurrentItem(Math.min(index, imageUris.size() - 1));
         }
     }
 

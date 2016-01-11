@@ -20,7 +20,9 @@ public abstract class AbstractImageViewer extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        pageAdapter = new ImageviewerPageAdapter(getSupportFragmentManager());
+        if(savedInstanceState == null){//avoid extra work and out of memory exceptions
+            pageAdapter = new ImageviewerPageAdapter(getSupportFragmentManager());
+        }
     }
 
     protected class ImageviewerPageAdapter extends FragmentStatePagerAdapter {
