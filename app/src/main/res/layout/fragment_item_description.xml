@@ -28,18 +28,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="16dp"
-            android:text="Emnegrupper"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-        <ExpandableListView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/expandableListView" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="16dp"
             android:text="Beskrivelse"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
@@ -48,7 +36,8 @@
             android:layout_height="wrap_content"
             android:inputType="textMultiLine"
             android:ems="10"
-            android:id="@+id/itemDescription" />
+            android:id="@+id/itemDescription"
+            android:lines="3" />
 
     </LinearLayout>
 

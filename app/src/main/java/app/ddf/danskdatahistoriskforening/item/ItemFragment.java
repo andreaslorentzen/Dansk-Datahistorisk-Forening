@@ -78,7 +78,9 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         seekBar.setOnSeekBarChangeListener(this);
         audioButton.setOnClickListener(this);
         mHandler=  new Handler();
-        setAudioPlayer(); // sets mPlayer
+        if(savedInstanceState == null){
+            setAudioPlayer(); // sets mPlayer
+        }
         return layout;
     }
 
@@ -285,6 +287,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         setAudioText(durText, mPlayer.getDuration());
         if (oldPlayer != null) {
             mPlayer.seekTo(oldPlayer.getCurrentPosition());
+            setAudioText(posText, mPlayer.getCurrentPosition());
             oldPlayer.release();
         } else
             posText.setText("0:00:00");
