@@ -297,23 +297,26 @@ public class TempDAO implements IDAO {
 
     public void deleteFile(Uri file, int itemID){
         String requestURL = API + "/items/" + itemID + "/" + file.getLastPathSegment() + userIDString;
-
+        HttpURLConnection conn = null;
         try{
             //setup for the query
             URL url = new URL(requestURL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(15000);
+            conn = (HttpURLConnection) url.openConnection();
+      //      conn.setConnectTimeout(15000);
             conn.setRequestMethod("DELETE");
-            conn.setDoOutput(true);
 
             // start the query
-            conn.connect(); // hvad sker der her?
-            System.out.println("REQUEST METODE"+conn.getRequestMethod()+" "+requestURL);
+            conn.getResponseCode();
+
         } catch(MalformedURLException |ProtocolException e){
             // SHOULD NEVER HAPPEN IN PRODUCTION
             e.printStackTrace();
         } catch(IOException e){
             e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 
