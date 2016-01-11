@@ -118,25 +118,19 @@ public class ItemActivity extends AppCompatActivity{
             item.addToPictures(pair.second);
         }
         item.setRecordings(itemFragment.audioUris);
-        item.setDonator(detailsFragment.donator.getText().toString());
-        item.setProducer(detailsFragment.producer.getText().toString());
+        item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
+        item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
         item.setItemDescription(descriptionFragment.getItemDescription());
 
 
         if(item.getItemId() > 0){
             try{
-                if(detailsFragment.dateReceive.getText() != null || !detailsFragment.dateReceive.getText().toString().equals(""))
+                if(detailsFragment.dateReceive != null && detailsFragment.dateReceive.getText() != null && !detailsFragment.dateReceive.getText().toString().equals(""))
                     item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
-                else
-                    item.setItemRecieved(null);
-                if(detailsFragment.dateFrom.getText() != null || !detailsFragment.dateFrom.getText().toString().equals(""))
+                if(detailsFragment.dateFrom != null && detailsFragment.dateFrom.getText() != null && !detailsFragment.dateFrom.getText().toString().equals("") )
                     item.setItemDatingFrom(Model.getFormatter().parse(detailsFragment.dateFrom.getText().toString()));
-                else
-                    item.setItemDatingFrom(null);
-                if(detailsFragment.dateTo.getText() != null || !detailsFragment.dateTo.getText().toString().equals(""))
+                if(detailsFragment.dateTo != null && detailsFragment.dateTo.getText() != null && !detailsFragment.dateTo.getText().toString().equals("")  )
                     item.setItemDatingTo(Model.getFormatter().parse(detailsFragment.dateTo.getText().toString()));
-                else
-                    item.setItemDatingTo(null);
             } catch(ParseException e){
                 e.printStackTrace();
             }

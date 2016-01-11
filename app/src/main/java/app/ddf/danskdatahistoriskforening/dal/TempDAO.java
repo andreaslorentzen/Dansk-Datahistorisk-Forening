@@ -242,6 +242,7 @@ public class TempDAO implements IDAO {
             conn.setReadTimeout(10000);
             conn.setConnectTimeout(15000);
             conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestMethod("POST");
             conn.setDoInput(true);
 
             String requestBody = item.toJSON().toString();

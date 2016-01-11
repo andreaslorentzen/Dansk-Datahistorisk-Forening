@@ -216,12 +216,9 @@ public class Item implements Parcelable{
     public void setPictures(ArrayList<Uri> pictures){this.pictures = pictures;}
 
     public void addToPictures(Uri picture){
-        if(pictures == null){
+        if(pictures == null)
             pictures = new ArrayList<Uri>();
-            pictures.add(picture);
-        } else{
-            pictures.add(picture);
-        }
+        pictures.add(picture);
     }
 
     public ArrayList<Uri> getRecordings(){return this.recordings;}
@@ -229,12 +226,9 @@ public class Item implements Parcelable{
     public void setRecordings(ArrayList<Uri> recordings){this.recordings = recordings;}
 
     public void addToRecordings(Uri recording){
-        if(recordings == null){
+        if(recordings == null)
             recordings = new ArrayList<Uri>();
-            recordings.add(recording);
-        } else{
-            recordings.add(recording);
-        }
+        recordings.add(recording);
     }
 
     public boolean hasPicturesChanged() {
@@ -262,6 +256,8 @@ public class Item implements Parcelable{
     }
 
     public void addDeletedPicture(Uri uri){
+        if(deletedPictures == null)
+            deletedPictures = new ArrayList<Uri>();
         deletedPictures.add(uri);
     }
 
@@ -274,6 +270,8 @@ public class Item implements Parcelable{
     }
 
     public void addToAddedPictures(Uri uri){
-
+        if(addedPictures == null)
+            addedPictures = new ArrayList<Uri>();
+        addedPictures.add(uri);
     }
 }
