@@ -6,15 +6,21 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 
 public class ImageviewerFragment extends Fragment {
     private Uri imageUri;
+    private int position;
+    private int total;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -22,18 +28,28 @@ public class ImageviewerFragment extends Fragment {
         View layout = inflater.inflate(R.layout.fragment_imageviewer, container, false);
 
         ImageView image = (ImageView) layout.findViewById(R.id.imageviewfragment_imageview);
-        BitmapFactory.Options options = new BitmapFactory.Options();
-
-        //this may be too big memorywise, but the page adapter should destroy old fragments as needed
-        options.inSampleSize = 2;
-        Bitmap bitmap = BitmapFactory.decodeFile(imageUri.getPath(), options);
         image.setBackgroundColor(Color.BLACK);
-        image.setImageBitmap(bitmap);
+
+        ProgressBar progressBar = (ProgressBar) layout.findViewById(R.id.imageviewfragment_progress);
+
+        TextView header = (TextView) layout.findViewById(R.id.imageviewfragment_header);
+        header.append(position + " af " + total);
+
+        //use screen dimensions as approximation for imageView dimensions
+        DisplayMetrics metrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        BitmapEncoder.loadBitmapFromURI(image, imageUri, metrics.widthPixels, metrics.heightPixels, progressBar);
 
         return layout;
     }
 
     public void setImageUri(Uri uri){
         imageUri = uri;
+    }
+
+    public void setHeaderData(int position, int total){
+        this.position = position;
+        this.total = total;
     }
 }

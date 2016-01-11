@@ -2,6 +2,7 @@ package app.ddf.danskdatahistoriskforening.image;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.content.Intent;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 
 import app.ddf.danskdatahistoriskforening.R;
 
-public class ImageviewerActivity extends AppCompatActivity implements View.OnClickListener, ConfirmDeletionDialogFragment.ConfirmDeletionListener{
+public class ImageviewerDeleteActivity extends AppCompatActivity implements View.OnClickListener, ConfirmDeletionDialogFragment.ConfirmDeletionListener{
     Button backButton;
     Button deleteButton;
     ViewPager viewPager;
@@ -29,7 +30,7 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_imageviewer);
+        setContentView(R.layout.activity_imageviewer_delete);
 
         Intent intent = getIntent();
 
@@ -83,8 +84,7 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
     public void onDialogPositiveClick(DialogFragment dialog) {
         int index = ((ConfirmDeletionDialogFragment) dialog).getIndex();
 
-        File file = new File(imageUris.get(index).getPath());
-        file.delete();
+        (new FileDeleterAsyncTask()).execute(imageUris.get(index));
 
         imageUris.remove(index);
 
@@ -112,6 +112,7 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
         public Fragment getItem(int position) {
             ImageviewerFragment fragment = new ImageviewerFragment();
             fragment.setImageUri(imageUris.get(position));
+            fragment.setHeaderData(position + 1, imageUris.size());
 
             return fragment;
         }
@@ -119,6 +120,19 @@ public class ImageviewerActivity extends AppCompatActivity implements View.OnCli
         @Override
         public int getCount() {
             return imageUris.size();
+        }
+    }
+
+    private class FileDeleterAsyncTask extends AsyncTask<Uri, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Uri... params) {
+            Uri uri = params[0];
+
+            File file = new File(uri.getPath());
+            file.delete();
+
+            return null;
         }
     }
 }

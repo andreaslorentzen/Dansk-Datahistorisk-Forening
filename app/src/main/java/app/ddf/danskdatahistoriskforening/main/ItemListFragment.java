@@ -42,8 +42,9 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
 
         itemList = (ListView) layout.findViewById(R.id.itemList);
         itemList.setOnItemClickListener(this);
-        adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles);
-        itemList.setAdapter(adapter);
+
+        updateItemList(null);
+        searchItemList();
 
         FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fab);
         fab.setOnClickListener(this);
@@ -51,20 +52,14 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
         return layout;
     }
 
-    // shit like this maybe
-    @Override
-    public void onDetach() {
-        super.onDetach();
-    }
 
-    ArrayAdapter adapter;
+    private void updateItemList(List<String> titles){
+        if(titles != null)
+            itemTitles = titles;
 
-    public void updateItemList(List<String> titles){
-        itemTitles = titles;
-        if(getActivity() != null){
-            adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles);
-            itemList.setAdapter(adapter);
-        }
+        ArrayAdapter adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles);
+        itemList.setAdapter(adapter);
+
     }
 
     /**
@@ -72,11 +67,11 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     *   [h, e]      -> search stack.peek()      -> titles       -> stack.push(titles)
     *   [h, e, j]   -> search stack.peek()      -> titles       -> stack.push(titles)
     *   [h, e]      -> stack.pop()              -> titles       -> stack.push(titles)
-    *   @param search
     */
-    public void searchItemList(String search) {
+    public void searchItemList() {
+        String search = Model.getInstance().getCurrentSearch();
         List<String> currentTitles = itemTitles;
-        if (search.equals("") && lastSearch.equals("")) {
+        if (search == null || search.equals("") && lastSearch.equals("")) {
             return;
         }
         if (search.contains(lastSearch) && search.length() == lastSearch.length() + 1) { // if 1 char is added, get last title list

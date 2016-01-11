@@ -27,12 +27,16 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 
-import app.ddf.danskdatahistoriskforening.image.ImageviewerActivity;
+import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
+import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 import app.ddf.danskdatahistoriskforening.R;
 
 public class ItemFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+    //TODO calculate acceptable thumbnail dimensions based on screensize or available space
+    private final int MAX_THUMBNAIL_WIDTH = 150;
+    private final int MAX_THUMBNAIL_HEIGHT = 250;
 
     ImageButton cameraButton;
     ImageButton micButton;
@@ -57,7 +61,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         micButton.setOnClickListener(this);
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
 
-
         Item item = ((ItemActivity) getActivity()).getItem();
         itemTitle.setText(item.getItemHeadline());
         //TODO indsæt billeder, lyd
@@ -78,8 +81,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         setAudioPlayer(); // sets mPlayer
         return layout;
     }
-
-
 
     // shit like this maybe
     @Override
@@ -158,19 +159,19 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
 
                     uris.add(imageUris.get(i).second);
                 }
+
                 if(index < 0){
                     //none of the imageViews matched
                     Log.d("ddf", "no imageView matched");
                     return;
                 }
-                Intent intent = new Intent(getActivity(), ImageviewerActivity.class);
+
+                Intent intent = new Intent(getActivity(), ImageviewerDeleteActivity.class);
                 intent.putExtra("imageURIs", uris);
                 intent.putExtra("index", index);
                 getActivity().startActivityForResult(intent, ItemActivity.IMAGEVIEWER_REQUEST_CODE);
         }
     }
-
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -178,13 +179,11 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             if (resultCode == Activity.RESULT_OK) {
                 // Image captured and saved to fileUri specified in the Intent
                 ImageView image = imageUris.get(imageUris.size()-1).first;
-                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(150, 250);
+
+                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
                 image.setLayoutParams(sizeParameters);
 
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inSampleSize = 4;
-                Bitmap thumbnail = BitmapFactory.decodeFile(imageUris.get(imageUris.size() - 1).second.getPath(), options);
-                image.setImageBitmap(thumbnail);
+                BitmapEncoder.loadBitmapFromURI(image, imageUris.get(imageUris.size() - 1).second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
                 image.setOnClickListener(this);
 
                 //image.setImageURI(imageUris.get(imageUris.size()-1));

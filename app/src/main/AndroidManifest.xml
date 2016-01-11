@@ -24,7 +24,7 @@
                 android:resource="@xml/search_config" />
         </activity>
         <activity android:name=".item.ItemActivity" />
-        <activity android:name=".image.ImageviewerActivity" />
+        <activity android:name=".image.ImageviewerDeleteActivity" />
         <activity android:name=".item.RecordingActivity" />
     </application>
 

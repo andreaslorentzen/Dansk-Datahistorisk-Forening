@@ -75,7 +75,6 @@ public class Model {
     }
 
     private String currentSearch;
-    private boolean searchFocus;
 
     public String getCurrentSearch() {
         return currentSearch;
@@ -85,11 +84,4 @@ public class Model {
         this.currentSearch = currentSearch;
     }
 
-    public boolean isSearchFocus() {
-        return searchFocus;
-    }
-
-    public void setSearchFocus(boolean searchFocus) {
-        this.searchFocus = searchFocus;
-    }
 }
