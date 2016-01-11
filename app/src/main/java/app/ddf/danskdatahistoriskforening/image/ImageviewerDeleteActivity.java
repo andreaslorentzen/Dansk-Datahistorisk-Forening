@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -28,16 +29,6 @@ public class ImageviewerDeleteActivity extends AbstractImageViewer implements Vi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_imageviewer_delete);
 
-        Intent intent = getIntent();
-
-        if(intent.hasExtra("imageURIs")){
-            imageUris = intent.getParcelableArrayListExtra("imageURIs");
-        }
-        else{
-            //should never happen... but just in case
-            imageUris = new ArrayList<>();
-        }
-
         backButton = (Button) findViewById(R.id.imageview_back_button);
         backButton.setOnClickListener(this);
 
@@ -45,10 +36,40 @@ public class ImageviewerDeleteActivity extends AbstractImageViewer implements Vi
         deleteButton.setOnClickListener(this);
 
         viewPager = (ViewPager) findViewById(R.id.imageview_viewpager);
-        viewPager.setAdapter(pageAdapter);
 
-        int index = intent.getIntExtra("index", 0);
+
+        if(savedInstanceState == null) {//avoid extra work and out of memory exceptions
+            Intent intent = getIntent();
+            if (intent.hasExtra("imageURIs")) {
+                imageUris = intent.getParcelableArrayListExtra("imageURIs");
+            } else {
+                //should never happen... but just in case
+                imageUris = new ArrayList<>();
+            }
+
+            int index;
+            index = intent.getIntExtra("index", 0);
+
+
+            viewPager.setAdapter(pageAdapter);
+
+            viewPager.setCurrentItem(index);
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        pageAdapter = new ImageviewerPageAdapter(getSupportFragmentManager());
+        imageUris = savedInstanceState.getParcelableArrayList("imageURIs");
+        int index = savedInstanceState.getInt("index");
+
+        pageAdapter.notifyDataSetChanged();
+        viewPager.setAdapter(pageAdapter);
         viewPager.setCurrentItem(index);
+
+        Log.d("RestoreActivity", "" + pageAdapter.getCount());
     }
 
     @Override
@@ -60,7 +81,11 @@ public class ImageviewerDeleteActivity extends AbstractImageViewer implements Vi
             int index = viewPager.getCurrentItem();
 
             ConfirmDeletionDialogFragment dialog = new ConfirmDeletionDialogFragment();
-            dialog.setTitle(imageUris.get(index).getPath());
+
+            String path = imageUris.get(index).getPath();
+            int offset = path.lastIndexOf("/") + 1;
+
+            dialog.setTitle(path.substring(offset));
             dialog.setIndex(index);
             dialog.show(getSupportFragmentManager(), "ConfirmDeletionDialog");
         }
@@ -89,7 +114,10 @@ public class ImageviewerDeleteActivity extends AbstractImageViewer implements Vi
         else {
             pageAdapter.notifyDataSetChanged();
             //workaround to force redraw of viewpager
+            pageAdapter = new ImageviewerPageAdapter(getSupportFragmentManager());
             viewPager.setAdapter(pageAdapter);
+
+            viewPager.setCurrentItem(Math.min(index, imageUris.size() - 1));
         }
     }
 
