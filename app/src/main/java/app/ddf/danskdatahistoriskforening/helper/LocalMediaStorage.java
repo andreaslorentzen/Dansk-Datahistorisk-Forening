@@ -2,6 +2,7 @@ package app.ddf.danskdatahistoriskforening.helper;
 
 //http://developer.android.com/guide/topics/media/camera.html#saving-media
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
@@ -10,11 +11,14 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import app.ddf.danskdatahistoriskforening.main.MainActivity;
+
 public class LocalMediaStorage {
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_AUDIO = 2;
     public static final int MEDIA_TYPE_AUDIO_TEMP = 3;
     public static final int MEDIA_TYPE_AUDIO_NEW = 4;
+    private static Context context;
 
     /** Create a file Uri for saving an image or video */
     public static Uri getOutputMediaFileUri(int type){
@@ -46,9 +50,7 @@ public class LocalMediaStorage {
             return null;
         }
 
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "DDF");
-
+        File mediaStorageDir = new File(context.getExternalFilesDir(null).getPath());
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
 
@@ -85,6 +87,11 @@ public class LocalMediaStorage {
         }
 
         return mediaFile;
+    }
+
+
+    public static void setContext(MainActivity mainActivity) {
+        context = mainActivity;
     }
 }
 
