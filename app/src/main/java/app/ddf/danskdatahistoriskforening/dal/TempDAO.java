@@ -189,7 +189,10 @@ public class TempDAO implements IDAO {
                 JSONObject image;
                 int i = 0;
                 while((image = images.optJSONObject("image_" + i)) != null){
-                    currentItem.addToPictures(getFile(image.getString("href"), LocalMediaStorage.MEDIA_TYPE_IMAGE));
+                    Uri temp = getFile(image.getString("href"), LocalMediaStorage.MEDIA_TYPE_IMAGE);
+                    if(temp == null)
+                        continue;;
+                    currentItem.addToPictures(temp);
                     i++;
                 }
             }
@@ -199,7 +202,10 @@ public class TempDAO implements IDAO {
                 JSONObject audio;
                 int i = 0;
                 while((audio = audios.optJSONObject("audio_" + i)) != null){
-                    currentItem.addToRecordings(getFile(audio.getString("href"), LocalMediaStorage.MEDIA_TYPE_AUDIO));
+                    Uri temp = getFile(audio.getString("href"), LocalMediaStorage.MEDIA_TYPE_AUDIO);
+                    if(temp == null)
+                        continue;
+                    currentItem.addToRecordings(temp);
                     i++;
                 }
             }
@@ -252,6 +258,25 @@ public class TempDAO implements IDAO {
                 returnValue = 3;
             }
 
+            if(item.getDeletedPictures() != null){
+                for(Uri picture : item.getDeletedPictures()){
+                    deleteFile(picture, item.getItemId());
+                }
+            }
+
+            if(item.getAddedPictures() != null){
+                for(Uri picture : item.getAddedPictures()){
+                    postFile(context, picture, item.getItemId(), "jpg");
+                }
+            }
+
+            if(item.isRecordingsChanged()){
+                for(Uri recording : item.getRecordings()){
+                    deleteFile(recording, item.getItemId());
+                    postFile(context, recording, item.getItemId(), "mp4");
+                }
+            }
+
         } catch(MalformedURLException |ProtocolException e){
             // SHOULD NEVER HAPPEN IN PRODUCTION
             e.printStackTrace();
@@ -267,6 +292,27 @@ public class TempDAO implements IDAO {
             }
         }
         return returnValue;
+    }
+
+    public void deleteFile(Uri file, int itemID){
+        String requestURL = API + "/items/" + itemID + "/" + file.getLastPathSegment() + userIDString;
+
+        try{
+            //setup for the query
+            URL url = new URL(requestURL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(15000);
+            conn.setDoOutput(true);
+            conn.setRequestMethod("DELETE");
+
+            // start the query
+            conn.connect();
+        } catch(MalformedURLException |ProtocolException e){
+            // SHOULD NEVER HAPPEN IN PRODUCTION
+            e.printStackTrace();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
     }
 
     public String readIt(InputStream stream, int len) throws IOException {
@@ -338,7 +384,12 @@ public class TempDAO implements IDAO {
             BufferedInputStream input = new BufferedInputStream(is);
 
             fileToSave = LocalMediaStorage.getOutputMediaFile(type);
+
+            if(fileToSave == null)
+                return null;
+
             OutputStream output = new FileOutputStream(fileToSave);
+
 
             byte[] data = new byte[1024];
             int count;
