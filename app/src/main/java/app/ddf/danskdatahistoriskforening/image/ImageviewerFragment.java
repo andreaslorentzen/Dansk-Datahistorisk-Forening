@@ -27,6 +27,13 @@ public class ImageviewerFragment extends Fragment {
         // Inflate the layout for this fragment
         View layout = inflater.inflate(R.layout.fragment_imageviewer, container, false);
 
+        if(savedInstanceState != null){
+            imageUri = savedInstanceState.getParcelable("imageUri");
+            position = savedInstanceState.getInt("position");
+            total = savedInstanceState.getInt("total");
+        }
+
+
         ImageView image = (ImageView) layout.findViewById(R.id.imageviewfragment_imageview);
         image.setBackgroundColor(Color.BLACK);
 
@@ -42,6 +49,14 @@ public class ImageviewerFragment extends Fragment {
         BitmapEncoder.loadBitmapFromURI(image, imageUri, metrics.widthPixels, metrics.heightPixels, progressBar);
 
         return layout;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("imageUri", imageUri);
+        outState.putInt("position", position);
+        outState.putInt("total", total);
     }
 
     public void setImageUri(Uri uri){
