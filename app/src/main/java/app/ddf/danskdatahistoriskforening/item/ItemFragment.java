@@ -33,7 +33,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
     ImageButton cameraButton;
     ImageButton micButton;
     EditText itemTitle;
-    LinearLayout imageContatiner;
+    LinearLayout imageContainer;
     ArrayList<Pair<ImageView,Uri>> imageUris;
 
     @Override
@@ -47,11 +47,31 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
 
         Item item = ((ItemActivity) getActivity()).getItem();
         itemTitle.setText(item.getItemHeadline());
-        //TODO indsæt billeder, lyd
+
+
+        //TODO indsæt lyd
 
         //((HorizontalScrollView) layout.findViewById(R.id.horizontalScrollView)).setFillViewport(true);
-        imageContatiner = (LinearLayout) layout.findViewById(R.id.imageContainer);
+        imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
         imageUris = new ArrayList<>();
+
+        ArrayList<Uri> uris = item.getPictures();
+        if(uris != null){
+            for(int i = 0; i<uris.size(); i++){
+                Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(getActivity()), uris.get(i));
+                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                uriImagePair.first.setLayoutParams(sizeParameters);
+
+                imageContainer.addView(uriImagePair.first);
+                imageUris.add(uriImagePair);
+
+                BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                uriImagePair.first.setOnClickListener(this);
+            }
+        }
+        else{
+            Log.d("updateImage", "no uris");
+        }
 
         return layout;
     }
@@ -78,7 +98,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
                 Toast.makeText(getActivity(), "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
             }
         }
-        if(v == micButton){
+        else if(v == micButton){
             Intent i = new Intent(getActivity(), RecordingActivity.class);
             startActivity(i);
         }
@@ -122,7 +142,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
                 image.setOnClickListener(this);
 
                 //image.setImageURI(imageUris.get(imageUris.size()-1));
-                imageContatiner.addView(image);
+                imageContainer.addView(image);
 
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // User cancelled the image capture
@@ -144,7 +164,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
                 }
 
                 //update image list and reconstruct imageContainer
-                imageContatiner.removeAllViews();
+                imageContainer.removeAllViews();
 
                 ArrayList temp = new ArrayList<Pair<ImageView, Uri>>(imageUris);
                 for(int i = 0; i<imageUris.size(); i++){
@@ -156,7 +176,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener{
                     }
                     else{
                         //image still exists
-                        imageContatiner.addView((ImageView)listItem.first);
+                        imageContainer.addView((ImageView) listItem.first);
                     }
                 }
 

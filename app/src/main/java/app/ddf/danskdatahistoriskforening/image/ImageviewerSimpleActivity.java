@@ -10,8 +10,7 @@ import java.util.ArrayList;
 import app.ddf.danskdatahistoriskforening.R;
 
 public class ImageviewerSimpleActivity extends AbstractImageViewer {
-
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -184,7 +184,7 @@ public class TempDAO implements IDAO {
                     isJsonNull(postnummer) ? null : postnummer
             );
 
-            JSONObject images = item.getJSONObject("images");
+            JSONObject images = item.optJSONObject("images");
             if (images != null){
                 JSONObject image;
                 int i = 0;
@@ -194,7 +194,7 @@ public class TempDAO implements IDAO {
                 }
             }
 
-            JSONObject audios = item.getJSONObject("audios");
+            JSONObject audios = item.optJSONObject("audios");
             if (audios != null){
                 JSONObject audio;
                 int i = 0;
