@@ -39,6 +39,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
     EditText itemTitle;
     LinearLayout imageContatiner;
     ArrayList<Pair<ImageView,Uri>> imageUris;
+    ArrayList<Uri> audioUris;
     ImageButton audioButton;
     SeekBar seekBar;
     MediaPlayer mPlayer;
@@ -276,6 +277,8 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             }
             return;
         }
+        audioUris = new ArrayList<Uri>();
+        audioUris.add(LocalMediaStorage.getOutputMediaFileUri(2));
         seekBar.setEnabled(true);
         audioText.setText("");
         mPlayer = MediaPlayer.create(getActivity(), Uri.parse(filePath));
