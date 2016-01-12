@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.LinearLayout;
@@ -67,9 +68,9 @@ public class ItemActivity extends AppCompatActivity{
     private PagerAdapter mPagerAdapter;
 
 
-    private ItemFragment itemFragment;
+/*    private ItemFragment itemFragment;
     private ItemDetailsFragment detailsFragment;
-    private ItemDescriptionFragment descriptionFragment;
+    private ItemDescriptionFragment descriptionFragment;*/
 
     private WeakReference<ItemFragment> itemFragmentWeakReference;
     private WeakReference<ItemDetailsFragment> itemDetailsFragmentWeakReference;
@@ -94,9 +95,9 @@ public class ItemActivity extends AppCompatActivity{
 
 
         if(savedInstanceState == null) {
-            itemFragment = new ItemFragment();
+            /*itemFragment = new ItemFragment();
             detailsFragment = new ItemDetailsFragment();
-            descriptionFragment = new ItemDescriptionFragment();
+            descriptionFragment = new ItemDescriptionFragment();*/
 
             mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
             viewPager.setAdapter(mPagerAdapter);
@@ -142,9 +143,9 @@ public class ItemActivity extends AppCompatActivity{
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-        itemFragment = new ItemFragment();
+        /*itemFragment = new ItemFragment();
         detailsFragment = new ItemDetailsFragment();
-        descriptionFragment = new ItemDescriptionFragment();
+        descriptionFragment = new ItemDescriptionFragment();*/
 
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(mPagerAdapter);
@@ -199,6 +200,24 @@ public class ItemActivity extends AppCompatActivity{
 
 
     private void save() {
+        //update item if fragment is instantiated
+        //destroyed fragments will have updated the item during onPause() already
+        ItemFragment itemFragment = itemFragmentWeakReference.get();
+        ItemDetailsFragment itemDetailsFragment = itemDetailsFragmentWeakReference.get();
+        ItemDescriptionFragment itemDescriptionFragment = itemDescriptionFragmentWeakReference.get();
+
+        if(itemFragment != null){
+            itemFragment.updateItem(item);
+        }
+
+        if(itemDetailsFragment != null){
+            itemDetailsFragment.updateItem(item);
+        }
+
+        if(itemDescriptionFragment != null){
+            itemDescriptionFragment.updateItem(item);
+        }
+
 
 
         //item.setItemHeadline(itemFragment.getItemTitle());
@@ -219,7 +238,7 @@ public class ItemActivity extends AppCompatActivity{
             if(!Model.isConnected()){
                 Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
             }
-            try{
+            /*try{
                 if(detailsFragment.dateReceive != null && detailsFragment.dateReceive.getText() != null && !detailsFragment.dateReceive.getText().toString().equals(""))
                     item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
                 if(detailsFragment.dateFrom != null && detailsFragment.dateFrom.getText() != null && !detailsFragment.dateFrom.getText().toString().equals("") )
@@ -228,7 +247,7 @@ public class ItemActivity extends AppCompatActivity{
                     item.setItemDatingTo(Model.getFormatter().parse(detailsFragment.dateTo.getText().toString()));
             } catch(ParseException e){
                 e.printStackTrace();
-            }
+            }*/
             new AsyncTask<Item, Void, Integer>(){
                 @Override
                 protected Integer doInBackground(Item... params){
@@ -242,7 +261,7 @@ public class ItemActivity extends AppCompatActivity{
             }.execute(item);
         }
         else{
-            try{
+            /*try{
                 System.out.println(detailsFragment.hasReceiveChanged());
                 if(detailsFragment.hasReceiveChanged())
                     item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
@@ -258,7 +277,7 @@ public class ItemActivity extends AppCompatActivity{
                     item.setItemDatingTo(null);
             } catch(ParseException e){
                 e.printStackTrace();
-            }
+            }*/
             new AsyncTask<Item, Void, Integer>(){
                 @Override
                 protected Integer doInBackground(Item... params){
@@ -308,13 +327,8 @@ public class ItemActivity extends AppCompatActivity{
 
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
-        /*private Pair<String, Fragment>[] fragments = new Pair[3];*/
-
         public ScreenSlidePagerAdapter(FragmentManager fm) {
             super(fm);
-           /* fragments[0] = new Pair<String, Fragment>("Genstand", itemFragment);
-            fragments[1] = new Pair<String, Fragment>("Beskrivelse", descriptionFragment);
-            fragments[2] = new Pair<String, Fragment>("Oplysninger", detailsFragment);*/
         }
 
         @Override
@@ -326,18 +340,36 @@ public class ItemActivity extends AppCompatActivity{
             switch (position){
                 case 0:
                     fragment = new ItemFragment();
-                    itemFragment = (ItemFragment) fragment;
                     break;
                 case 1:
                     fragment = new ItemDescriptionFragment();
-                    descriptionFragment = (ItemDescriptionFragment) fragment;
                     break;
                 case 2:
                     fragment = new ItemDetailsFragment();
-                    detailsFragment = (ItemDetailsFragment) fragment;
                     break;
                 default:
                     fragment = new ItemFragment();
+            }
+
+            return fragment;
+        }
+
+        //save weak references to fragments as they are instantiated for updating item
+        //in case a reference becomes invalid, the fragment should have updated the item in onPause() anyways
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Fragment fragment = (Fragment) super.instantiateItem(container, position);
+
+            switch (position){
+                case 0:
+                    itemFragmentWeakReference = new WeakReference<ItemFragment>((ItemFragment) fragment);
+                    break;
+                case 1:
+                    itemDescriptionFragmentWeakReference = new WeakReference<ItemDescriptionFragment>((ItemDescriptionFragment) fragment);
+                    break;
+                case 2:
+                    itemDetailsFragmentWeakReference = new WeakReference<ItemDetailsFragment>((ItemDetailsFragment) fragment);
+                    break;
             }
 
             return fragment;
@@ -371,23 +403,14 @@ public class ItemActivity extends AppCompatActivity{
         }
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
-            itemFragment.onActivityResult(requestCode, resultCode, data);
+            //itemFragment.onActivityResult(requestCode, resultCode, data);
         }
         else if(requestCode == IMAGEVIEWER_REQUEST_CODE){
-            itemFragment.onActivityResult(requestCode, resultCode, data);
+            //itemFragment.onActivityResult(requestCode, resultCode, data);
         }
-    }
-
-
-    public void takePic(){
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        //    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-
-        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
     }
 
     public void updateInternet(boolean isConnected){
