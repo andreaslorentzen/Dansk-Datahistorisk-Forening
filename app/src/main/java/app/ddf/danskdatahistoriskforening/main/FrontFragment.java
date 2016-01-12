@@ -37,10 +37,6 @@ public class FrontFragment extends Fragment implements View.OnClickListener{
             ((MainActivity) getActivity()).startRegister();
         }
         else if(v == listButton){
-            if(Model.isConnected()){
-                Toast.makeText(getContext(), "Listen kan ikke vises uden internet", Toast.LENGTH_LONG).show();
-                return;
-            }
             ((MainActivity) getActivity()).setFragmentList();
         }
     }

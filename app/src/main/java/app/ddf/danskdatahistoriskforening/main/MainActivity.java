@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         } else{
             findViewById(R.id.internetConnBar).setVisibility(View.GONE);
         }
-        if(!Model.isListUpdated()) {
+        if(!Model.isListUpdated() && Model.isConnected()) {
             new AsyncTask<Void, Void, String>() {
                 @Override
                 protected String doInBackground(Void... params) {
@@ -146,6 +146,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentList(){
+        // TODO Add check for is connected and if the list allready exists.
         if(getSupportFragmentManager().getBackStackEntryCount() == 0){
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.frame, new ItemListFragment())
