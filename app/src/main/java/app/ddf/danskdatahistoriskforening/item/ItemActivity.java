@@ -16,7 +16,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.ParseException;
@@ -32,6 +34,7 @@ public class ItemActivity extends AppCompatActivity{
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
 
     private Toolbar registerToolbar;
+    private TextView internetBar;
     private Item item;
 
     public Item getItem() {
@@ -53,6 +56,8 @@ public class ItemActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Model.setCurrentActivity(this);
+        internetBar = (TextView) findViewById(R.id.internetConnBar);
         setContentView(R.layout.activity_register);
 
         registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
@@ -257,4 +262,12 @@ public class ItemActivity extends AppCompatActivity{
         startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
     }
 
+    public void updateInternet(boolean isConnected){
+        if(internetBar != null){
+            if(isConnected)
+                internetBar.setVisibility(View.GONE);
+            else
+                internetBar.setVisibility(View.VISIBLE);
+        }
+    }
 }

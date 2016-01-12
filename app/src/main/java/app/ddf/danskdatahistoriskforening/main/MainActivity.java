@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,6 +30,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     Toolbar mainToolbar;
 
+    TextView internetBar;
+
     MenuItem searchButton;
     MenuItem editButton;
     SearchView searchView;
@@ -38,8 +41,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
+        Model.setCurrentActivity(this);
+        internetBar = (TextView) findViewById(R.id.internetConnBar);
         setContentView(R.layout.activity_main);
         LocalMediaStorage.setContext(this);
         if(savedInstanceState == null) {
@@ -56,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
         mainToolbar.setNavigationIcon(null);
         setSupportActionBar(mainToolbar);
+
+
     }
 
     @Override
@@ -261,4 +267,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         this.searchButtonVisible = searchButtonVisible;
     }
 
+    public void updateInternet(boolean isConnected){
+        if(internetBar != null){
+            if(isConnected)
+                internetBar.setVisibility(View.GONE);
+            else
+                internetBar.setVisibility(View.VISIBLE);
+        }
+    }
 }

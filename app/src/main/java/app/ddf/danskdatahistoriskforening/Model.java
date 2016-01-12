@@ -1,5 +1,7 @@
 package app.ddf.danskdatahistoriskforening;
 
+import android.support.v7.app.AppCompatActivity;
+
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
@@ -18,6 +20,7 @@ public class Model {
     private static boolean itemListUpdated = false;
     private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     private static boolean isConnected;
+    private static AppCompatActivity currentActivity;
 
     public static Model getInstance() {
         if (ourInstance == null) {
@@ -50,6 +53,14 @@ public class Model {
 
     public static void setIsConnected(boolean isConnected) {
         Model.isConnected = isConnected;
+    }
+
+    public static AppCompatActivity getCurrentActivity() {
+        return currentActivity;
+    }
+
+    public static void setCurrentActivity(AppCompatActivity currentActivity) {
+        Model.currentActivity = currentActivity;
     }
 
     public List<String> getItemTitles() {
