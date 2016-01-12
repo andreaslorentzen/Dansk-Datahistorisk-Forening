@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -154,6 +155,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentDetails(int position) {
+        if(!Model.isConnected()){
+            Toast.makeText(this, "Detaljer kan ikke hentes, da der ikke er internet", Toast.LENGTH_LONG).show();
+            return;
+        }
         try {
             String detailsURI = Model.getInstance().getItems().get(position).getString("detailsuri");
             if(detailsURI == null)
