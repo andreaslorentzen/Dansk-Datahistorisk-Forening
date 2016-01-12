@@ -261,6 +261,16 @@ public class Item implements Parcelable{
         deletedPictures.add(uri);
     }
 
+    public void removeFromDeletedPicture(Uri uri){
+        if(deletedPictures.contains(uri)){
+            if(deletedPictures.size() == 0){
+                deletedPictures = null;
+            } else{
+                deletedPictures.remove(uri);
+            }
+        }
+    }
+
     public ArrayList<Uri> getAddedPictures() {
         return addedPictures;
     }

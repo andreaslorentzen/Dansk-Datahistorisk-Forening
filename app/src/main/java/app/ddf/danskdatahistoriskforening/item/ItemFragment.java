@@ -247,7 +247,14 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
                     if(!remainingURIs.contains(listItem.second)){
                         //image has been removed
                         if(((ItemActivity) getActivity()).getItem() != null){
-                            ((ItemActivity) getActivity()).getItem().addDeletedPicture((Uri)listItem.second);
+                            Item currentItem = ((ItemActivity) getActivity()).getItem();
+                            if(currentItem.getAddedPictures() !=  null){
+                                if(!currentItem.getAddedPictures().contains(listItem.second)){
+                                    currentItem.addDeletedPicture((Uri) listItem.second);
+                                } else{
+                                    currentItem.removeFromDeletedPicture((Uri) listItem.second);
+                                }
+                            }
                         }
                         temp.remove(listItem);
                     }
