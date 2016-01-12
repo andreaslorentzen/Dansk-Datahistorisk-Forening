@@ -10,6 +10,7 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -82,6 +83,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     protected void onResume(){
+        System.out.println(Model.isConnected());
+        if(!Model.isConnected()){
+            findViewById(R.id.internetConnBar).setVisibility(View.VISIBLE);
+        } else{
+            findViewById(R.id.internetConnBar).setVisibility(View.GONE);
+        }
         if(!Model.isListUpdated()) {
             new AsyncTask<Void, Void, String>() {
                 @Override

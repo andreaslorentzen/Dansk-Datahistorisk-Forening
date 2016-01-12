@@ -12,7 +12,20 @@
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:theme="@style/ToolbarTheme"
         android:background="@color/colorPrimary"
+        android:elevation="4dp"
         app:title="@string/toolbar_title"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/no_internet"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:visibility="gone"
+        android:id="@+id/internetConnBar"
+        android:background="@color/colorAccent"
+        android:elevation="3dp"/>
 
     <FrameLayout
         android:layout_width="match_parent"
