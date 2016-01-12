@@ -129,6 +129,9 @@ public class ItemActivity extends AppCompatActivity{
 
 
         if(item.getItemId() > 0){
+            if(!Model.isConnected()){
+                Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
+            }
             try{
                 if(detailsFragment.dateReceive != null && detailsFragment.dateReceive.getText() != null && !detailsFragment.dateReceive.getText().toString().equals(""))
                     item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
