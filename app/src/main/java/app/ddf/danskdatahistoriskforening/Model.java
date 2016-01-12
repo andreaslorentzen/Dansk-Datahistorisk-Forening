@@ -17,6 +17,7 @@ public class Model {
     private static IDAO dao = new TempDAO();
     private static boolean itemListUpdated = false;
     private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    private static boolean isConnected;
 
     public static Model getInstance() {
         if (ourInstance == null) {
@@ -42,6 +43,14 @@ public class Model {
     private List<String> itemTitles;
     private String currentDetailsURI;
     private Item currentItem;
+
+    public static boolean isConnected() {
+        return isConnected;
+    }
+
+    public static void setIsConnected(boolean isConnected) {
+        Model.isConnected = isConnected;
+    }
 
     public List<String> getItemTitles() {
         return itemTitles;
