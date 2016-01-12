@@ -301,17 +301,22 @@ public class ItemActivity extends AppCompatActivity{
 
         @Override
         public Fragment getItem(int position) {
+            Log.d("ddfstate", "new fragment: " + position);
+
             Fragment fragment;
 
             switch (position){
                 case 0:
                     fragment = new ItemFragment();
+                    itemFragment = (ItemFragment) fragment;
                     break;
                 case 1:
                     fragment = new ItemDescriptionFragment();
+                    descriptionFragment = (ItemDescriptionFragment) fragment;
                     break;
                 case 2:
                     fragment = new ItemDetailsFragment();
+                    detailsFragment = (ItemDetailsFragment) fragment;
                     break;
                 default:
                     fragment = new ItemFragment();
