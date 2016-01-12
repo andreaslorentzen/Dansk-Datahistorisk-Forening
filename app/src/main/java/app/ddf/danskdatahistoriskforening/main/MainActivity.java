@@ -9,6 +9,9 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,6 +30,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     Toolbar mainToolbar;
 
+    TextView internetBar;
+
     MenuItem searchButton;
     MenuItem editButton;
     SearchView searchView;
@@ -36,8 +41,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
+        Model.setCurrentActivity(this);
+        internetBar = (TextView) findViewById(R.id.internetConnBar);
         setContentView(R.layout.activity_main);
         LocalMediaStorage.setContext(this);
         if(savedInstanceState == null) {
@@ -54,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
         mainToolbar.setNavigationIcon(null);
         setSupportActionBar(mainToolbar);
+
+
     }
 
     @Override
@@ -81,7 +89,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     protected void onResume(){
-        if(!Model.isListUpdated()) {
+        System.out.println(Model.isConnected());
+        if(!Model.isConnected()){
+            findViewById(R.id.internetConnBar).setVisibility(View.VISIBLE);
+        } else{
+            findViewById(R.id.internetConnBar).setVisibility(View.GONE);
+        }
+        if(!Model.isListUpdated() && Model.isConnected()) {
             new AsyncTask<Void, Void, String>() {
                 @Override
                 protected String doInBackground(Void... params) {
@@ -131,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentList(){
+        // TODO Add check for is connected and if the list allready exists.
         if(getSupportFragmentManager().getBackStackEntryCount() == 0){
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.frame, new ItemListFragment())
@@ -140,6 +155,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentDetails(int position) {
+        if(!Model.isConnected()){
+            Toast.makeText(this, "Detaljer kan ikke hentes, da der ikke er internet", Toast.LENGTH_LONG).show();
+            return;
+        }
         try {
             String detailsURI = Model.getInstance().getItems().get(position).getString("detailsuri");
             if(detailsURI == null)
@@ -245,4 +264,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         this.searchButtonVisible = searchButtonVisible;
     }
 
+    public void updateInternet(boolean isConnected){
+        if(internetBar != null){
+            if(isConnected)
+                internetBar.setVisibility(View.GONE);
+            else
+                internetBar.setVisibility(View.VISIBLE);
+        }
+    }
 }

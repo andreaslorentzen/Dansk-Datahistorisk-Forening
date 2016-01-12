@@ -17,7 +17,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -39,6 +41,7 @@ public class ItemActivity extends AppCompatActivity{
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
 
     private Toolbar registerToolbar;
+    private TextView internetBar;
 
     private Item item;
     private ArrayList<Pair<ImageView,Uri>> imageUris;
@@ -70,6 +73,8 @@ public class ItemActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Model.setCurrentActivity(this);
+        internetBar = (TextView) findViewById(R.id.internetConnBar);
         setContentView(R.layout.activity_register);
 
         registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
@@ -201,6 +206,9 @@ public class ItemActivity extends AppCompatActivity{
 
 
         if(item.getItemId() > 0){
+            if(!Model.isConnected()){
+                Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
+            }
             try{
                 if(detailsFragment.dateReceive != null && detailsFragment.dateReceive.getText() != null && !detailsFragment.dateReceive.getText().toString().equals(""))
                     item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
@@ -372,4 +380,12 @@ public class ItemActivity extends AppCompatActivity{
         startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
     }
 
+    public void updateInternet(boolean isConnected){
+        if(internetBar != null){
+            if(isConnected)
+                internetBar.setVisibility(View.GONE);
+            else
+                internetBar.setVisibility(View.VISIBLE);
+        }
+    }
 }
