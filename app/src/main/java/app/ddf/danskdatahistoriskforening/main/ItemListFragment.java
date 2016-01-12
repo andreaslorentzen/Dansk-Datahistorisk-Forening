@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
+
 import org.json.JSONArray;
 
 import java.util.ArrayList;
@@ -27,7 +29,7 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     List<String> itemTitles;
     Stack<List<String>> stackTitles;
     String lastSearch = "";
-
+    TextView emptyText;
     public ItemListFragment() {
         itemTitles = new ArrayList<>();
     }
@@ -36,29 +38,35 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d("ItemListFragment", "created");
         View layout = inflater.inflate(R.layout.fragment_item_list, container, false);
-
+        emptyText = (TextView) layout.findViewById(R.id.emptyText);
         itemTitles = Model.getInstance().getItemTitles();
 
 
         itemList = (ListView) layout.findViewById(R.id.itemList);
         itemList.setOnItemClickListener(this);
-
+        ArrayAdapter adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1,  new ArrayList<String>());
+        itemList.setAdapter(adapter);
         updateItemList(null);
 
 
         FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fab);
         fab.setOnClickListener(this);
-        System.out.println(itemTitles);
         return layout;
     }
 
 
     private void updateItemList(List<String> titles){
-        if(titles == null)
+        ArrayAdapter adapter = (ArrayAdapter) itemList.getAdapter();
+        adapter.clear();
+        if (itemTitles != null && titles == null)
             titles = itemTitles;
-        ArrayAdapter adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, titles);
-        itemList.setAdapter(adapter);
-
+        if (titles.isEmpty())
+            emptyText.setVisibility(View.VISIBLE);
+        else {
+            emptyText.setVisibility(View.GONE);
+            adapter.addAll(titles);
+        }
+        adapter.notifyDataSetChanged();
     }
 
     /**
@@ -75,8 +83,6 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
             stackTitles = new Stack<>();
             stackTitles.push(itemTitles);
             searchedTitles = itemTitles;
-            System.out.println(itemTitles);
-            System.out.println(searchedTitles);
         } else if (lastSearch.length() > 0 && search.contains(lastSearch)  && search.length() == lastSearch.length() + 1) { // if 1 char is added, get last title list
             // incremented search word
             searchedTitles = searchList(stackTitles.peek(), search);
@@ -94,9 +100,6 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
                 stackTitles.push( searchList(stackTitles.peek(), search.substring(0,i+1)));
             searchedTitles = stackTitles.peek();
         }
-
-        System.out.println(searchedTitles);
-        System.out.println(stackTitles.peek());
         lastSearch = search;
         updateItemList(searchedTitles);
     }
