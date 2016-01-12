@@ -261,6 +261,16 @@ public class Item implements Parcelable{
         deletedPictures.add(uri);
     }
 
+    public void removeFromDeletedPicture(Uri uri){
+        if(deletedPictures.contains(uri)){
+            if(deletedPictures.size() == 0){
+                deletedPictures = null;
+            } else{
+                deletedPictures.remove(uri);
+            }
+        }
+    }
+
     public ArrayList<Uri> getAddedPictures() {
         return addedPictures;
     }
@@ -273,5 +283,15 @@ public class Item implements Parcelable{
         if(addedPictures == null)
             addedPictures = new ArrayList<Uri>();
         addedPictures.add(uri);
+    }
+
+    public void removeFromAddedPicture(Uri uri){
+        if(addedPictures.contains(uri)){
+            if(addedPictures.size() == 0){
+                addedPictures = null;
+            } else{
+                addedPictures.remove(uri);
+            }
+        }
     }
 }
