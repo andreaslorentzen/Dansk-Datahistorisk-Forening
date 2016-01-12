@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
+
 import org.json.JSONArray;
 
 import java.util.ArrayList;
@@ -19,78 +21,59 @@ import java.util.Stack;
 
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 
-public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener {
+public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener, SearchManager.SearchListener {
 
     ListView itemList;
     JSONArray items;
-    List<String> itemTitles;
-    Stack<List<String>> stackTitles = new Stack<>();
-    String lastSearch = "";
 
-    public ItemListFragment() {
-        itemTitles = new ArrayList<>();
-    }
+    TextView emptyText;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d("ItemListFragment", "created");
         View layout = inflater.inflate(R.layout.fragment_item_list, container, false);
+        emptyText = (TextView) layout.findViewById(R.id.emptyText);
 
-        itemTitles = Model.getInstance().getItemTitles();
-        stackTitles.push(itemTitles);
-
+        SearchManager.setSearchList(this);
         itemList = (ListView) layout.findViewById(R.id.itemList);
         itemList.setOnItemClickListener(this);
-
+        ArrayAdapter adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1,  new ArrayList<String>());
+        itemList.setAdapter(adapter);
         updateItemList(null);
-        searchItemList();
+
 
         FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fab);
         fab.setOnClickListener(this);
-
         return layout;
     }
 
 
     private void updateItemList(List<String> titles){
-        if(titles != null)
-            itemTitles = titles;
-
-        ArrayAdapter adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles);
-        itemList.setAdapter(adapter);
-
+        ArrayAdapter adapter = (ArrayAdapter) itemList.getAdapter();
+        adapter.clear();
+        List<String>  itemTitles = Model.getInstance().getItemTitles();
+        if (itemTitles != null && titles == null)
+            titles = itemTitles;
+        if (titles == null || titles.isEmpty())
+            emptyText.setVisibility(View.VISIBLE);
+        else {
+            emptyText.setVisibility(View.GONE);
+            adapter.addAll(titles);
+        }
+        adapter.notifyDataSetChanged();
     }
 
-    /**
-    *   [h]         -> search itemTitles        -> titles       -> stack.push(titles)
-    *   [h, e]      -> search stack.peek()      -> titles       -> stack.push(titles)
-    *   [h, e, j]   -> search stack.peek()      -> titles       -> stack.push(titles)
-    *   [h, e]      -> stack.pop()              -> titles       -> stack.push(titles)
-    */
-    public void searchItemList() {
-        String search = Model.getInstance().getCurrentSearch();
-        List<String> currentTitles = itemTitles;
-        if (search == null || search.equals("") && lastSearch.equals("")) {
-            return;
-        }
-        if (search.contains(lastSearch) && search.length() == lastSearch.length() + 1) { // if 1 char is added, get last title list
-            currentTitles = stackTitles.peek();
-        } else if (lastSearch.length() > 0 && search.equals(lastSearch.substring(0, lastSearch.length() - 1))) { // if 1 char is removed, delete last title list and get the "new last" title list
-            stackTitles.pop();
-            currentTitles = stackTitles.peek();
-            lastSearch = search;
-            updateItemList(currentTitles);
-            return;
-        }
-        List<String> searchedTitles = new ArrayList<String>();
-        for (String title : currentTitles) {
-            if (title.toLowerCase().contains(search.toLowerCase()))
-                searchedTitles.add(title);
-        }
-        stackTitles.push(searchedTitles);
-        lastSearch = search;
-        updateItemList(searchedTitles);
+    @Override
+    public void onDestroy() {
+        SearchManager.setSearchList(null);
+    }
+
+    @Override
+    public void onSearch(List<String> result) {
+        updateItemList(result);
     }
 
     @Override
@@ -103,4 +86,6 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     public void onClick(View v) {
         ((MainActivity)getActivity()).startRegister();
     }
+
+
 }

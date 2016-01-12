@@ -7,19 +7,32 @@
     android:layout_height="match_parent"
     tools:context="app.ddf.danskdatahistoriskforening.main.ItemListFragment">
 
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/itemList"
-        android:choiceMode="none" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_add"
-        app:backgroundTint="@color/colorPrimaryDark" />
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/emptyText"
+            android:text="No items found!"
+            android:layout_marginTop="10dp"
+            android:textAlignment="center"
+            android:textIsSelectable="false"
+            android:singleLine="false"
+            android:phoneNumber="false" />
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/itemList"
+            android:choiceMode="none" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/fab_margin"
+            android:src="@drawable/ic_add"
+            app:backgroundTint="@color/colorPrimaryDark" />
 
 </android.support.design.widget.CoordinatorLayout>
