@@ -20,6 +20,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/no_internet"
+        android:gravity="center_horizontal"
         android:textAlignment="center"
         android:textColor="#FFFFFF"
         android:visibility="gone"

@@ -30,8 +30,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     Toolbar mainToolbar;
 
-    TextView internetBar;
-
     MenuItem searchButton;
     MenuItem editButton;
     SearchView searchView;
@@ -43,7 +41,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Model.setCurrentActivity(this);
-        internetBar = (TextView) findViewById(R.id.internetConnBar);
         setContentView(R.layout.activity_main);
         LocalMediaStorage.setContext(this);
         if(savedInstanceState == null) {
@@ -96,38 +93,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             findViewById(R.id.internetConnBar).setVisibility(View.GONE);
         }
         if(!Model.isListUpdated() && Model.isConnected()) {
-            new AsyncTask<Void, Void, String>() {
-                @Override
-                protected String doInBackground(Void... params) {
-                    return Model.getDAO().getOverviewFromBackend();
-                }
-
-                @Override
-                protected void onPostExecute(String data) {
-                    if (data != null) {
-                        System.out.println("data = " + data);
-
-                        try {
-                            List<JSONObject> items;
-                            List<String> itemTitles;
-                            itemTitles = new ArrayList<>();
-                            items = new ArrayList<>();
-                            JSONArray jsonItems = new JSONArray(data);
-
-                            for (int n = 0; n < jsonItems.length(); n++) {
-                                JSONObject item = jsonItems.getJSONObject(n);
-                                itemTitles.add(item.optString("itemheadline", "(ukendt)"));
-                                items.add(item);
-                            }
-                            Model.getInstance().setItemTitles(itemTitles);
-                            Model.getInstance().setItems(items);
-                            Model.setListUpdated(true);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }.execute();
+            updateItemList();
         }
         super.onResume();
     }
@@ -145,7 +111,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentList(){
-        // TODO Add check for is connected and if the list allready exists.
+        if(!Model.isConnected() && Model.getInstance().getItemTitles() == null){
+            Toast.makeText(this, "Der kan ikke hentes nogen liste uden internet", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if(getSupportFragmentManager().getBackStackEntryCount() == 0){
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.frame, new ItemListFragment())
@@ -265,11 +235,50 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void updateInternet(boolean isConnected){
-        if(internetBar != null){
-            if(isConnected)
-                internetBar.setVisibility(View.GONE);
-            else
-                internetBar.setVisibility(View.VISIBLE);
+        TextView iBar = (TextView) findViewById(R.id.internetConnBar);
+        if(iBar != null){
+            if(isConnected) {
+                iBar.setVisibility(View.GONE);
+                if(!Model.isListUpdated()){
+                    updateItemList();
+                }
+            }else
+                iBar.setVisibility(View.VISIBLE);
         }
+    }
+
+    public void updateItemList(){
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... params) {
+                return Model.getDAO().getOverviewFromBackend();
+            }
+
+            @Override
+            protected void onPostExecute(String data) {
+                if (data != null) {
+                    System.out.println("data = " + data);
+
+                    try {
+                        List<JSONObject> items;
+                        List<String> itemTitles;
+                        itemTitles = new ArrayList<>();
+                        items = new ArrayList<>();
+                        JSONArray jsonItems = new JSONArray(data);
+
+                        for (int n = 0; n < jsonItems.length(); n++) {
+                            JSONObject item = jsonItems.getJSONObject(n);
+                            itemTitles.add(item.optString("itemheadline", "(ukendt)"));
+                            items.add(item);
+                        }
+                        Model.getInstance().setItemTitles(itemTitles);
+                        Model.getInstance().setItems(items);
+                        Model.setListUpdated(true);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.execute();
     }
 }
