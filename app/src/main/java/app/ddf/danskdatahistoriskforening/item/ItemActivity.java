@@ -202,9 +202,21 @@ public class ItemActivity extends AppCompatActivity{
     private void save() {
         //update item if fragment is instantiated
         //destroyed fragments will have updated the item during onPause() already
-        ItemFragment itemFragment = itemFragmentWeakReference.get();
-        ItemDetailsFragment itemDetailsFragment = itemDetailsFragmentWeakReference.get();
-        ItemDescriptionFragment itemDescriptionFragment = itemDescriptionFragmentWeakReference.get();
+        ItemFragment itemFragment = null;
+        ItemDetailsFragment itemDetailsFragment = null;
+        ItemDescriptionFragment itemDescriptionFragment = null;
+
+        if(itemFragmentWeakReference != null) {
+            itemFragment = itemFragmentWeakReference.get();
+        }
+
+        if(itemDetailsFragmentWeakReference != null){
+            itemDetailsFragment = itemDetailsFragmentWeakReference.get();
+        }
+
+        if(itemDescriptionFragmentWeakReference != null){
+            itemDescriptionFragment = itemDescriptionFragmentWeakReference.get();
+        }
 
         if(itemFragment != null){
             itemFragment.updateItem(item);
@@ -226,7 +238,13 @@ public class ItemActivity extends AppCompatActivity{
             item.addToPictures(pair.second);
         }
 
-        item.setRecordings(itemFragment.audioUris);
+        /*
+        HUSK
+        HUSK
+        HUSK
+        HUSK
+        HUSK
+        item.setRecordings(itemFragment.audioUris);*/
 
 
         /*item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
