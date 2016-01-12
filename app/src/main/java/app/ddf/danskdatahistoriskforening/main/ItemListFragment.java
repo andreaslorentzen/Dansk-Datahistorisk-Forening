@@ -25,7 +25,7 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     ListView itemList;
     JSONArray items;
     List<String> itemTitles;
-    Stack<List<String>> stackTitles = new Stack<>();
+    Stack<List<String>> stackTitles;
     String lastSearch = "";
 
     public ItemListFragment() {
@@ -38,26 +38,25 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
         View layout = inflater.inflate(R.layout.fragment_item_list, container, false);
 
         itemTitles = Model.getInstance().getItemTitles();
-        stackTitles.push(itemTitles);
+
 
         itemList = (ListView) layout.findViewById(R.id.itemList);
         itemList.setOnItemClickListener(this);
 
         updateItemList(null);
-        searchItemList();
+
 
         FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fab);
         fab.setOnClickListener(this);
-
+        System.out.println(itemTitles);
         return layout;
     }
 
 
     private void updateItemList(List<String> titles){
-        if(titles != null)
-            itemTitles = titles;
-
-        ArrayAdapter adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, itemTitles);
+        if(titles == null)
+            titles = itemTitles;
+        ArrayAdapter adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1, titles);
         itemList.setAdapter(adapter);
 
     }
@@ -70,28 +69,47 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     */
     public void searchItemList() {
         String search = Model.getInstance().getCurrentSearch();
-        List<String> currentTitles = itemTitles;
-        if (search == null || search.equals("") && lastSearch.equals("")) {
-            return;
-        }
-        if (search.contains(lastSearch) && search.length() == lastSearch.length() + 1) { // if 1 char is added, get last title list
-            currentTitles = stackTitles.peek();
+        List<String> searchedTitles;
+        if (search.equals("")) {
+            // clear on empty search word
+            stackTitles = new Stack<>();
+            stackTitles.push(itemTitles);
+            searchedTitles = itemTitles;
+            System.out.println(itemTitles);
+            System.out.println(searchedTitles);
+        } else if (lastSearch.length() > 0 && search.contains(lastSearch)  && search.length() == lastSearch.length() + 1) { // if 1 char is added, get last title list
+            // incremented search word
+            searchedTitles = searchList(stackTitles.peek(), search);
+            stackTitles.push(searchedTitles);
         } else if (lastSearch.length() > 0 && search.equals(lastSearch.substring(0, lastSearch.length() - 1))) { // if 1 char is removed, delete last title list and get the "new last" title list
+            // decremented search word
             stackTitles.pop();
-            currentTitles = stackTitles.peek();
+            searchedTitles = stackTitles.peek();
+        } else  {
+            // new serach word - also handles a pasted search word (for loop)
+            stackTitles = new Stack<>();
+            stackTitles.push(itemTitles);
             lastSearch = search;
-            updateItemList(currentTitles);
-            return;
+            for (int i = 0; i < search.length(); i++)
+                stackTitles.push( searchList(stackTitles.peek(), search.substring(0,i+1)));
+            searchedTitles = stackTitles.peek();
         }
-        List<String> searchedTitles = new ArrayList<String>();
-        for (String title : currentTitles) {
-            if (title.toLowerCase().contains(search.toLowerCase()))
-                searchedTitles.add(title);
-        }
-        stackTitles.push(searchedTitles);
+
+        System.out.println(searchedTitles);
+        System.out.println(stackTitles.peek());
         lastSearch = search;
         updateItemList(searchedTitles);
     }
+
+    public List<String>  searchList(List<String> list, String text) {
+        List<String> result = new ArrayList<String>();
+        for (String title : list) {
+            if (title.toLowerCase().contains(text.toLowerCase()))
+                result.add(title);
+        }
+        return result;
+    }
+
 
     @Override
     public void onItemClick(AdapterView<?> aV, View v, int position, long l){
