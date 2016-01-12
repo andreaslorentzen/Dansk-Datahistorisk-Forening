@@ -68,6 +68,7 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
         SearchManager.setSearchList(null);
     }
 
