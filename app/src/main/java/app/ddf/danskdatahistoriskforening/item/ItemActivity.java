@@ -13,32 +13,49 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.helper.PagerSlidingTabStrip;
 import app.ddf.danskdatahistoriskforening.R;
 
 public class ItemActivity extends AppCompatActivity{
+    //TODO calculate acceptable thumbnail dimensions based on screensize or available space
+    private final int MAX_THUMBNAIL_WIDTH = 150;
+    private final int MAX_THUMBNAIL_HEIGHT = 250;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
 
     private Toolbar registerToolbar;
     private TextView internetBar;
+
     private Item item;
+    private ArrayList<Pair<ImageView,Uri>> imageUris;
 
     public Item getItem() {
         return item;
+    }
+
+    public ArrayList<Pair<ImageView,Uri>> getImageUris(){
+        return imageUris;
+    }
+
+    public void setImageUris(ArrayList<Pair<ImageView,Uri>> imageUris){
+        this.imageUris = imageUris;
     }
 
     /**
@@ -49,9 +66,9 @@ public class ItemActivity extends AppCompatActivity{
     private PagerAdapter mPagerAdapter;
 
 
-    private ItemFragment itemFragment = new ItemFragment();
-    private ItemDetailsFragment detailsFragment = new ItemDetailsFragment();
-    private ItemDescriptionFragment descriptionFragment = new ItemDescriptionFragment();
+    private ItemFragment itemFragment;
+    private ItemDetailsFragment detailsFragment;
+    private ItemDescriptionFragment descriptionFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,22 +85,82 @@ public class ItemActivity extends AppCompatActivity{
 
         // Instantiate a ViewPager and a PagerAdapter.
         viewPager = (ViewPager) findViewById(R.id.pager);
+
+
+
+        if(savedInstanceState == null) {
+            itemFragment = new ItemFragment();
+            detailsFragment = new ItemDetailsFragment();
+            descriptionFragment = new ItemDescriptionFragment();
+
+            mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+            viewPager.setAdapter(mPagerAdapter);
+
+            PagerSlidingTabStrip pagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tab_strip);
+            pagerSlidingTabStrip.setViewPager(viewPager);
+
+            item = new Item();
+            Intent intent = getIntent();
+            if (intent.hasExtra("item")) {
+                item = intent.getParcelableExtra("item");
+            }
+
+        }
+        else {
+            item = savedInstanceState.getParcelable("item");
+        }
+
+        imageUris = new ArrayList<>();
+        ArrayList<Uri> uris = item.getPictures();
+        if(uris != null){
+            for(int i = 0; i<uris.size(); i++){
+                Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(this), uris.get(i));
+                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                uriImagePair.first.setLayoutParams(sizeParameters);
+
+                imageUris.add(uriImagePair);
+
+                BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+            }
+        }
+        else{
+            Log.d("updateImage", "no uris");
+        }
+
+
+   //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
+   //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        itemFragment = new ItemFragment();
+        detailsFragment = new ItemDetailsFragment();
+        descriptionFragment = new ItemDescriptionFragment();
+
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(mPagerAdapter);
 
         PagerSlidingTabStrip pagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tab_strip);
         pagerSlidingTabStrip.setViewPager(viewPager);
+    }
 
-        item = new Item();
-        Intent intent = getIntent();
-        if(intent.hasExtra("item")){
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
 
-            item = intent.getParcelableExtra("item");
+        ArrayList<Uri> uris = new ArrayList<>();
+        for(int i=0; i<imageUris.size(); i++){
+            Pair p = (Pair) imageUris.get(i);
+            uris.add((Uri) p.second);
         }
+        item.setPictures(uris);
 
-   //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
-   //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
-
+        outState.putParcelable("item", item);
+        outState.putInt("index", viewPager.getCurrentItem());
     }
 
     @Override
@@ -119,7 +196,7 @@ public class ItemActivity extends AppCompatActivity{
     private void save() {
 
         item.setItemHeadline(itemFragment.getItemTitle());
-        for(Pair<ImageView, Uri> pair : itemFragment.imageUris) {
+        for(Pair<ImageView, Uri> pair : imageUris) {
             item.addToPictures(pair.second);
         }
         item.setRecordings(itemFragment.audioUris);
@@ -221,28 +298,66 @@ public class ItemActivity extends AppCompatActivity{
 
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
-        private Pair<String, Fragment>[] fragments = new Pair[3];
+        /*private Pair<String, Fragment>[] fragments = new Pair[3];*/
 
         public ScreenSlidePagerAdapter(FragmentManager fm) {
             super(fm);
-            fragments[0] = new Pair<String, Fragment>("Genstand", itemFragment);
+           /* fragments[0] = new Pair<String, Fragment>("Genstand", itemFragment);
             fragments[1] = new Pair<String, Fragment>("Beskrivelse", descriptionFragment);
-            fragments[2] = new Pair<String, Fragment>("Oplysninger", detailsFragment);
+            fragments[2] = new Pair<String, Fragment>("Oplysninger", detailsFragment);*/
         }
 
         @Override
         public Fragment getItem(int position) {
-            return fragments[position].second;
+            Log.d("ddfstate", "new fragment: " + position);
+
+            Fragment fragment;
+
+            switch (position){
+                case 0:
+                    fragment = new ItemFragment();
+                    itemFragment = (ItemFragment) fragment;
+                    break;
+                case 1:
+                    fragment = new ItemDescriptionFragment();
+                    descriptionFragment = (ItemDescriptionFragment) fragment;
+                    break;
+                case 2:
+                    fragment = new ItemDetailsFragment();
+                    detailsFragment = (ItemDetailsFragment) fragment;
+                    break;
+                default:
+                    fragment = new ItemFragment();
+            }
+
+            return fragment;
         }
 
         @Override
         public int getCount() {
-            return fragments.length;
+            return 3;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return fragments[position].first;
+            CharSequence title;
+
+            switch (position){
+                case 0:
+                    title = "Genstand";
+                    break;
+                case 1:
+                    title = "Beskrivelse";
+                    break;
+                case 2:
+                    title = "Oplysninger";
+                    break;
+                default:
+                    title = "";
+                    break;
+            }
+
+            return title;
         }
     }
 

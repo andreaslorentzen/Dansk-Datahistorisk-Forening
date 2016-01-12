@@ -10,6 +10,7 @@ import java.util.List;
 import app.ddf.danskdatahistoriskforening.dal.IDAO;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.dal.TempDAO;
+import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 
 /**
  * Created by mathias on 05/01/16.
@@ -21,6 +22,7 @@ public class Model {
     private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     private static boolean isConnected;
     private static AppCompatActivity currentActivity;
+    private static SearchManager sm = new SearchManager();
 
     public static Model getInstance() {
         if (ourInstance == null) {
@@ -94,20 +96,7 @@ public class Model {
         this.currentDetailsURI = currentDetailsURI;
     }
 
-    private String currentSearch;
-
-    public String getCurrentSearch() {
-        return currentSearch;
+    public SearchManager getSearchManager() {
+        return sm;
     }
-
-    public void setCurrentSearch(String currentSearch) {
-        this.currentSearch = currentSearch;
-    }
-
-
-
-
-
-
-
 }

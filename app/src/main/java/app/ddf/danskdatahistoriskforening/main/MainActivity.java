@@ -3,7 +3,6 @@ package app.ddf.danskdatahistoriskforening.main;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -81,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         updateSearchVisibility();
 
-        searchView.setQuery(Model.getInstance().getCurrentSearch(), false);
+        searchView.setQuery(Model.getInstance().getSearchManager().getCurrentSearch(), false);
 
         searchView.setOnQueryTextListener(this);
 
@@ -171,11 +170,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     .addToBackStack(null)
                     .commit();
             boolean expanded = isSearchExpanded();
-            String query = Model.getInstance().getCurrentSearch();
             setSearchButtonVisible(false);
             updateSearchVisibility();
             setSearchExpanded(expanded);
-            Model.getInstance().setCurrentSearch(query);
         } catch(JSONException e){
             e.printStackTrace();
             return;
@@ -207,13 +204,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextChange(String newText) {
-
-        Model.getInstance().setCurrentSearch(newText);
-        if(getSupportFragmentManager().getBackStackEntryCount()>0){
-            List<Fragment> fragments = getSupportFragmentManager().getFragments();
-            ((ItemListFragment)fragments.get(1)).searchItemList();
-        }
-
+        Model.getInstance().getSearchManager().searchItemList(newText);
         return true;
     }
 
@@ -250,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 break;
             case 1:
                 setSearchButtonVisible(true);
-                String query = Model.getInstance().getCurrentSearch();
+                String query = Model.getInstance().getSearchManager().getCurrentSearch();
                 updateSearchVisibility();
                 searchView.setQuery(query, false);
                 break;
