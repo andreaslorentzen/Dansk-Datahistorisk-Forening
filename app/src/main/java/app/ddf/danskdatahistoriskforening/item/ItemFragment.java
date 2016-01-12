@@ -9,6 +9,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
@@ -38,6 +39,12 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
     private final int MAX_THUMBNAIL_WIDTH = 150;
     private final int MAX_THUMBNAIL_HEIGHT = 250;
 
+    //
+    boolean isCreated = false;
+    int requestCode;
+    int resultCode;
+    Intent data;
+
     ImageButton cameraButton;
     ImageButton micButton;
     EditText itemTitle;
@@ -51,6 +58,13 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
     TextView durText;
     TextView posText;
     TextView audioText;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        imageUris = new ArrayList<>();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -69,7 +83,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
 
         //((HorizontalScrollView) layout.findViewById(R.id.horizontalScrollView)).setFillViewport(true);
         imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
-        imageUris = new ArrayList<>();
 
         ArrayList<Uri> uris = item.getPictures();
         if(uris != null){
@@ -101,6 +114,9 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         if(savedInstanceState == null){
             setAudioPlayer(); // sets mPlayer
         }
+
+        isCreated = true;
+
         return layout;
     }
 
@@ -198,10 +214,17 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(!isCreated){
+
+        }
+
         if (requestCode == ItemActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
+                Log.d("ddfstate", imageUris + "");
+
                 // Image captured and saved to fileUri specified in the Intent
-                ImageView image = imageUris.get(imageUris.size()-1).first;
+                int lastIndex = imageUris.size()-1;
+                ImageView image = imageUris.get(lastIndex).first;
 
                 LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
                 image.setLayoutParams(sizeParameters);
@@ -209,7 +232,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
                 BitmapEncoder.loadBitmapFromURI(image, imageUris.get(imageUris.size() - 1).second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
                 image.setOnClickListener(this);
 
-                //image.setImageURI(imageUris.get(imageUris.size()-1));
                 imageContainer.addView(image);
 
                 if(((ItemActivity)getActivity()).getItem() != null) {
