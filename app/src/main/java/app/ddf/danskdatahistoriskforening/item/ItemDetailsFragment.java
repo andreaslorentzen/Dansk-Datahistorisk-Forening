@@ -18,7 +18,7 @@ import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 
 
-public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener{
+public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener, ItemUpdater{
 
     TextView dateFrom;
     TextView dateTo;
@@ -137,5 +137,22 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
 
     public boolean hasDateToChanged(){
         return dateToChanged;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        updateItem(((ItemActivity) getActivity()).getItem());
+    }
+
+    @Override
+    public void updateItem(Item item) {
+        item.setDonator(donator.getText().toString());
+        item.setProducer(producer.getText().toString());
+
+        /*TextView dateFrom;
+        TextView dateTo;
+        TextView dateReceive;*/
     }
 }

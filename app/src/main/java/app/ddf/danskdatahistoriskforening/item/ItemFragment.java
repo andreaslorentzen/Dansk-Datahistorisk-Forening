@@ -34,7 +34,7 @@ import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 import app.ddf.danskdatahistoriskforening.R;
 
-public class ItemFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+public class ItemFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, ItemUpdater {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
     private final int MAX_THUMBNAIL_WIDTH = 150;
     private final int MAX_THUMBNAIL_HEIGHT = 250;
@@ -157,8 +157,18 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
 
     @Override
     public void onPause() {
+        Log.d("ddfstate", "onPause");
+
         super.onPause();
+
         killAudioPlayer(); // stop mPlayer and mHandler
+
+        updateItem(((ItemActivity) getActivity()).getItem());
+    }
+
+    @Override
+    public void updateItem(Item item){
+        item.setItemHeadline(itemTitle.getText().toString());
     }
 
     @Override

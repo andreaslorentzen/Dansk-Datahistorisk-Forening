@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.text.ParseException;
 import java.util.ArrayList;
 
@@ -69,6 +70,10 @@ public class ItemActivity extends AppCompatActivity{
     private ItemFragment itemFragment;
     private ItemDetailsFragment detailsFragment;
     private ItemDescriptionFragment descriptionFragment;
+
+    private WeakReference<ItemFragment> itemFragmentWeakReference;
+    private WeakReference<ItemDetailsFragment> itemDetailsFragmentWeakReference;
+    private WeakReference<ItemDescriptionFragment> itemDescriptionFragmentWeakReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,14 +200,19 @@ public class ItemActivity extends AppCompatActivity{
 
     private void save() {
 
-        item.setItemHeadline(itemFragment.getItemTitle());
+
+        //item.setItemHeadline(itemFragment.getItemTitle());
+
         for(Pair<ImageView, Uri> pair : imageUris) {
             item.addToPictures(pair.second);
         }
+
         item.setRecordings(itemFragment.audioUris);
-        item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
+
+
+        /*item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
         item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
-        item.setItemDescription(descriptionFragment.getItemDescription());
+        item.setItemDescription(descriptionFragment.getItemDescription());*/
 
 
         if(item.getItemId() > 0){
