@@ -23,8 +23,8 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         setContentView(R.layout.activity_recording);
         timerHandler = new Handler();
         vr = new VoiceRecorder();
-        pauseButton = (ImageButton) this.findViewById(R.id.recordButton);
-        time_text = (TextView) this.findViewById(R.id.timeText);
+        pauseButton = (ImageButton) this.findViewById(R.id.recButton);
+        time_text = (TextView) this.findViewById(R.id.recText);
         pauseButton.setOnClickListener(this);
         /*
         // IGNORE CODE BELOW - unnecessary/irrelevant feedback to the user
