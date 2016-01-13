@@ -55,13 +55,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         Model.setCurrentActivity(this);
         setContentView(R.layout.activity_main);
         LocalMediaStorage.setContext(this);
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
 
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.frame, new FrontFragment())
                     .commit();
-        }
-        else{
+        } else {
             setSearchExpanded(savedInstanceState.getBoolean("isSearchExpanded"));
             setSearchButtonVisible(savedInstanceState.getBoolean("isSearchButtonVisible", true));
 
@@ -95,11 +94,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         System.out.println(Model.isConnected());
-        if(!Model.isConnected()){
+        if (!Model.isConnected()) {
             findViewById(R.id.internetConnBar).setVisibility(View.VISIBLE);
-        } else{
+        } else {
             findViewById(R.id.internetConnBar).setVisibility(View.GONE);
         }
 
@@ -107,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         filter.addAction(Model.BROADCAST_ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
 
-        if(!Model.isListUpdated() && Model.isConnected()) {
+        if (!Model.isListUpdated() && Model.isConnected()) {
             updateItemList();
         }
         super.onResume();
@@ -125,13 +124,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         startActivity(i);
     }
 
-    public void setFragmentList(){
-        if(!Model.isConnected() && Model.getInstance().getItemTitles() == null){
+    public void setFragmentList() {
+        if (!Model.isConnected() && Model.getInstance().getItemTitles() == null) {
             Toast.makeText(this, "Der kan ikke hentes nogen liste uden internet", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if(getSupportFragmentManager().getBackStackEntryCount() == 0){
+        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.frame, new ItemListFragment())
                     .addToBackStack("list")
@@ -140,13 +139,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentDetails(int position) {
-        if(!Model.isConnected()){
+        if (!Model.isConnected()) {
             Toast.makeText(this, "Detaljer kan ikke hentes, da der ikke er internet", Toast.LENGTH_LONG).show();
             return;
         }
         try {
             String detailsURI = Model.getInstance().getItems().get(position).getString("detailsuri");
-            if(detailsURI == null)
+            if (detailsURI == null)
                 // Maybe throw exception
                 return;
             Model.getInstance().setCurrentDetailsURI(detailsURI);
@@ -158,23 +157,22 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             setSearchButtonVisible(false);
             updateSearchVisibility();
             setSearchExpanded(expanded);
-        } catch(JSONException e){
+        } catch (JSONException e) {
             e.printStackTrace();
             return;
             //TODO DO SOMETHING USEFULL
         }
     }
 
-    private void updateSearchVisibility(){
+    private void updateSearchVisibility() {
         boolean isSerSearchVisible = isSearchButtonVisible();
         searchButton.setVisible(isSerSearchVisible);
         editButton.setVisible(!isSerSearchVisible);
 
-        if(!isSerSearchVisible){
+        if (!isSerSearchVisible) {
             MenuItemCompat.collapseActionView(searchButton);
-        }
-        else{
-            if(isSearchExpanded()) {
+        } else {
+            if (isSearchExpanded()) {
                 if (!MenuItemCompat.isActionViewExpanded(searchButton))
                     MenuItemCompat.expandActionView(searchButton);
             }
@@ -195,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        if(item == editButton){
+        if (item == editButton) {
             Intent i = new Intent(this, ItemActivity.class);
             i.putExtra("item", Model.getInstance().getCurrentItem());
             startActivity(i);
@@ -220,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public void onBackPressed() {
         super.onBackPressed();
 
-        switch (getSupportFragmentManager().getBackStackEntryCount()){
+        switch (getSupportFragmentManager().getBackStackEntryCount()) {
             case 0:
 
                 break;
@@ -249,20 +247,20 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         this.searchButtonVisible = searchButtonVisible;
     }
 
-    public void updateInternet(boolean isConnected){
+    public void updateInternet(boolean isConnected) {
         TextView iBar = (TextView) findViewById(R.id.internetConnBar);
-        if(iBar != null){
-            if(isConnected) {
+        if (iBar != null) {
+            if (isConnected) {
                 iBar.setVisibility(View.GONE);
-                if(!Model.isListUpdated()){
+                if (!Model.isListUpdated()) {
                     updateItemList();
                 }
-            }else
+            } else
                 iBar.setVisibility(View.VISIBLE);
         }
     }
 
-    public void updateItemList(){
+    public void updateItemList() {
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... params) {
@@ -288,7 +286,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         }
                         Model.getInstance().setItemTitles(itemTitles);
                         Model.getInstance().setItems(items);
-                        if(SearchManager.getSearchList() != null)
+                        if (SearchManager.getSearchList() != null)
                             Model.getInstance().getSearchManager().searchItemList(Model.getInstance().getSearchManager().getCurrentSearch());
                         Model.setListUpdated(true);
                     } catch (JSONException e) {
