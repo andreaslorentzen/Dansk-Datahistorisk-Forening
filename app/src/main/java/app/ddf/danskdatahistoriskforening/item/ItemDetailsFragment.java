@@ -19,7 +19,7 @@ import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 
 
-public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener, ItemUpdater{
+public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener, ItemUpdater {
 
     TextView dateFrom;
     TextView dateTo;
@@ -63,12 +63,12 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
 
     @Override
     public void onClick(View v) {
-        if(v == dateReceiveWrapper || v == dateFromWrapper || v == dateToWrapper){
-            if(v == dateReceiveWrapper) {
+        if (v == dateReceiveWrapper || v == dateFromWrapper || v == dateToWrapper) {
+            if (v == dateReceiveWrapper) {
                 currentDateField = dateReceive;
-            }else if(v == dateFromWrapper) {
+            } else if (v == dateFromWrapper) {
                 currentDateField = dateFrom;
-            }else if(v == dateToWrapper) {
+            } else if (v == dateToWrapper) {
                 currentDateField = dateTo;
             }
             DatePickerFragment datePicker = new DatePickerFragment();
@@ -79,7 +79,7 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
 
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        currentDateField.setText("" + year + "-" + (((monthOfYear + 1) < 10) ? "0"+(monthOfYear+1) : (monthOfYear+1)) + "-" + dayOfMonth);
+        currentDateField.setText("" + year + "-" + (((monthOfYear + 1) < 10) ? "0" + (monthOfYear + 1) : (monthOfYear + 1)) + "-" + dayOfMonth);
     }
 
     @Override
@@ -97,10 +97,10 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
             item.setItemRecieved(dateReceive.getText().toString().equals("") || dateReceive.getText().toString().equals("Ikke sat") ? null : Model.getFormatter().parse(dateReceive.getText().toString()));
             item.setItemDatingFrom(dateFrom.getText().toString().equals("") || dateFrom.getText().toString().equals("Ikke sat") ? null : Model.getFormatter().parse(dateFrom.getText().toString()));
             item.setItemDatingTo(dateTo.getText().toString().equals("") || dateTo.getText().toString().equals("Ikke sat") ? null : Model.getFormatter().parse(dateTo.getText().toString()));
-        } catch(ParseException e){
+        } catch (ParseException e) {
             e.printStackTrace();
         }
-        if(item.getItemRecievedAsString() != null)
+        if (item.getItemRecievedAsString() != null)
             System.out.println(item.getItemRecievedAsString());
     }
 }

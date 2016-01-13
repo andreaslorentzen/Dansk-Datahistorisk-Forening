@@ -13,23 +13,23 @@ import java.util.Date;
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.item.ItemDetailsFragment;
 
-public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener{
+public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
     private DatePickerDialog.OnDateSetListener externalListener;
 
-    public void setOnDateSetListener(DatePickerDialog.OnDateSetListener listener){
+    public void setOnDateSetListener(DatePickerDialog.OnDateSetListener listener) {
         this.externalListener = listener;
     }
 
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceBundle){
+    public Dialog onCreateDialog(Bundle savedInstanceBundle) {
         Date chosenDate;
-        if(ItemDetailsFragment.currentDateField.getText().toString().equals("Ikke sat") || ItemDetailsFragment.currentDateField.getText().toString().equals("")){
+        if (ItemDetailsFragment.currentDateField.getText().toString().equals("Ikke sat") || ItemDetailsFragment.currentDateField.getText().toString().equals("")) {
             chosenDate = new Date();
-        } else{
+        } else {
             try {
                 chosenDate = Model.getFormatter().parse(ItemDetailsFragment.currentDateField.getText().toString());
-            } catch (ParseException e){
+            } catch (ParseException e) {
                 e.printStackTrace();
                 return null;
             }
@@ -43,7 +43,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        if(externalListener != null){
+        if (externalListener != null) {
             externalListener.onDateSet(view, year, monthOfYear, dayOfMonth);
         }
     }

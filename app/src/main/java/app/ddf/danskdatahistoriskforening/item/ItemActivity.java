@@ -34,7 +34,7 @@ import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.helper.PagerSlidingTabStrip;
 import app.ddf.danskdatahistoriskforening.R;
 
-public class ItemActivity extends AppCompatActivity{
+public class ItemActivity extends AppCompatActivity {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
     private final int MAX_THUMBNAIL_WIDTH = 150;
     private final int MAX_THUMBNAIL_HEIGHT = 250;
@@ -45,17 +45,17 @@ public class ItemActivity extends AppCompatActivity{
     private Toolbar registerToolbar;
 
     private Item item;
-    private ArrayList<Pair<ImageView,Uri>> imageUris;
+    private ArrayList<Pair<ImageView, Uri>> imageUris;
 
     public Item getItem() {
         return item;
     }
 
-    public ArrayList<Pair<ImageView,Uri>> getImageUris(){
+    public ArrayList<Pair<ImageView, Uri>> getImageUris() {
         return imageUris;
     }
 
-    public void setImageUris(ArrayList<Pair<ImageView,Uri>> imageUris){
+    public void setImageUris(ArrayList<Pair<ImageView, Uri>> imageUris) {
         this.imageUris = imageUris;
     }
 
@@ -91,8 +91,7 @@ public class ItemActivity extends AppCompatActivity{
         viewPager = (ViewPager) findViewById(R.id.pager);
 
 
-
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             /*itemFragment = new ItemFragment();
             detailsFragment = new ItemDetailsFragment();
             descriptionFragment = new ItemDescriptionFragment();*/
@@ -109,15 +108,14 @@ public class ItemActivity extends AppCompatActivity{
                 item = intent.getParcelableExtra("item");
             }
 
-        }
-        else {
+        } else {
             item = savedInstanceState.getParcelable("item");
         }
 
         imageUris = new ArrayList<>();
         ArrayList<Uri> uris = item.getPictures();
-        if(uris != null){
-            for(int i = 0; i<uris.size(); i++){
+        if (uris != null) {
+            for (int i = 0; i < uris.size(); i++) {
                 Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(this), uris.get(i));
                 LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
                 uriImagePair.first.setLayoutParams(sizeParameters);
@@ -126,14 +124,13 @@ public class ItemActivity extends AppCompatActivity{
 
                 BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
             }
-        }
-        else{
+        } else {
             Log.d("updateImage", "no uris");
         }
 
 
-   //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
-   //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
+        //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
+        //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
 
     }
 
@@ -157,7 +154,7 @@ public class ItemActivity extends AppCompatActivity{
         super.onSaveInstanceState(outState);
 
         ArrayList<Uri> uris = new ArrayList<>();
-        for(int i=0; i<imageUris.size(); i++){
+        for (int i = 0; i < imageUris.size(); i++) {
             Pair p = (Pair) imageUris.get(i);
             uris.add((Uri) p.second);
         }
@@ -173,7 +170,6 @@ public class ItemActivity extends AppCompatActivity{
         inflater.inflate(R.menu.menu_register, menu);
         return true;
     }
-
 
 
     @Override
@@ -204,35 +200,34 @@ public class ItemActivity extends AppCompatActivity{
         ItemDetailsFragment itemDetailsFragment = null;
         ItemDescriptionFragment itemDescriptionFragment = null;
 
-        if(itemFragmentWeakReference != null) {
+        if (itemFragmentWeakReference != null) {
             itemFragment = itemFragmentWeakReference.get();
         }
 
-        if(itemDetailsFragmentWeakReference != null){
+        if (itemDetailsFragmentWeakReference != null) {
             itemDetailsFragment = itemDetailsFragmentWeakReference.get();
         }
 
-        if(itemDescriptionFragmentWeakReference != null){
+        if (itemDescriptionFragmentWeakReference != null) {
             itemDescriptionFragment = itemDescriptionFragmentWeakReference.get();
         }
 
-        if(itemFragment != null){
+        if (itemFragment != null) {
             itemFragment.updateItem(item);
         }
 
-        if(itemDetailsFragment != null){
+        if (itemDetailsFragment != null) {
             itemDetailsFragment.updateItem(item);
         }
 
-        if(itemDescriptionFragment != null){
+        if (itemDescriptionFragment != null) {
             itemDescriptionFragment.updateItem(item);
         }
 
 
-
         //item.setItemHeadline(itemFragment.getItemTitle());
 
-        for(Pair<ImageView, Uri> pair : imageUris) {
+        for (Pair<ImageView, Uri> pair : imageUris) {
             item.addToPictures(pair.second);
         }
 
@@ -250,42 +245,40 @@ public class ItemActivity extends AppCompatActivity{
         item.setItemDescription(descriptionFragment.getItemDescription());*/
 
 
-        if(item.getItemId() > 0){
-            if(!Model.isConnected()){
+        if (item.getItemId() > 0) {
+            if (!Model.isConnected()) {
                 Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
             }
-            new AsyncTask<Item, Void, Integer>(){
+            new AsyncTask<Item, Void, Integer>() {
                 @Override
-                protected Integer doInBackground(Item... params){
+                protected Integer doInBackground(Item... params) {
                     return Model.getDAO().updateItem(ItemActivity.this, params[0]);
                 }
 
                 @Override
-                protected void onPostExecute(Integer response){
+                protected void onPostExecute(Integer response) {
                     checkForErrors(response);
                 }
             }.execute(item);
-        }
-        else{
-            new AsyncTask<Item, Void, Integer>(){
+        } else {
+            new AsyncTask<Item, Void, Integer>() {
                 @Override
-                protected Integer doInBackground(Item... params){
+                protected Integer doInBackground(Item... params) {
                     return Model.getDAO().saveItemToDB(ItemActivity.this, params[0]);
                 }
 
                 @Override
-                protected void onPostExecute(Integer response){
-                   checkForErrors(response);
+                protected void onPostExecute(Integer response) {
+                    checkForErrors(response);
                 }
             }.execute(item);
         }
 
 
-
     }
 
-    private void checkForErrors(int responseCode){
-        switch(responseCode){
+    private void checkForErrors(int responseCode) {
+        switch (responseCode) {
             case -1:
                 Model.setListUpdated(false);
                 finish();
@@ -309,7 +302,7 @@ public class ItemActivity extends AppCompatActivity{
         }
     }
 
-    private void prompt(){
+    private void prompt() {
         finish();
     }
 
@@ -326,7 +319,7 @@ public class ItemActivity extends AppCompatActivity{
 
             Fragment fragment;
 
-            switch (position){
+            switch (position) {
                 case 0:
                     fragment = new ItemFragment();
                     break;
@@ -349,7 +342,7 @@ public class ItemActivity extends AppCompatActivity{
         public Object instantiateItem(ViewGroup container, int position) {
             Fragment fragment = (Fragment) super.instantiateItem(container, position);
 
-            switch (position){
+            switch (position) {
                 case 0:
                     itemFragmentWeakReference = new WeakReference<ItemFragment>((ItemFragment) fragment);
                     break;
@@ -373,7 +366,7 @@ public class ItemActivity extends AppCompatActivity{
         public CharSequence getPageTitle(int position) {
             CharSequence title;
 
-            switch (position){
+            switch (position) {
                 case 0:
                     title = "Genstand";
                     break;
@@ -396,16 +389,15 @@ public class ItemActivity extends AppCompatActivity{
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             //itemFragment.onActivityResult(requestCode, resultCode, data);
-        }
-        else if(requestCode == IMAGEVIEWER_REQUEST_CODE){
+        } else if (requestCode == IMAGEVIEWER_REQUEST_CODE) {
             //itemFragment.onActivityResult(requestCode, resultCode, data);
         }
     }
 
-    public void updateInternet(boolean isConnected){
+    public void updateInternet(boolean isConnected) {
         TextView iBar = (TextView) findViewById(R.id.internetConnBar);
-        if(iBar != null){
-            if(isConnected)
+        if (iBar != null) {
+            if (isConnected)
                 iBar.setVisibility(View.GONE);
             else
                 iBar.setVisibility(View.VISIBLE);
