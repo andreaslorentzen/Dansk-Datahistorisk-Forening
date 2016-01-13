@@ -1,8 +1,12 @@
 package app.ddf.danskdatahistoriskforening.main;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -38,6 +42,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private boolean isSearchExpanded;
     private boolean searchButtonVisible = true;
 
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            MainActivity.this.checkForErrors(intent.getIntExtra("status", 0));
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,8 +69,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
         mainToolbar.setNavigationIcon(null);
         setSupportActionBar(mainToolbar);
-
-
     }
 
     @Override
@@ -93,6 +102,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         } else{
             findViewById(R.id.internetConnBar).setVisibility(View.GONE);
         }
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Model.BROADCAST_ACTION);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+
         if(!Model.isListUpdated() && Model.isConnected()) {
             updateItemList();
         }
@@ -283,5 +297,32 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 }
             }
         }.execute();
+    }
+
+    private void checkForErrors(int responseCode) {
+        switch (responseCode) {
+            case -1:
+                Toast.makeText(this, "Genstanden blev sendt til severen", Toast.LENGTH_SHORT).show();
+                break;
+            case 2:
+                Toast.makeText(this, "Enheden er ikke forbundet til internettet!", Toast.LENGTH_LONG).show();
+                break;
+            case 3:
+                Toast.makeText(this, "Server problem", Toast.LENGTH_LONG).show();
+                break;
+            case 4:
+                Toast.makeText(this, "Kunne ikke forbinde til serveren", Toast.LENGTH_LONG).show();
+                break;
+            case 5:
+                Toast.makeText(this, "Server problem", Toast.LENGTH_LONG).show(); // JSON problem
+            default:
+                Toast.makeText(this, "Noget gik galt", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
     }
 }

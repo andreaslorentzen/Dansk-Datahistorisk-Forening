@@ -83,7 +83,6 @@ public class ItemActivity extends AppCompatActivity {
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            System.out.println("Intent received");
             ItemActivity.this.checkForErrors(intent.getIntExtra("status", 0));
         }
     };
@@ -288,10 +287,11 @@ public class ItemActivity extends AppCompatActivity {
         }
     }
 
-
-
     private void checkForErrors(int responseCode) {
         switch (responseCode) {
+            case -1:
+                Toast.makeText(this, "Genstanden blev sendt til severen", Toast.LENGTH_SHORT).show();
+                break;
             case 2:
                 Toast.makeText(this, "Enheden er ikke forbundet til internettet!", Toast.LENGTH_LONG).show();
                 break;

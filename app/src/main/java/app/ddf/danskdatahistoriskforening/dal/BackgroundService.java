@@ -23,14 +23,15 @@ public class BackgroundService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Context context = getApplication();
         Item item = intent.getParcelableExtra("item");
+        int returnValue = -1;
         if(intent.getStringExtra("event").equals("create")){
-            Model.getDAO().saveItemToDB(context, item);
+            returnValue = Model.getDAO().saveItemToDB(context, item);
         } else if(intent.getStringExtra("event").equals("update")){
-            Model.getDAO().updateItem(context, item);
+            returnValue = Model.getDAO().updateItem(context, item);
         }
         Intent localIntent = new Intent();
         localIntent.setAction(Model.BROADCAST_ACTION);
-        localIntent.putExtra("status", -1);
+        localIntent.putExtra("status", returnValue);
         LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
     }
 }
