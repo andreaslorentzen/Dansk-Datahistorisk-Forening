@@ -150,42 +150,6 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
                     Log.d("itemdetails", data.toJSON().toString());
 
                     updateViews(currentItem);
-
-                    /*// felterne udfyld felterne
-                    itemheadlineView.setText(currentItem.getItemHeadline());
-                    // TODO handle lyd
-                    itemdescriptionView.setText(currentItem.getItemDescription());
-                    receivedView.setText(((currentItem.getItemRecievedAsString() == null) ? null : currentItem.getItemRecievedAsString()));
-                    datingFromView.setText(((currentItem.getItemDatingFromAsString() == null) ? null : currentItem.getItemDatingFromAsString()));
-                    datingToView.setText(((currentItem.getItemDatingToAsString() == null) ? null : currentItem.getItemDatingToAsString()));
-
-                    donatorView.setText(currentItem.getDonator());
-                    producerView.setText(currentItem.getProducer());
-                    postNummerView.setText(currentItem.getPostalCode());
-
-                    //create picture thumbnails
-                    ArrayList<Uri> uris = currentItem.getPictures();
-                    Object context = getActivity();
-                    Log.d("ddfstate", "Activity: " + getActivity());
-                    Log.d("ddfstate", uris + "");
-
-                    if(uris != null && context != null){//activity may have been destroyed while downloading
-                        for(int i = 0; i<uris.size(); i++){
-
-
-                            Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(getActivity()), uris.get(i));
-                            LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-                            uriImagePair.first.setLayoutParams(sizeParameters);
-
-                            imageContainer.addView(uriImagePair.first);
-                            imageUris.add(uriImagePair);
-
-                            BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-                            uriImagePair.first.setOnClickListener(ItemShowFragment.this);
-                        }
-                    }*/
-
-
                 } else {
                     Log.d("itemdetails", "else");
                     //TODO ERROR HANDLING FOR data = null
