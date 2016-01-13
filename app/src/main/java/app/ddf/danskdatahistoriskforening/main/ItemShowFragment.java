@@ -32,8 +32,8 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
     private final int MAX_THUMBNAIL_HEIGHT = 250;
 
     private String detailsURI;
+
     private TextView itemheadlineView;
-    private HorizontalScrollView imageScrollView;
     private TextView itemdescriptionView;
     private TextView receivedView;
     private TextView datingFromView;
@@ -45,6 +45,8 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
     private LinearLayout imageContainer;
     private ArrayList<Pair<ImageView, Uri>> imageUris;
 
+    private boolean shouldReloadFromAPI = true;
+
     public ItemShowFragment() {
         // Required empty public constructor
     }
@@ -54,15 +56,17 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
         super.onCreate(savedInstanceState);
 
         imageUris = new ArrayList<>();
+
+        if(savedInstanceState != null){
+            shouldReloadFromAPI = false;
+        }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.fragment_item_show, container, false);
 
         itemheadlineView = (TextView) layout.findViewById(R.id.itemheadline);
-        imageScrollView = (HorizontalScrollView) layout.findViewById(R.id.imageScrollView);
         itemdescriptionView = (TextView) layout.findViewById(R.id.itemdescription);
         receivedView = (TextView) layout.findViewById(R.id.received);
         datingFromView = (TextView) layout.findViewById(R.id.datingFrom);
@@ -74,15 +78,57 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
 
     //    ((MainActivity) getActivity()).updateSearchVisibility();
 
-        setDetailsURI(Model.getInstance().getCurrentDetailsURI());
+        //setDetailsURI(Model.getInstance().getCurrentDetailsURI());
 
         return layout;
     }
 
     @Override
     public void onResume(){
-        setDetailsURI(Model.getInstance().getCurrentDetailsURI());
         super.onResume();
+
+        if(shouldReloadFromAPI) {
+            setDetailsURI(Model.getInstance().getCurrentDetailsURI());
+        }
+        else{
+            updateViews(Model.getInstance().getCurrentItem());
+        }
+    }
+
+    private void updateViews(Item currentItem){
+        // felterne udfyld felterne
+        itemheadlineView.setText(currentItem.getItemHeadline());
+        // TODO handle lyd
+        itemdescriptionView.setText(currentItem.getItemDescription());
+        receivedView.setText(((currentItem.getItemRecievedAsString() == null) ? null : currentItem.getItemRecievedAsString()));
+        datingFromView.setText(((currentItem.getItemDatingFromAsString() == null) ? null : currentItem.getItemDatingFromAsString()));
+        datingToView.setText(((currentItem.getItemDatingToAsString() == null) ? null : currentItem.getItemDatingToAsString()));
+
+        donatorView.setText(currentItem.getDonator());
+        producerView.setText(currentItem.getProducer());
+        postNummerView.setText(currentItem.getPostalCode());
+
+        //create picture thumbnails
+        ArrayList<Uri> uris = currentItem.getPictures();
+        Object context = getActivity();
+        Log.d("ddfstate", "Activity: " + getActivity());
+        Log.d("ddfstate", uris + "");
+
+        if(uris != null && context != null){//activity may have been destroyed while downloading
+            for(int i = 0; i<uris.size(); i++){
+
+
+                Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(getActivity()), uris.get(i));
+                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                uriImagePair.first.setLayoutParams(sizeParameters);
+
+                imageContainer.addView(uriImagePair.first);
+                imageUris.add(uriImagePair);
+
+                BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                uriImagePair.first.setOnClickListener(ItemShowFragment.this);
+            }
+        }
     }
 
     public void setDetailsURI(String detailsURI){
@@ -103,7 +149,9 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
                     Item currentItem = data;
                     Log.d("itemdetails", data.toJSON().toString());
 
-                    // felterne udfyld felterne
+                    updateViews(currentItem);
+
+                    /*// felterne udfyld felterne
                     itemheadlineView.setText(currentItem.getItemHeadline());
                     // TODO handle lyd
                     itemdescriptionView.setText(currentItem.getItemDescription());
@@ -135,7 +183,7 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
                             BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
                             uriImagePair.first.setOnClickListener(ItemShowFragment.this);
                         }
-                    }
+                    }*/
 
 
                 } else {
