@@ -1,15 +1,10 @@
 package app.ddf.danskdatahistoriskforening.item;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
@@ -19,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -28,25 +22,12 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 
-import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
-import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
+import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
-import app.ddf.danskdatahistoriskforening.R;
 
 public class ItemFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, ItemUpdater {
-    //TODO calculate acceptable thumbnail dimensions based on screensize or available space
-    private final int MAX_THUMBNAIL_WIDTH = 150;
-    private final int MAX_THUMBNAIL_HEIGHT = 250;
 
-    //onActivityResult state variables
-    boolean isCreated = false;
-    boolean hasResult = false;
-    int requestCode;
-    int resultCode;
-    Intent data;
-
-    //views
     ImageButton cameraButton;
     ImageButton micButton;
     EditText itemTitle;
@@ -62,13 +43,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
     ArrayList<Uri> audioUris;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        Log.d("ddfstate", "onCreate");
-
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d("ddfstate", "onCreateView");
 
@@ -80,7 +54,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
 
         Item item = ((ItemActivity) getActivity()).getItem();
-        Log.d("ddfstate", item + "");
         itemTitle.setText(item.getItemHeadline());
 
 
@@ -88,20 +61,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
 
         //((HorizontalScrollView) layout.findViewById(R.id.horizontalScrollView)).setFillViewport(true);
         imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
-
-        ArrayList<Uri> uris = item.getPictures();
-        ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
-        if(uris != null){
-            for(int i = 0; i<uris.size(); i++){
-                Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(getActivity()), uris.get(i));
-
-                imageContainer.addView(uriImagePair.first);
-                uriImagePair.first.setOnClickListener(this);
-            }
-        }
-        else{
-            Log.d("updateImage", "no uris");
-        }
 
         // AUDIO
         posText = (TextView) layout.findViewById(R.id.posText);
@@ -116,36 +75,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             setAudioPlayer(); // sets mPlayer
         }
 
-        //delayed onActivityResult
-        /*isCreated = true;
-
-        if(hasResult) {
-            Log.d("ddfstate", "has result");
-            onActivityResult(requestCode, resultCode, data);
-            hasResult = false;
-            data = null;
-        }*/
-
         return layout;
-    }
-
-    @Override
-    public void onViewStateRestored(Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-
-        Log.d("ddfstate", "onViewStateRestored");
-
-        ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
-
-        Log.d("ddfstate", "imageViews" + imageUris.size());
-
-        imageContainer.removeAllViews();
-
-        for(int i=0; i<imageUris.size(); i++){
-            Pair p = (Pair) imageUris.get(i);
-            imageContainer.addView((View) p.first);
-            ((View) p.first).setOnClickListener(this);
-        }
     }
 
     // shit like this maybe
@@ -164,6 +94,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         killAudioPlayer(); // stop mPlayer and mHandler
 
         updateItem(((ItemActivity) getActivity()).getItem());
+
     }
 
     @Override
@@ -174,6 +105,19 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
     @Override
     public void onResume() {
         super.onResume();
+
+        ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
+
+        imageContainer.removeAllViews();
+
+        for(int i=0; i<imageUris.size(); i++){
+            Pair p = (Pair) imageUris.get(i);
+
+            imageContainer.addView((View) p.first);
+        //    ((View) p.first).setOnClickListener((View.OnClickListener) getActivity());
+        //    ((View) p.first).setOnClickListener(this);
+        }
+
         setAudioPlayer(); // resets mPlayer
     }
 
@@ -199,8 +143,8 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             //http://developer.android.com/guide/topics/media/camera.html#intents
             Uri fileUri = LocalMediaStorage.getOutputMediaFileUri(LocalMediaStorage.MEDIA_TYPE_IMAGE);
             if(fileUri != null) {
-                ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
-                imageUris.add(new Pair<>(new ImageView(getActivity()), fileUri));
+
+                ((ItemActivity)getActivity()).setTempUri(fileUri);
 
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
@@ -225,123 +169,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
                 }
             } else
                 Toast.makeText(getActivity(), "Audio file not found - start recording!", Toast.LENGTH_LONG).show();
-        } else { //image tapped
-                int index = -1;
-                ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
-                ArrayList<Uri> uris = new ArrayList<>();
-                for(int i = 0; i<imageUris.size(); i++){
-                    Pair p = (Pair) imageUris.get(i);
-                    if(p.first == v){
-                        //the correct imageView was found
-                        index = i;
-                    }
-
-                    uris.add((Uri) p.second);
-                }
-
-                if(index < 0){
-                    //none of the imageViews matched
-                    Log.d("ddf", "no imageView matched");
-                    return;
-                }
-
-                Intent intent = new Intent(getActivity(), ImageviewerDeleteActivity.class);
-                intent.putExtra("imageURIs", uris);
-                intent.putExtra("index", index);
-                getActivity().startActivityForResult(intent, ItemActivity.IMAGEVIEWER_REQUEST_CODE);
-        }
-
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        //OnActivityResult is called before onViewCreated
-        //delay update if necessary
-        Log.d("ddfstate", "is created: " + isCreated);
-
-        /*if(!isCreated){
-            hasResult = true;
-            this.requestCode = requestCode;
-            this.resultCode = resultCode;
-            this.data = data;
-
-            return;
-        }*/
-
-        ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
-
-        if (requestCode == ItemActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                Log.d("ddfstate", imageUris + "");
-
-                // Image captured and saved to fileUri specified in the Intent
-                int lastIndex = imageUris.size()-1;
-                Pair p = (Pair) imageUris.get(lastIndex);
-                ImageView image = (ImageView) p.first;
-
-                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-                image.setLayoutParams(sizeParameters);
-
-                BitmapEncoder.loadBitmapFromURI(image, (Uri) p.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-                image.setOnClickListener(this);
-
-                imageContainer.addView(image);
-
-                if(((ItemActivity)getActivity()).getItem() != null) {
-                    ((ItemActivity) getActivity()).getItem().addToAddedPictures((Uri) p.second);
-                }
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                // User cancelled the image capture
-                //clean up
-                imageUris.remove(imageUris.size() - 1);
-            } else {
-                // Image capture failed, advise user
-                imageUris.remove(imageUris.size()-1);
-                Toast.makeText(getActivity(), "Der opstod en fejl under brug af kameraet" , Toast.LENGTH_LONG).show();
-            }
-        }
-        else if(requestCode == ItemActivity.IMAGEVIEWER_REQUEST_CODE){
-            if(resultCode == Activity.RESULT_OK){
-                ArrayList<Uri> remainingURIs = data.getParcelableArrayListExtra("remainingURIs");
-
-                //no change
-                if(remainingURIs.size() == imageUris.size()){
-                    return;
-                }
-
-                //update image list and reconstruct imageContainer
-                imageContainer.removeAllViews();
-
-                if(((ItemActivity)getActivity()).getItem() != null){
-                    ((ItemActivity)getActivity()).getItem().setPicturesChanged(true);
-                }
-                ArrayList temp = new ArrayList<Pair<ImageView, Uri>>(imageUris);
-                for(int i = 0; i<imageUris.size(); i++){
-                    Pair listItem = (Pair) imageUris.get(i);
-
-                    if(!remainingURIs.contains(listItem.second)){
-                        //image has been removed
-                        if(((ItemActivity) getActivity()).getItem() != null){
-                            Item currentItem = ((ItemActivity) getActivity()).getItem();
-                            if(currentItem.getAddedPictures() !=  null){
-                                if(!currentItem.getAddedPictures().contains(listItem.second)){
-                                    currentItem.addDeletedPicture((Uri) listItem.second);
-                                } else{
-                                    currentItem.removeFromAddedPicture((Uri) listItem.second);
-                                }
-                            }
-                        }
-                        temp.remove(listItem);
-                    }
-                    else{
-                        //image still exists
-                        imageContainer.addView((ImageView) listItem.first);
-                    }
-                }
-
-                ((ItemActivity) getActivity()).setImageUris(temp);
-            }
         }
     }
 
@@ -374,6 +201,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             mPlayer.stop();
 
     }
+
     private void setAudioPlayer() {
         MediaPlayer oldPlayer = mPlayer;
         String filePath = LocalMediaStorage.getOutputMediaFileUri(2).getPath();
@@ -391,7 +219,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             }
             return;
         }
-        audioUris = new ArrayList<Uri>();
+        audioUris = new ArrayList<>();
         audioUris.add(LocalMediaStorage.getOutputMediaFileUri(2));
         seekBar.setEnabled(true);
         audioText.setText("");
@@ -406,14 +234,4 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             posText.setText("0:00:00");
     }
 
-    public String getItemTitle(){
-        if(itemTitle == null){
-            return "";
-        }
-        return itemTitle.getText().toString();
-    }
-
-    public void setItemTitle(String title) {
-        this.itemTitle.setText(title);
-    }
 }
