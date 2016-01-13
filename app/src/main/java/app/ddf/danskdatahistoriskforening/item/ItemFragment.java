@@ -1,26 +1,19 @@
 package app.ddf.danskdatahistoriskforening.item;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -29,25 +22,12 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 
-import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
-import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
+import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
-import app.ddf.danskdatahistoriskforening.R;
 
 public class ItemFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, ItemUpdater {
-    //TODO calculate acceptable thumbnail dimensions based on screensize or available space
-    private final int MAX_THUMBNAIL_WIDTH = 150;
-    private final int MAX_THUMBNAIL_HEIGHT = 250;
 
-    //onActivityResult state variables
-    boolean isCreated = false;
-    boolean hasResult = false;
-    int requestCode;
-    int resultCode;
-    Intent data;
-
-    //views
     ImageButton cameraButton;
     ImageButton micButton;
     EditText itemTitle;
@@ -94,16 +74,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         if(savedInstanceState == null){
             setAudioPlayer(); // sets mPlayer
         }
-
-        //delayed onActivityResult
-        /*isCreated = true;
-
-        if(hasResult) {
-            Log.d("ddfstate", "has result");
-            onActivityResult(requestCode, resultCode, data);
-            hasResult = false;
-            data = null;
-        }*/
 
         return layout;
     }
@@ -202,69 +172,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        //OnActivityResult is called before onViewCreated
-        //delay update if necessary
-        Log.d("ddfstate", "is created: " + isCreated);
-
-        /*if(!isCreated){
-            hasResult = true;
-            this.requestCode = requestCode;
-            this.resultCode = resultCode;
-            this.data = data;
-
-            return;
-        }*/
-
-        ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
-
-
-        if(requestCode == ItemActivity.IMAGEVIEWER_REQUEST_CODE){
-            if(resultCode == AppCompatActivity.RESULT_OK){
-                ArrayList<Uri> remainingURIs = data.getParcelableArrayListExtra("remainingURIs");
-
-                //no change
-                if(remainingURIs.size() == imageUris.size()){
-                    return;
-                }
-
-                //update image list and reconstruct imageContainer
-                imageContainer.removeAllViews();
-
-                if(((ItemActivity)getActivity()).getItem() != null){
-                    ((ItemActivity)getActivity()).getItem().setPicturesChanged(true);
-                }
-                ArrayList temp = new ArrayList<Pair<ImageView, Uri>>(imageUris);
-                for(int i = 0; i<imageUris.size(); i++){
-                    Pair listItem = (Pair) imageUris.get(i);
-
-                    if(!remainingURIs.contains(listItem.second)){
-                        //image has been removed
-                        if(((ItemActivity) getActivity()).getItem() != null){
-                            Item currentItem = ((ItemActivity) getActivity()).getItem();
-                            if(currentItem.getAddedPictures() !=  null){
-                                if(!currentItem.getAddedPictures().contains(listItem.second)){
-                                    currentItem.addDeletedPicture((Uri) listItem.second);
-                                } else{
-                                    currentItem.removeFromAddedPicture((Uri) listItem.second);
-                                }
-                            }
-                        }
-                        temp.remove(listItem);
-                    }
-                    else{
-                        //image still exists
-                        imageContainer.addView((ImageView) listItem.first);
-                    }
-                }
-
-                ((ItemActivity) getActivity()).setImageUris(temp);
-            }
-        }
-    }
-
     Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
@@ -294,6 +201,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             mPlayer.stop();
 
     }
+
     private void setAudioPlayer() {
         MediaPlayer oldPlayer = mPlayer;
         String filePath = LocalMediaStorage.getOutputMediaFileUri(2).getPath();
@@ -311,7 +219,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             }
             return;
         }
-        audioUris = new ArrayList<Uri>();
+        audioUris = new ArrayList<>();
         audioUris.add(LocalMediaStorage.getOutputMediaFileUri(2));
         seekBar.setEnabled(true);
         audioText.setText("");
@@ -326,14 +234,4 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             posText.setText("0:00:00");
     }
 
-    public String getItemTitle(){
-        if(itemTitle == null){
-            return "";
-        }
-        return itemTitle.getText().toString();
-    }
-
-    public void setItemTitle(String title) {
-        this.itemTitle.setText(title);
-    }
 }

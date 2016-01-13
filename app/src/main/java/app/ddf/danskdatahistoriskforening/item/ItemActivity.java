@@ -54,10 +54,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         return imageUris;
     }
 
-    public void setImageUris(ArrayList<Pair<ImageView, Uri>> imageUris) {
-        this.imageUris = imageUris;
-    }
-
     /**
      * http://developer.android.com/training/animation/screen-slide.html
      */
@@ -128,7 +124,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void generateImagePair(Uri uri) {
-        Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(this), uri);
+        Pair<ImageView, Uri> uriImagePair = new Pair<>(new ImageView(this), uri);
         LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
         uriImagePair.first.setLayoutParams(sizeParameters);
 
