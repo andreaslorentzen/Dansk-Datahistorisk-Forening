@@ -43,7 +43,6 @@ public class ItemActivity extends AppCompatActivity{
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
 
     private Toolbar registerToolbar;
-    private TextView internetBar;
 
     private Item item;
     private ArrayList<Pair<ImageView,Uri>> imageUris;
@@ -80,7 +79,6 @@ public class ItemActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Model.setCurrentActivity(this);
-        internetBar = (TextView) findViewById(R.id.internetConnBar);
         setContentView(R.layout.activity_register);
 
         registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
@@ -432,11 +430,12 @@ public class ItemActivity extends AppCompatActivity{
     }
 
     public void updateInternet(boolean isConnected){
-        if(internetBar != null){
+        TextView iBar = (TextView) findViewById(R.id.internetConnBar);
+        if(iBar != null){
             if(isConnected)
-                internetBar.setVisibility(View.GONE);
+                iBar.setVisibility(View.GONE);
             else
-                internetBar.setVisibility(View.VISIBLE);
+                iBar.setVisibility(View.VISIBLE);
         }
     }
 }
