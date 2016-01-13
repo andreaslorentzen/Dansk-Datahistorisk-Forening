@@ -1,12 +1,16 @@
 package app.ddf.danskdatahistoriskforening.item;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -28,6 +32,7 @@ import java.lang.ref.WeakReference;
 import java.text.ParseException;
 import java.util.ArrayList;
 
+import app.ddf.danskdatahistoriskforening.dal.BackgroundService;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
@@ -74,6 +79,14 @@ public class ItemActivity extends AppCompatActivity {
     private WeakReference<ItemFragment> itemFragmentWeakReference;
     private WeakReference<ItemDetailsFragment> itemDetailsFragmentWeakReference;
     private WeakReference<ItemDescriptionFragment> itemDescriptionFragmentWeakReference;
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            System.out.println("Intent received");
+            ItemActivity.this.checkForErrors(intent.getIntExtra("status", 0));
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,6 +178,14 @@ public class ItemActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onResume(){
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Model.BROADCAST_ACTION);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+        super.onResume();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_register, menu);
@@ -224,6 +245,11 @@ public class ItemActivity extends AppCompatActivity {
             itemDescriptionFragment.updateItem(item);
         }
 
+        if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty())
+            Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
+
+        if(!Model.isConnected())
+            Toast.makeText(this, "Kan ikke udføres uden internet", Toast.LENGTH_SHORT).show();
 
         //item.setItemHeadline(itemFragment.getItemTitle());
 
@@ -243,49 +269,29 @@ public class ItemActivity extends AppCompatActivity {
         /*item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
         item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
         item.setItemDescription(descriptionFragment.getItemDescription());*/
-
-
-        if (item.getItemId() > 0) {
-            if (!Model.isConnected()) {
-                Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
+        if(Model.isConnected()) {
+            if (item.getItemId() > 0) {
+                Intent backgroundService = new Intent(this, BackgroundService.class);
+                backgroundService.putExtra("event", "update");
+                backgroundService.putExtra("item", item);
+                startService(backgroundService);
+            } else {
+                Intent backgroundService = new Intent(this, BackgroundService.class);
+                backgroundService.putExtra("event", "create");
+                backgroundService.putExtra("item", item);
+                startService(backgroundService);
             }
-            new AsyncTask<Item, Void, Integer>() {
-                @Override
-                protected Integer doInBackground(Item... params) {
-                    return Model.getDAO().updateItem(ItemActivity.this, params[0]);
-                }
-
-                @Override
-                protected void onPostExecute(Integer response) {
-                    checkForErrors(response);
-                }
-            }.execute(item);
-        } else {
-            new AsyncTask<Item, Void, Integer>() {
-                @Override
-                protected Integer doInBackground(Item... params) {
-                    return Model.getDAO().saveItemToDB(ItemActivity.this, params[0]);
-                }
-
-                @Override
-                protected void onPostExecute(Integer response) {
-                    checkForErrors(response);
-                }
-            }.execute(item);
+            Model.setListUpdated(false);
+            finish();
+        } else{
+            Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
         }
-
-
     }
+
+
 
     private void checkForErrors(int responseCode) {
         switch (responseCode) {
-            case -1:
-                Model.setListUpdated(false);
-                finish();
-                break;
-            case 1:
-                Toast.makeText(this, "Der er ikke angivet en titel til museumsgenstanden!", Toast.LENGTH_LONG).show();
-                break;
             case 2:
                 Toast.makeText(this, "Enheden er ikke forbundet til internettet!", Toast.LENGTH_LONG).show();
                 break;
@@ -402,5 +408,11 @@ public class ItemActivity extends AppCompatActivity {
             else
                 iBar.setVisibility(View.VISIBLE);
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
     }
 }

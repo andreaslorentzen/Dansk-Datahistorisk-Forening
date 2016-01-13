@@ -23,6 +23,7 @@ public class Model {
     private static boolean isConnected;
     private static AppCompatActivity currentActivity;
     private static SearchManager sm = new SearchManager();
+    public static final String BROADCAST_ACTION = "com.datahistoriskforening.android.backgroundservice.BROADCAST";
 
     public static Model getInstance() {
         if (ourInstance == null) {
