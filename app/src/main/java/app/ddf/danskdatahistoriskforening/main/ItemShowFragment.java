@@ -91,6 +91,7 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
         new AsyncTask<String, Void, Item>() {
             @Override
             protected Item doInBackground(String ... params) {
+                Log.d("ddfstate", "start of download details " + params[0]);
                 return Model.getDAO().getDetailsFromBackEnd(params[0]);
             }
 
@@ -116,8 +117,14 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
 
                     //create picture thumbnails
                     ArrayList<Uri> uris = currentItem.getPictures();
-                    if(uris != null){
+                    Object context = getActivity();
+                    Log.d("ddfstate", "Activity: " + getActivity());
+                    Log.d("ddfstate", uris + "");
+
+                    if(uris != null && context != null){//activity may have been destroyed while downloading
                         for(int i = 0; i<uris.size(); i++){
+
+
                             Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(getActivity()), uris.get(i));
                             LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
                             uriImagePair.first.setLayoutParams(sizeParameters);
