@@ -38,6 +38,9 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
+        <service
+            android:name=".dal.BackgroundService"
+            android:exported="false"/>
     </application>
 
 </manifest>
