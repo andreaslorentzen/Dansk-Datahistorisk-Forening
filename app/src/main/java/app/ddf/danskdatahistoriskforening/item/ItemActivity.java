@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.MediaStore;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -12,7 +12,6 @@ import android.support.v4.util.Pair;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -21,21 +20,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
-import java.text.ParseException;
 import java.util.ArrayList;
 
-import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.helper.PagerSlidingTabStrip;
-import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
 
-public class ItemActivity extends AppCompatActivity{
+public class ItemActivity extends AppCompatActivity implements View.OnClickListener {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
     private final int MAX_THUMBNAIL_WIDTH = 150;
     private final int MAX_THUMBNAIL_HEIGHT = 250;
@@ -43,21 +42,19 @@ public class ItemActivity extends AppCompatActivity{
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
 
-    private Toolbar registerToolbar;
-
     private Item item;
-    private ArrayList<Pair<ImageView,Uri>> imageUris;
+    private ArrayList<Pair<ImageView, Uri>> imageUris;
     private Uri tempUri;
 
     public Item getItem() {
         return item;
     }
 
-    public ArrayList<Pair<ImageView,Uri>> getImageUris(){
+    public ArrayList<Pair<ImageView, Uri>> getImageUris() {
         return imageUris;
     }
 
-    public void setImageUris(ArrayList<Pair<ImageView,Uri>> imageUris){
+    public void setImageUris(ArrayList<Pair<ImageView, Uri>> imageUris) {
         this.imageUris = imageUris;
     }
 
@@ -66,12 +63,6 @@ public class ItemActivity extends AppCompatActivity{
      */
 
     private ViewPager viewPager;
-    private PagerAdapter mPagerAdapter;
-
-
-/*    private ItemFragment itemFragment;
-    private ItemDetailsFragment detailsFragment;
-    private ItemDescriptionFragment descriptionFragment;*/
 
     private WeakReference<ItemFragment> itemFragmentWeakReference;
     private WeakReference<ItemDetailsFragment> itemDetailsFragmentWeakReference;
@@ -83,7 +74,7 @@ public class ItemActivity extends AppCompatActivity{
         Model.setCurrentActivity(this);
         setContentView(R.layout.activity_register);
 
-        registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
+        Toolbar registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
         registerToolbar.setTitle("Registrer genstand");
         registerToolbar.setTitleTextColor(-1); // #FFF
         registerToolbar.setNavigationIcon(R.drawable.ic_close);
@@ -91,18 +82,13 @@ public class ItemActivity extends AppCompatActivity{
 
         // Instantiate a ViewPager and a PagerAdapter.
         viewPager = (ViewPager) findViewById(R.id.pager);
-
-        mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+        PagerAdapter mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(mPagerAdapter);
-
         PagerSlidingTabStrip pagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tab_strip);
         pagerSlidingTabStrip.setViewPager(viewPager);
 
 
-        if(savedInstanceState == null) {
-            /*itemFragment = new ItemFragment();
-            detailsFragment = new ItemDetailsFragment();
-            descriptionFragment = new ItemDescriptionFragment();*/
+        if (savedInstanceState == null) {
 
             item = new Item();
             Intent intent = getIntent();
@@ -110,8 +96,7 @@ public class ItemActivity extends AppCompatActivity{
                 item = intent.getParcelableExtra("item");
             }
 
-        }
-        else {
+        } else {
             item = savedInstanceState.getParcelable("item");
             tempUri = savedInstanceState.getParcelable("tempUri");
 
@@ -127,14 +112,14 @@ public class ItemActivity extends AppCompatActivity{
         super.onResume();
         imageUris = new ArrayList<>();
         ArrayList<Uri> uris = item.getPictures();
-        if(uris != null){
-            for(int i = 0; i<uris.size(); i++){
+        if (uris != null) {
+            for (int i = 0; i < uris.size(); i++) {
                 generateImagePair(uris.get(i));
             }
         }
         uris = item.getAddedPictures();
-        if(uris != null){
-            for(int i = 0; i<uris.size(); i++){
+        if (uris != null) {
+            for (int i = 0; i < uris.size(); i++) {
                 generateImagePair(uris.get(i));
             }
         }
@@ -142,14 +127,14 @@ public class ItemActivity extends AppCompatActivity{
     }
 
 
-    private void generateImagePair(Uri uri){
+    private void generateImagePair(Uri uri) {
         Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(this), uri);
         LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
         uriImagePair.first.setLayoutParams(sizeParameters);
 
         BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
 
-    //    uriImagePair.first.setOnClickListener(this);
+        uriImagePair.first.setOnClickListener(this);
 
         imageUris.add(uriImagePair);
     }
@@ -160,7 +145,7 @@ public class ItemActivity extends AppCompatActivity{
 
         outState.putParcelable("item", item);
         outState.putInt("index", viewPager.getCurrentItem());
-        outState.putParcelable("tempUri",tempUri);
+        outState.putParcelable("tempUri", tempUri);
     }
 
     @Override
@@ -169,7 +154,6 @@ public class ItemActivity extends AppCompatActivity{
         inflater.inflate(R.menu.menu_register, menu);
         return true;
     }
-
 
 
     @Override
@@ -200,35 +184,34 @@ public class ItemActivity extends AppCompatActivity{
         ItemDetailsFragment itemDetailsFragment = null;
         ItemDescriptionFragment itemDescriptionFragment = null;
 
-        if(itemFragmentWeakReference != null) {
+        if (itemFragmentWeakReference != null) {
             itemFragment = itemFragmentWeakReference.get();
         }
 
-        if(itemDetailsFragmentWeakReference != null){
+        if (itemDetailsFragmentWeakReference != null) {
             itemDetailsFragment = itemDetailsFragmentWeakReference.get();
         }
 
-        if(itemDescriptionFragmentWeakReference != null){
+        if (itemDescriptionFragmentWeakReference != null) {
             itemDescriptionFragment = itemDescriptionFragmentWeakReference.get();
         }
 
-        if(itemFragment != null){
+        if (itemFragment != null) {
             itemFragment.updateItem(item);
         }
 
-        if(itemDetailsFragment != null){
+        if (itemDetailsFragment != null) {
             itemDetailsFragment.updateItem(item);
         }
 
-        if(itemDescriptionFragment != null){
+        if (itemDescriptionFragment != null) {
             itemDescriptionFragment.updateItem(item);
         }
 
 
-
         //item.setItemHeadline(itemFragment.getItemTitle());
 
-        for(Pair<ImageView, Uri> pair : imageUris) {
+        for (Pair<ImageView, Uri> pair : imageUris) {
             item.addToPictures(pair.second);
         }
 
@@ -246,8 +229,8 @@ public class ItemActivity extends AppCompatActivity{
         item.setItemDescription(descriptionFragment.getItemDescription());*/
 
 
-        if(item.getItemId() > 0){
-            if(!Model.isConnected()){
+        if (item.getItemId() > 0) {
+            if (!Model.isConnected()) {
                 Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
             }
             /*try{
@@ -260,19 +243,18 @@ public class ItemActivity extends AppCompatActivity{
             } catch(ParseException e){
                 e.printStackTrace();
             }*/
-            new AsyncTask<Item, Void, Integer>(){
+            new AsyncTask<Item, Void, Integer>() {
                 @Override
-                protected Integer doInBackground(Item... params){
+                protected Integer doInBackground(Item... params) {
                     return Model.getDAO().updateItem(ItemActivity.this, params[0]);
                 }
 
                 @Override
-                protected void onPostExecute(Integer response){
+                protected void onPostExecute(Integer response) {
                     checkForErrors(response);
                 }
             }.execute(item);
-        }
-        else{
+        } else {
             /*try{
                 System.out.println(detailsFragment.hasReceiveChanged());
                 if(detailsFragment.hasReceiveChanged())
@@ -290,25 +272,24 @@ public class ItemActivity extends AppCompatActivity{
             } catch(ParseException e){
                 e.printStackTrace();
             }*/
-            new AsyncTask<Item, Void, Integer>(){
+            new AsyncTask<Item, Void, Integer>() {
                 @Override
-                protected Integer doInBackground(Item... params){
+                protected Integer doInBackground(Item... params) {
                     return Model.getDAO().saveItemToDB(ItemActivity.this, params[0]);
                 }
 
                 @Override
-                protected void onPostExecute(Integer response){
+                protected void onPostExecute(Integer response) {
                     checkForErrors(response);
                 }
             }.execute(item);
         }
 
 
-
     }
 
-    private void checkForErrors(int responseCode){
-        switch(responseCode){
+    private void checkForErrors(int responseCode) {
+        switch (responseCode) {
             case -1:
                 Model.setListUpdated(false);
                 finish();
@@ -332,12 +313,38 @@ public class ItemActivity extends AppCompatActivity{
         }
     }
 
-    private void prompt(){
+    private void prompt() {
         finish();
     }
 
     public void setTempUri(Uri fileUri) {
         tempUri = fileUri;
+    }
+
+    @Override
+    public void onClick(View v) {
+        Log.d("DDF", "imageClick");
+        int index = -1;
+        ArrayList<Uri> uris = new ArrayList<>();
+        for (int i = 0; i < imageUris.size(); i++) {
+            Pair p = (Pair) imageUris.get(i);
+            if (p.first == v) {
+                //the correct imageView was found
+                index = i;
+            }
+
+            uris.add((Uri) p.second);
+        }
+
+        if (index < 0) {
+            //none of the imageViews matched
+            return;
+        }
+
+        Intent intent = new Intent(this, ImageviewerDeleteActivity.class);
+        intent.putExtra("imageURIs", uris);
+        intent.putExtra("index", index);
+        startActivityForResult(intent, ItemActivity.IMAGEVIEWER_REQUEST_CODE);
     }
 
 
@@ -349,11 +356,10 @@ public class ItemActivity extends AppCompatActivity{
 
         @Override
         public Fragment getItem(int position) {
-            Log.d("ddfstate", "new fragment: " + position);
 
             Fragment fragment;
 
-            switch (position){
+            switch (position) {
                 case 0:
                     fragment = new ItemFragment();
                     break;
@@ -376,15 +382,15 @@ public class ItemActivity extends AppCompatActivity{
         public Object instantiateItem(ViewGroup container, int position) {
             Fragment fragment = (Fragment) super.instantiateItem(container, position);
 
-            switch (position){
+            switch (position) {
                 case 0:
-                    itemFragmentWeakReference = new WeakReference<ItemFragment>((ItemFragment) fragment);
+                    itemFragmentWeakReference = new WeakReference<>((ItemFragment) fragment);
                     break;
                 case 1:
-                    itemDescriptionFragmentWeakReference = new WeakReference<ItemDescriptionFragment>((ItemDescriptionFragment) fragment);
+                    itemDescriptionFragmentWeakReference = new WeakReference<>((ItemDescriptionFragment) fragment);
                     break;
                 case 2:
-                    itemDetailsFragmentWeakReference = new WeakReference<ItemDetailsFragment>((ItemDetailsFragment) fragment);
+                    itemDetailsFragmentWeakReference = new WeakReference<>((ItemDetailsFragment) fragment);
                     break;
             }
 
@@ -400,7 +406,7 @@ public class ItemActivity extends AppCompatActivity{
         public CharSequence getPageTitle(int position) {
             CharSequence title;
 
-            switch (position){
+            switch (position) {
                 case 0:
                     title = "Genstand";
                     break;
@@ -430,24 +436,23 @@ public class ItemActivity extends AppCompatActivity{
 
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // User cancelled the image capture
-                //clean up
+
             } else {
                 // Image capture failed, advise user
-                Toast.makeText(this, "Der opstod en fejl under brug af kameraet" , Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Der opstod en fejl under brug af kameraet", Toast.LENGTH_LONG).show();
             }
 
             setTempUri(null);
 
-        }
-        else if(requestCode == IMAGEVIEWER_REQUEST_CODE){
+        } else if (requestCode == IMAGEVIEWER_REQUEST_CODE) {
             //itemFragment.onActivityResult(requestCode, resultCode, data);
         }
     }
 
-    public void updateInternet(boolean isConnected){
+    public void updateInternet(boolean isConnected) {
         TextView iBar = (TextView) findViewById(R.id.internetConnBar);
-        if(iBar != null){
-            if(isConnected)
+        if (iBar != null) {
+            if (isConnected)
                 iBar.setVisibility(View.GONE);
             else
                 iBar.setVisibility(View.VISIBLE);

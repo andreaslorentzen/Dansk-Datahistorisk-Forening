@@ -62,13 +62,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
     ArrayList<Uri> audioUris;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        Log.d("ddfstate", "onCreate");
-
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d("ddfstate", "onCreateView");
 
@@ -80,7 +73,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
 
         Item item = ((ItemActivity) getActivity()).getItem();
-        Log.d("ddfstate", item + "");
         itemTitle.setText(item.getItemHeadline());
 
 
@@ -151,7 +143,8 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             Pair p = (Pair) imageUris.get(i);
 
             imageContainer.addView((View) p.first);
-            ((View) p.first).setOnClickListener(this);
+        //    ((View) p.first).setOnClickListener((View.OnClickListener) getActivity());
+        //    ((View) p.first).setOnClickListener(this);
         }
 
         setAudioPlayer(); // resets mPlayer
@@ -205,32 +198,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
                 }
             } else
                 Toast.makeText(getActivity(), "Audio file not found - start recording!", Toast.LENGTH_LONG).show();
-        } else { //image tapped
-                int index = -1;
-                ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
-                ArrayList<Uri> uris = new ArrayList<>();
-                for(int i = 0; i<imageUris.size(); i++){
-                    Pair p = (Pair) imageUris.get(i);
-                    if(p.first == v){
-                        //the correct imageView was found
-                        index = i;
-                    }
-
-                    uris.add((Uri) p.second);
-                }
-
-                if(index < 0){
-                    //none of the imageViews matched
-                    Log.d("ddf", "no imageView matched");
-                    return;
-                }
-
-                Intent intent = new Intent(getActivity(), ImageviewerDeleteActivity.class);
-                intent.putExtra("imageURIs", uris);
-                intent.putExtra("index", index);
-                getActivity().startActivityForResult(intent, ItemActivity.IMAGEVIEWER_REQUEST_CODE);
         }
-
     }
 
     @Override
@@ -264,7 +232,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
                 image.setLayoutParams(sizeParameters);
 
                 BitmapEncoder.loadBitmapFromURI(image, (Uri) p.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-                image.setOnClickListener(this);
+             //   image.setOnClickListener(this);
 
                 imageContainer.addView(image);
 
