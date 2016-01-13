@@ -13,6 +13,7 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -124,8 +125,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
 
         updateItem(((ItemActivity) getActivity()).getItem());
 
-        imageContainer.removeAllViews();
-
     }
 
     @Override
@@ -138,6 +137,8 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         super.onResume();
 
         ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
+
+        imageContainer.removeAllViews();
 
         for(int i=0; i<imageUris.size(); i++){
             Pair p = (Pair) imageUris.get(i);
@@ -219,38 +220,9 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
 
         ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
 
-        if (requestCode == ItemActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                Log.d("ddfstate", imageUris + "");
 
-                // Image captured and saved to fileUri specified in the Intent
-                int lastIndex = imageUris.size()-1;
-                Pair p = (Pair) imageUris.get(lastIndex);
-                ImageView image = (ImageView) p.first;
-
-                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-                image.setLayoutParams(sizeParameters);
-
-                BitmapEncoder.loadBitmapFromURI(image, (Uri) p.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-             //   image.setOnClickListener(this);
-
-                imageContainer.addView(image);
-
-                if(((ItemActivity)getActivity()).getItem() != null) {
-                    ((ItemActivity) getActivity()).getItem().addToAddedPictures((Uri) p.second);
-                }
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                // User cancelled the image capture
-                //clean up
-                imageUris.remove(imageUris.size() - 1);
-            } else {
-                // Image capture failed, advise user
-                imageUris.remove(imageUris.size()-1);
-                Toast.makeText(getActivity(), "Der opstod en fejl under brug af kameraet" , Toast.LENGTH_LONG).show();
-            }
-        }
-        else if(requestCode == ItemActivity.IMAGEVIEWER_REQUEST_CODE){
-            if(resultCode == Activity.RESULT_OK){
+        if(requestCode == ItemActivity.IMAGEVIEWER_REQUEST_CODE){
+            if(resultCode == AppCompatActivity.RESULT_OK){
                 ArrayList<Uri> remainingURIs = data.getParcelableArrayListExtra("remainingURIs");
 
                 //no change

@@ -444,8 +444,40 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
             setTempUri(null);
 
-        } else if (requestCode == IMAGEVIEWER_REQUEST_CODE) {
-            //itemFragment.onActivityResult(requestCode, resultCode, data);
+        } else if(requestCode == ItemActivity.IMAGEVIEWER_REQUEST_CODE){
+            if(resultCode == AppCompatActivity.RESULT_OK){
+                ArrayList<Uri> remainingURIs = data.getParcelableArrayListExtra("remainingURIs");
+
+                //no change
+                if(remainingURIs.size() == imageUris.size()){
+                    return;
+                }
+
+                if(item != null){
+                    item.setPicturesChanged(true);
+                }
+
+         //       ArrayList temp = new ArrayList<>(imageUris);
+                for(int i = 0; i<imageUris.size(); i++){
+                    Pair listItem = (Pair) imageUris.get(i);
+
+                    if(!remainingURIs.contains(listItem.second)){
+                        //image has been removed
+
+                        if(item.getAddedPictures() !=  null){
+                            if(!item.getAddedPictures().contains(listItem.second)){
+                                item.addDeletedPicture((Uri) listItem.second);
+                            } else{
+                                item.removeFromAddedPicture((Uri) listItem.second);
+                            }
+                        }
+              //          temp.remove(listItem);
+                    }
+                    else{
+
+                    }
+                }
+            }
         }
     }
 
