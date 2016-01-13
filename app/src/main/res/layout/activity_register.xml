@@ -15,6 +15,19 @@
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/no_internet"
+        android:gravity="center_horizontal"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:visibility="gone"
+        android:id="@+id/internetConnBar"
+        android:background="@color/colorAccent"
+        android:elevation="3dp"/>
+
     <app.ddf.danskdatahistoriskforening.helper.PagerSlidingTabStrip
         android:id="@+id/tab_strip"
         android:layout_width="match_parent"

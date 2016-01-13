@@ -1,41 +1,67 @@
 package app.ddf.danskdatahistoriskforening.item;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.text.ParseException;
+import java.util.ArrayList;
 
+import app.ddf.danskdatahistoriskforening.dal.BackgroundService;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.helper.PagerSlidingTabStrip;
 import app.ddf.danskdatahistoriskforening.R;
 
-public class ItemActivity extends AppCompatActivity{
+public class ItemActivity extends AppCompatActivity {
+    //TODO calculate acceptable thumbnail dimensions based on screensize or available space
+    private final int MAX_THUMBNAIL_WIDTH = 150;
+    private final int MAX_THUMBNAIL_HEIGHT = 250;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
 
     private Toolbar registerToolbar;
+
     private Item item;
+    private ArrayList<Pair<ImageView, Uri>> imageUris;
 
     public Item getItem() {
         return item;
+    }
+
+    public ArrayList<Pair<ImageView, Uri>> getImageUris() {
+        return imageUris;
+    }
+
+    public void setImageUris(ArrayList<Pair<ImageView, Uri>> imageUris) {
+        this.imageUris = imageUris;
     }
 
     /**
@@ -46,13 +72,25 @@ public class ItemActivity extends AppCompatActivity{
     private PagerAdapter mPagerAdapter;
 
 
-    private ItemFragment itemFragment = new ItemFragment();
-    private ItemDetailsFragment detailsFragment = new ItemDetailsFragment();
-    private ItemDescriptionFragment descriptionFragment = new ItemDescriptionFragment();
+/*    private ItemFragment itemFragment;
+    private ItemDetailsFragment detailsFragment;
+    private ItemDescriptionFragment descriptionFragment;*/
+
+    private WeakReference<ItemFragment> itemFragmentWeakReference;
+    private WeakReference<ItemDetailsFragment> itemDetailsFragmentWeakReference;
+    private WeakReference<ItemDescriptionFragment> itemDescriptionFragmentWeakReference;
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ItemActivity.this.checkForErrors(intent.getIntExtra("status", 0));
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Model.setCurrentActivity(this);
         setContentView(R.layout.activity_register);
 
         registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
@@ -63,22 +101,87 @@ public class ItemActivity extends AppCompatActivity{
 
         // Instantiate a ViewPager and a PagerAdapter.
         viewPager = (ViewPager) findViewById(R.id.pager);
+
+
+        if (savedInstanceState == null) {
+            /*itemFragment = new ItemFragment();
+            detailsFragment = new ItemDetailsFragment();
+            descriptionFragment = new ItemDescriptionFragment();*/
+
+            mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+            viewPager.setAdapter(mPagerAdapter);
+
+            PagerSlidingTabStrip pagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tab_strip);
+            pagerSlidingTabStrip.setViewPager(viewPager);
+
+            item = new Item();
+            Intent intent = getIntent();
+            if (intent.hasExtra("item")) {
+                item = intent.getParcelableExtra("item");
+            }
+
+        } else {
+            item = savedInstanceState.getParcelable("item");
+        }
+
+        imageUris = new ArrayList<>();
+        ArrayList<Uri> uris = item.getPictures();
+        if (uris != null) {
+            for (int i = 0; i < uris.size(); i++) {
+                Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(this), uris.get(i));
+                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                uriImagePair.first.setLayoutParams(sizeParameters);
+
+                imageUris.add(uriImagePair);
+
+                BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+            }
+        } else {
+            Log.d("updateImage", "no uris");
+        }
+
+
+        //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
+        //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        /*itemFragment = new ItemFragment();
+        detailsFragment = new ItemDetailsFragment();
+        descriptionFragment = new ItemDescriptionFragment();*/
+
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(mPagerAdapter);
 
         PagerSlidingTabStrip pagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tab_strip);
         pagerSlidingTabStrip.setViewPager(viewPager);
+    }
 
-        item = new Item();
-        Intent intent = getIntent();
-        if(intent.hasExtra("item")){
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
 
-            item = intent.getParcelableExtra("item");
+        ArrayList<Uri> uris = new ArrayList<>();
+        for (int i = 0; i < imageUris.size(); i++) {
+            Pair p = (Pair) imageUris.get(i);
+            uris.add((Uri) p.second);
         }
+        item.setPictures(uris);
 
-   //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
-   //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
+        outState.putParcelable("item", item);
+        outState.putInt("index", viewPager.getCurrentItem());
+    }
 
+    @Override
+    public void onResume(){
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Model.BROADCAST_ACTION);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+        super.onResume();
     }
 
     @Override
@@ -87,7 +190,6 @@ public class ItemActivity extends AppCompatActivity{
         inflater.inflate(R.menu.menu_register, menu);
         return true;
     }
-
 
 
     @Override
@@ -112,83 +214,83 @@ public class ItemActivity extends AppCompatActivity{
 
 
     private void save() {
+        //update item if fragment is instantiated
+        //destroyed fragments will have updated the item during onPause() already
+        ItemFragment itemFragment = null;
+        ItemDetailsFragment itemDetailsFragment = null;
+        ItemDescriptionFragment itemDescriptionFragment = null;
 
-        item.setItemHeadline(itemFragment.getItemTitle());
-        for(Pair<ImageView, Uri> pair : itemFragment.imageUris) {
+        if (itemFragmentWeakReference != null) {
+            itemFragment = itemFragmentWeakReference.get();
+        }
+
+        if (itemDetailsFragmentWeakReference != null) {
+            itemDetailsFragment = itemDetailsFragmentWeakReference.get();
+        }
+
+        if (itemDescriptionFragmentWeakReference != null) {
+            itemDescriptionFragment = itemDescriptionFragmentWeakReference.get();
+        }
+
+        if (itemFragment != null) {
+            itemFragment.updateItem(item);
+        }
+
+        if (itemDetailsFragment != null) {
+            itemDetailsFragment.updateItem(item);
+        }
+
+        if (itemDescriptionFragment != null) {
+            itemDescriptionFragment.updateItem(item);
+        }
+
+        if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty())
+            Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
+
+        if(!Model.isConnected())
+            Toast.makeText(this, "Kan ikke udføres uden internet", Toast.LENGTH_SHORT).show();
+
+        //item.setItemHeadline(itemFragment.getItemTitle());
+
+        for (Pair<ImageView, Uri> pair : imageUris) {
             item.addToPictures(pair.second);
         }
-        item.setRecordings(itemFragment.audioUris);
-        item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
+
+        /*
+        HUSK
+        HUSK
+        HUSK
+        HUSK
+        HUSK
+        item.setRecordings(itemFragment.audioUris);*/
+
+
+        /*item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
         item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
-        item.setItemDescription(descriptionFragment.getItemDescription());
-
-
-        if(item.getItemId() > 0){
-            try{
-                if(detailsFragment.dateReceive != null && detailsFragment.dateReceive.getText() != null && !detailsFragment.dateReceive.getText().toString().equals(""))
-                    item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
-                if(detailsFragment.dateFrom != null && detailsFragment.dateFrom.getText() != null && !detailsFragment.dateFrom.getText().toString().equals("") )
-                    item.setItemDatingFrom(Model.getFormatter().parse(detailsFragment.dateFrom.getText().toString()));
-                if(detailsFragment.dateTo != null && detailsFragment.dateTo.getText() != null && !detailsFragment.dateTo.getText().toString().equals("")  )
-                    item.setItemDatingTo(Model.getFormatter().parse(detailsFragment.dateTo.getText().toString()));
-            } catch(ParseException e){
-                e.printStackTrace();
+        item.setItemDescription(descriptionFragment.getItemDescription());*/
+        if(Model.isConnected()) {
+            if (item.getItemId() > 0) {
+                Intent backgroundService = new Intent(this, BackgroundService.class);
+                backgroundService.putExtra("event", "update");
+                backgroundService.putExtra("item", item);
+                startService(backgroundService);
+            } else {
+                Intent backgroundService = new Intent(this, BackgroundService.class);
+                backgroundService.putExtra("event", "create");
+                backgroundService.putExtra("item", item);
+                startService(backgroundService);
             }
-            new AsyncTask<Item, Void, Integer>(){
-                @Override
-                protected Integer doInBackground(Item... params){
-                    return Model.getDAO().updateItem(ItemActivity.this, params[0]);
-                }
-
-                @Override
-                protected void onPostExecute(Integer response){
-                    checkForErrors(response);
-                }
-            }.execute(item);
+            Model.setListUpdated(false);
+            finish();
+        } else{
+            Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
         }
-        else{
-            try{
-                System.out.println(detailsFragment.hasReceiveChanged());
-                if(detailsFragment.hasReceiveChanged())
-                    item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
-                else
-                    item.setItemRecieved(null);
-                if(detailsFragment.hasDateFromChanged())
-                    item.setItemDatingFrom(Model.getFormatter().parse(detailsFragment.dateFrom.getText().toString()));
-                else
-                    item.setItemDatingFrom(null);
-                if(detailsFragment.hasDateToChanged())
-                    item.setItemDatingTo(Model.getFormatter().parse(detailsFragment.dateTo.getText().toString()));
-                else
-                    item.setItemDatingTo(null);
-            } catch(ParseException e){
-                e.printStackTrace();
-            }
-            new AsyncTask<Item, Void, Integer>(){
-                @Override
-                protected Integer doInBackground(Item... params){
-                    return Model.getDAO().saveItemToDB(ItemActivity.this, params[0]);
-                }
-
-                @Override
-                protected void onPostExecute(Integer response){
-                   checkForErrors(response);
-                }
-            }.execute(item);
-        }
-
-
-
     }
 
-    private void checkForErrors(int responseCode){
-        switch(responseCode){
+    private void checkForErrors(int responseCode) {
+        switch (responseCode) {
             case -1:
-                Model.setListUpdated(false);
-                finish();
-                break;
-            case 1:
-                Toast.makeText(this, "Der er ikke angivet en titel til museumsgenstanden!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Genstanden blev sendt til severen", Toast.LENGTH_SHORT).show();
                 break;
             case 2:
                 Toast.makeText(this, "Enheden er ikke forbundet til internettet!", Toast.LENGTH_LONG).show();
@@ -206,55 +308,111 @@ public class ItemActivity extends AppCompatActivity{
         }
     }
 
-    private void prompt(){
+    private void prompt() {
         finish();
     }
 
 
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
-        private Pair<String, Fragment>[] fragments = new Pair[3];
-
         public ScreenSlidePagerAdapter(FragmentManager fm) {
             super(fm);
-            fragments[0] = new Pair<String, Fragment>("Genstand", itemFragment);
-            fragments[1] = new Pair<String, Fragment>("Beskrivelse", descriptionFragment);
-            fragments[2] = new Pair<String, Fragment>("Oplysninger", detailsFragment);
         }
 
         @Override
         public Fragment getItem(int position) {
-            return fragments[position].second;
+            Log.d("ddfstate", "new fragment: " + position);
+
+            Fragment fragment;
+
+            switch (position) {
+                case 0:
+                    fragment = new ItemFragment();
+                    break;
+                case 1:
+                    fragment = new ItemDescriptionFragment();
+                    break;
+                case 2:
+                    fragment = new ItemDetailsFragment();
+                    break;
+                default:
+                    fragment = new ItemFragment();
+            }
+
+            return fragment;
+        }
+
+        //save weak references to fragments as they are instantiated for updating item
+        //in case a reference becomes invalid, the fragment should have updated the item in onPause() anyways
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Fragment fragment = (Fragment) super.instantiateItem(container, position);
+
+            switch (position) {
+                case 0:
+                    itemFragmentWeakReference = new WeakReference<ItemFragment>((ItemFragment) fragment);
+                    break;
+                case 1:
+                    itemDescriptionFragmentWeakReference = new WeakReference<ItemDescriptionFragment>((ItemDescriptionFragment) fragment);
+                    break;
+                case 2:
+                    itemDetailsFragmentWeakReference = new WeakReference<ItemDetailsFragment>((ItemDetailsFragment) fragment);
+                    break;
+            }
+
+            return fragment;
         }
 
         @Override
         public int getCount() {
-            return fragments.length;
+            return 3;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return fragments[position].first;
+            CharSequence title;
+
+            switch (position) {
+                case 0:
+                    title = "Genstand";
+                    break;
+                case 1:
+                    title = "Beskrivelse";
+                    break;
+                case 2:
+                    title = "Oplysninger";
+                    break;
+                default:
+                    title = "";
+                    break;
+            }
+
+            return title;
         }
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
-            itemFragment.onActivityResult(requestCode, resultCode, data);
-        }
-        else if(requestCode == IMAGEVIEWER_REQUEST_CODE){
-            itemFragment.onActivityResult(requestCode, resultCode, data);
+            //itemFragment.onActivityResult(requestCode, resultCode, data);
+        } else if (requestCode == IMAGEVIEWER_REQUEST_CODE) {
+            //itemFragment.onActivityResult(requestCode, resultCode, data);
         }
     }
 
-
-    public void takePic(){
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        //    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-
-        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+    public void updateInternet(boolean isConnected) {
+        TextView iBar = (TextView) findViewById(R.id.internetConnBar);
+        if (iBar != null) {
+            if (isConnected)
+                iBar.setVisibility(View.GONE);
+            else
+                iBar.setVisibility(View.VISIBLE);
+        }
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+    }
 }

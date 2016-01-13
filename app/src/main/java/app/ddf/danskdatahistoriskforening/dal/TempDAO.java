@@ -37,14 +37,6 @@ public class TempDAO implements IDAO {
 
     @Override
     public int saveItemToDB(Context context, Item item) {
-        if(item.getItemHeadline() == null || item.getItemHeadline().isEmpty()){
-            return 1;
-        }
-
-        if(!isConnected(context)){
-            return 2;
-        }
-
         InputStream is = null;
         String requestURL = API + "/items" + userIDString;
         int returnValue = 0;
@@ -114,13 +106,6 @@ public class TempDAO implements IDAO {
             }
         }
         return returnValue;
-    }
-
-    private boolean isConnected(Context context){
-        ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-
-        return (networkInfo != null && networkInfo.isConnected());
     }
 
     @Override
@@ -225,12 +210,6 @@ public class TempDAO implements IDAO {
 
     @Override
     public int updateItem(Context context, Item item) {
-        if (item.getItemId()== 0){
-            return 1;
-        }
-        if(!isConnected(context)){
-            return 2;
-        }
         String requestURL = API + "/items/" + item.getItemId() + userIDString;
 
         InputStream is = null;

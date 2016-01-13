@@ -79,6 +79,12 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
         return layout;
     }
 
+    @Override
+    public void onResume(){
+        setDetailsURI(Model.getInstance().getCurrentDetailsURI());
+        super.onResume();
+    }
+
     public void setDetailsURI(String detailsURI){
         this.detailsURI = detailsURI;
 
