@@ -1,5 +1,6 @@
 package app.ddf.danskdatahistoriskforening.item;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -46,6 +47,7 @@ public class ItemActivity extends AppCompatActivity{
 
     private Item item;
     private ArrayList<Pair<ImageView,Uri>> imageUris;
+    private Uri tempUri;
 
     public Item getItem() {
         return item;
@@ -90,18 +92,17 @@ public class ItemActivity extends AppCompatActivity{
         // Instantiate a ViewPager and a PagerAdapter.
         viewPager = (ViewPager) findViewById(R.id.pager);
 
+        mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(mPagerAdapter);
+
+        PagerSlidingTabStrip pagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tab_strip);
+        pagerSlidingTabStrip.setViewPager(viewPager);
 
 
         if(savedInstanceState == null) {
             /*itemFragment = new ItemFragment();
             detailsFragment = new ItemDetailsFragment();
             descriptionFragment = new ItemDescriptionFragment();*/
-
-            mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
-            viewPager.setAdapter(mPagerAdapter);
-
-            PagerSlidingTabStrip pagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tab_strip);
-            pagerSlidingTabStrip.setViewPager(viewPager);
 
             item = new Item();
             Intent intent = getIntent();
@@ -112,59 +113,54 @@ public class ItemActivity extends AppCompatActivity{
         }
         else {
             item = savedInstanceState.getParcelable("item");
+            tempUri = savedInstanceState.getParcelable("tempUri");
+
         }
 
-        imageUris = new ArrayList<>();
-        ArrayList<Uri> uris = item.getPictures();
-        if(uris != null){
-            for(int i = 0; i<uris.size(); i++){
-                Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(this), uris.get(i));
-                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-                uriImagePair.first.setLayoutParams(sizeParameters);
-
-                imageUris.add(uriImagePair);
-
-                BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-            }
-        }
-        else{
-            Log.d("updateImage", "no uris");
-        }
-
-
-   //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
-   //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
+        //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
+        //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
 
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
+    protected void onResume() {
+        super.onResume();
+        imageUris = new ArrayList<>();
+        ArrayList<Uri> uris = item.getPictures();
+        if(uris != null){
+            for(int i = 0; i<uris.size(); i++){
+                generateImagePair(uris.get(i));
+            }
+        }
+        uris = item.getAddedPictures();
+        if(uris != null){
+            for(int i = 0; i<uris.size(); i++){
+                generateImagePair(uris.get(i));
+            }
+        }
 
-        /*itemFragment = new ItemFragment();
-        detailsFragment = new ItemDetailsFragment();
-        descriptionFragment = new ItemDescriptionFragment();*/
+    }
 
-        mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(mPagerAdapter);
 
-        PagerSlidingTabStrip pagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tab_strip);
-        pagerSlidingTabStrip.setViewPager(viewPager);
+    private void generateImagePair(Uri uri){
+        Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(this), uri);
+        LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+        uriImagePair.first.setLayoutParams(sizeParameters);
+
+        BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+
+    //    uriImagePair.first.setOnClickListener(this);
+
+        imageUris.add(uriImagePair);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        ArrayList<Uri> uris = new ArrayList<>();
-        for(int i=0; i<imageUris.size(); i++){
-            Pair p = (Pair) imageUris.get(i);
-            uris.add((Uri) p.second);
-        }
-        item.setPictures(uris);
-
         outState.putParcelable("item", item);
         outState.putInt("index", viewPager.getCurrentItem());
+        outState.putParcelable("tempUri",tempUri);
     }
 
     @Override
@@ -302,7 +298,7 @@ public class ItemActivity extends AppCompatActivity{
 
                 @Override
                 protected void onPostExecute(Integer response){
-                   checkForErrors(response);
+                    checkForErrors(response);
                 }
             }.execute(item);
         }
@@ -338,6 +334,10 @@ public class ItemActivity extends AppCompatActivity{
 
     private void prompt(){
         finish();
+    }
+
+    public void setTempUri(Uri fileUri) {
+        tempUri = fileUri;
     }
 
 
@@ -423,6 +423,21 @@ public class ItemActivity extends AppCompatActivity{
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             //itemFragment.onActivityResult(requestCode, resultCode, data);
+            Log.d("updateImage", "Result");
+
+            if (resultCode == Activity.RESULT_OK) {
+                item.addToAddedPictures(tempUri);
+
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                // User cancelled the image capture
+                //clean up
+            } else {
+                // Image capture failed, advise user
+                Toast.makeText(this, "Der opstod en fejl under brug af kameraet" , Toast.LENGTH_LONG).show();
+            }
+
+            setTempUri(null);
+
         }
         else if(requestCode == IMAGEVIEWER_REQUEST_CODE){
             //itemFragment.onActivityResult(requestCode, resultCode, data);

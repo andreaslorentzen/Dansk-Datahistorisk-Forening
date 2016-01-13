@@ -89,20 +89,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         //((HorizontalScrollView) layout.findViewById(R.id.horizontalScrollView)).setFillViewport(true);
         imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
 
-        ArrayList<Uri> uris = item.getPictures();
-        ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
-        if(uris != null){
-            for(int i = 0; i<uris.size(); i++){
-                Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(getActivity()), uris.get(i));
-
-                imageContainer.addView(uriImagePair.first);
-                uriImagePair.first.setOnClickListener(this);
-            }
-        }
-        else{
-            Log.d("updateImage", "no uris");
-        }
-
         // AUDIO
         posText = (TextView) layout.findViewById(R.id.posText);
         durText = (TextView) layout.findViewById(R.id.durText);
@@ -129,25 +115,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         return layout;
     }
 
-    @Override
-    public void onViewStateRestored(Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-
-        Log.d("ddfstate", "onViewStateRestored");
-
-        ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
-
-        Log.d("ddfstate", "imageViews" + imageUris.size());
-
-        imageContainer.removeAllViews();
-
-        for(int i=0; i<imageUris.size(); i++){
-            Pair p = (Pair) imageUris.get(i);
-            imageContainer.addView((View) p.first);
-            ((View) p.first).setOnClickListener(this);
-        }
-    }
-
     // shit like this maybe
     @Override
     public void onDetach() {
@@ -164,6 +131,9 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         killAudioPlayer(); // stop mPlayer and mHandler
 
         updateItem(((ItemActivity) getActivity()).getItem());
+
+        imageContainer.removeAllViews();
+
     }
 
     @Override
@@ -174,6 +144,16 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
     @Override
     public void onResume() {
         super.onResume();
+
+        ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
+
+        for(int i=0; i<imageUris.size(); i++){
+            Pair p = (Pair) imageUris.get(i);
+
+            imageContainer.addView((View) p.first);
+            ((View) p.first).setOnClickListener(this);
+        }
+
         setAudioPlayer(); // resets mPlayer
     }
 
@@ -199,8 +179,8 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             //http://developer.android.com/guide/topics/media/camera.html#intents
             Uri fileUri = LocalMediaStorage.getOutputMediaFileUri(LocalMediaStorage.MEDIA_TYPE_IMAGE);
             if(fileUri != null) {
-                ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
-                imageUris.add(new Pair<>(new ImageView(getActivity()), fileUri));
+
+                ((ItemActivity)getActivity()).setTempUri(fileUri);
 
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
