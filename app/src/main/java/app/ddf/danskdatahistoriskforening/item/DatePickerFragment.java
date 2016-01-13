@@ -24,12 +24,17 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceBundle){
         Date chosenDate;
-        try {
-            chosenDate = Model.getFormatter().parse(ItemDetailsFragment.currentDateField.getText().toString());
-        } catch (ParseException e){
-            e.printStackTrace();
-            return null;
+        if(ItemDetailsFragment.currentDateField.getText().toString().equals("Ikke sat") || ItemDetailsFragment.currentDateField.getText().toString().equals("")){
+            chosenDate = new Date();
+        } else{
+            try {
+                chosenDate = Model.getFormatter().parse(ItemDetailsFragment.currentDateField.getText().toString());
+            } catch (ParseException e){
+                e.printStackTrace();
+                return null;
+            }
         }
+
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(chosenDate);

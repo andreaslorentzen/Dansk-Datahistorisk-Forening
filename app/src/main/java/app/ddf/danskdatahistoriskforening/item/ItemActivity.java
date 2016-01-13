@@ -254,16 +254,6 @@ public class ItemActivity extends AppCompatActivity{
             if(!Model.isConnected()){
                 Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
             }
-            /*try{
-                if(detailsFragment.dateReceive != null && detailsFragment.dateReceive.getText() != null && !detailsFragment.dateReceive.getText().toString().equals(""))
-                    item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
-                if(detailsFragment.dateFrom != null && detailsFragment.dateFrom.getText() != null && !detailsFragment.dateFrom.getText().toString().equals("") )
-                    item.setItemDatingFrom(Model.getFormatter().parse(detailsFragment.dateFrom.getText().toString()));
-                if(detailsFragment.dateTo != null && detailsFragment.dateTo.getText() != null && !detailsFragment.dateTo.getText().toString().equals("")  )
-                    item.setItemDatingTo(Model.getFormatter().parse(detailsFragment.dateTo.getText().toString()));
-            } catch(ParseException e){
-                e.printStackTrace();
-            }*/
             new AsyncTask<Item, Void, Integer>(){
                 @Override
                 protected Integer doInBackground(Item... params){
@@ -277,23 +267,6 @@ public class ItemActivity extends AppCompatActivity{
             }.execute(item);
         }
         else{
-            /*try{
-                System.out.println(detailsFragment.hasReceiveChanged());
-                if(detailsFragment.hasReceiveChanged())
-                    item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
-                else
-                    item.setItemRecieved(null);
-                if(detailsFragment.hasDateFromChanged())
-                    item.setItemDatingFrom(Model.getFormatter().parse(detailsFragment.dateFrom.getText().toString()));
-                else
-                    item.setItemDatingFrom(null);
-                if(detailsFragment.hasDateToChanged())
-                    item.setItemDatingTo(Model.getFormatter().parse(detailsFragment.dateTo.getText().toString()));
-                else
-                    item.setItemDatingTo(null);
-            } catch(ParseException e){
-                e.printStackTrace();
-            }*/
             new AsyncTask<Item, Void, Integer>(){
                 @Override
                 protected Integer doInBackground(Item... params){
