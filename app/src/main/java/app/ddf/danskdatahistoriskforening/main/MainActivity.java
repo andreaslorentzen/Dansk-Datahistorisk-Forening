@@ -23,6 +23,7 @@ import java.util.List;
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
+import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 
 
@@ -273,6 +274,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         }
                         Model.getInstance().setItemTitles(itemTitles);
                         Model.getInstance().setItems(items);
+                        if(SearchManager.getSearchList() != null)
+                            Model.getInstance().getSearchManager().searchItemList(Model.getInstance().getSearchManager().getCurrentSearch());
                         Model.setListUpdated(true);
                     } catch (JSONException e) {
                         e.printStackTrace();

@@ -66,6 +66,10 @@ public class SearchManager {
         usedSearchListener = searchListener;
     }
 
+    public static SearchListener getSearchList(){
+        return usedSearchListener;
+    }
+
     public String getCurrentSearch() {
         return lastSearch;
     }
