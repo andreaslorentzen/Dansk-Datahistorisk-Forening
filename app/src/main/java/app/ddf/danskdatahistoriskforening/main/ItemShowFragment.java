@@ -45,7 +45,7 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
     private LinearLayout imageContainer;
     private ArrayList<Pair<ImageView, Uri>> imageUris;
 
-    private boolean isLoaded = true;
+    private boolean isLoaded = false;
     private String loadedURI = "";
 
     public ItemShowFragment() {
@@ -60,9 +60,7 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
 
         if (savedInstanceState != null) {
             isLoaded = savedInstanceState.getBoolean("isLoaded");
-            detailsURI = savedInstanceState.getString("detailsURI");
-            Log.d("isLoaded ", "" + isLoaded);
-            Log.d("loadedURI ", loadedURI);
+            loadedURI = savedInstanceState.getString("loadedURI");
         }
     }
 
@@ -96,6 +94,9 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
+
+        Log.d("ddfstate", "isLoaded: " + isLoaded);
+        Log.d("ddfstate", "loadedURI: " + loadedURI);
 
         //avoid downloading details if possible
         if (!isLoaded || Model.getInstance().getCurrentItem() == null || loadedURI != Model.getInstance().getCurrentDetailsURI()) {
