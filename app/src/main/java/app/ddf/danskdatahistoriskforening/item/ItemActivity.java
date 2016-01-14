@@ -459,16 +459,16 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     public static final int RECORD_PERMISSION_REQUEST = 2;
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 
         if (requestCode == RECORD_PERMISSION_REQUEST && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-            startRecoording();
+            startRecording();
 
         }
     }
 
-    public void startRecoording() {
+    public void startRecording() {
         if (App.hasRecordAudioPermission(this)){
 
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)) {

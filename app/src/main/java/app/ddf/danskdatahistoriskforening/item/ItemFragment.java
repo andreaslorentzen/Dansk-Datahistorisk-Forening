@@ -1,17 +1,12 @@
 package app.ddf.danskdatahistoriskforening.item;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -162,7 +157,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
                 Toast.makeText(getActivity(), "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
             }
         } else if(v == micButton){
-            ((ItemActivity) getActivity()).startRecoording();
+            ((ItemActivity) getActivity()).startRecording();
 
         } else if(v == audioButton) {
             if (mPlayer != null) {
