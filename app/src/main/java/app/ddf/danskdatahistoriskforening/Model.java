@@ -106,24 +106,40 @@ public class Model {
         return sm;
     }
 
+    private AsyncTask<String, Void, Item> currentFetchTask;
     public void fetchCurrentItem() {
         final String uri = Model.getInstance().getCurrentDetailsURI();
         if(uri == null)
             return;
 
-        new AsyncTask<String, Void, Item>() {
+        if(currentFetchTask != null){
+            currentFetchTask.cancel(true);
+            Model.getDAO().setCanceled(true);
+        }
+
+        currentFetchTask = new AsyncTask<String, Void, Item>() {
             @Override
             protected Item doInBackground(String... params) {
+                Model.getDAO().setCanceled(false);
                 return Model.getDAO().getDetailsFromBackEnd(params[0]);
             }
 
             @Override
             protected void onPostExecute(Item data) {
+                Log.d("hello","execute");
                 if (data != null) {
                     Model.getInstance().setCurrentItem(data);
                 }
+                currentFetchTask = null;
             }
-        }.execute(uri);
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                Log.d("hello","cnacled");
+            }
+        };
+        currentFetchTask.execute(uri);
     }
 
     private OnCurrentItemChangeListener currentItemChangeListener;
