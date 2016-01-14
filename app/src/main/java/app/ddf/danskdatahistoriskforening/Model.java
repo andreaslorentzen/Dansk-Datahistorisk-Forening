@@ -112,15 +112,9 @@ public class Model {
         if(uri == null)
             return;
 
-        if(currentFetchTask != null){
-            currentFetchTask.cancel(true);
-            Model.getDAO().setCanceled(true);
-        }
-
         currentFetchTask = new AsyncTask<String, Void, Item>() {
             @Override
             protected Item doInBackground(String... params) {
-                Model.getDAO().setCanceled(false);
                 return Model.getDAO().getDetailsFromBackEnd(params[0]);
             }
 
@@ -140,12 +134,20 @@ public class Model {
             }
         };
         currentFetchTask.execute(uri);
+
     }
 
     private OnCurrentItemChangeListener currentItemChangeListener;
 
     public void setOnCurrentItemChangeListener(OnCurrentItemChangeListener currentItemChangeListener) {
         this.currentItemChangeListener = currentItemChangeListener;
+    }
+
+    public void cancelFetch() {
+        if(currentFetchTask != null)
+            currentFetchTask.cancel(true);
+
+        Model.getDAO().cancelDownload();
     }
 
     public interface OnCurrentItemChangeListener {

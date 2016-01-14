@@ -95,7 +95,7 @@ public class DAO implements IDAO {
     }
 
     @Override
-    public void setCanceled(boolean b) {
+    public void cancelDownload() {
 
     }
 

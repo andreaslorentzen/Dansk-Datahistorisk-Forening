@@ -128,6 +128,7 @@ public class TempDAO implements IDAO {
 
     @Override
     public Item getDetailsFromBackEnd(String detailsURI) {
+        canceled = false;
         BufferedReader br;
         StringBuilder sb;
         try {
@@ -362,9 +363,10 @@ public class TempDAO implements IDAO {
         }
     }
     private boolean canceled;
+
     @Override
-    public void setCanceled(boolean b) {
-        canceled = b;
+    public void cancelDownload() {
+        canceled = true;
 
     }
 

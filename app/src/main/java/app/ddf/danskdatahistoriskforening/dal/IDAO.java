@@ -11,5 +11,5 @@ public interface IDAO {
     int updateItem(Context context, Item item);
     void postFile(Context context, Uri path, int itemID, String extension);
 
-    void setCanceled(boolean b);
+    void cancelDownload();
 }
