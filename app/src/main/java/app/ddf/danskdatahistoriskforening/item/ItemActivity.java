@@ -74,8 +74,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onReceive(Context context, Intent intent) {
             ItemActivity.this.checkForErrors(intent.getIntExtra("status", 0));
-            Model.getInstance().setCurrentItem(null);
-            Model.getInstance().fetchCurrentItem();
         }
     };
 

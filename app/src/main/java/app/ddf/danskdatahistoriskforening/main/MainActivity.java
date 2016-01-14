@@ -11,6 +11,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,7 +48,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+        //    intent.getAction()
             MainActivity.this.checkForErrors(intent.getIntExtra("status", 0));
+            Model.getInstance().setCurrentItem(null);
+            Log.d("Current sat til null", "" + (Model.getInstance().getCurrentItem() == null));
+            Model.getInstance().fetchCurrentItem();
         }
     };
 

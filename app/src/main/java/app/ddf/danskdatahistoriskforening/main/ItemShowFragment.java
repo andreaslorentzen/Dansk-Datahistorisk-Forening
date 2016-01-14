@@ -1,14 +1,9 @@
 package app.ddf.danskdatahistoriskforening.main;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,9 +16,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.image.ImageviewerSimpleActivity;
 
@@ -94,29 +89,22 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putBoolean("isLoaded", isLoaded);
-        outState.putString("loadedURI", loadedURI);
+    //    outState.putBoolean("isLoaded", isLoaded);
+    //    outState.putString("loadedURI", loadedURI);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Model.BROADCAST_ACTION);
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
 
-            }
-        }, filter);
+        Log.d("SHOW", "RESUME");
 
         Model.getInstance().setOnCurrentItemChangeListener(this);
 
-        Item currentItem = Model.getInstance().getCurrentItem();
-        onCurrentItemChange(currentItem);
+        onCurrentItemChange(Model.getInstance().getCurrentItem());
 
-        Log.d("ddfstate", "isLoaded: " + isLoaded);
-        Log.d("ddfstate", "loadedURI: " + loadedURI);
+    //    Log.d("ddfstate", "isLoaded: " + isLoaded);
+     //   Log.d("ddfstate", "loadedURI: " + loadedURI);
 
         //avoid downloading details if possible
 
@@ -130,23 +118,21 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
 
     @Override
     public void onCurrentItemChange(Item currentItem) {
+        progressBar.setVisibility(View.VISIBLE);
+        contentWrapper.setVisibility(View.GONE);
+
+        Log.d("CURENT ITEM CHANGE",""+(currentItem==null));
+
         if (currentItem == null) {
             ((MainActivity) getActivity()).disableEdit();
-            //   fetchCurrentItem();
-        }
-        else {
-            ((MainActivity) getActivity()).enableEdit();
-        }
-        updateViews();
-
-    }
-
-    private void updateViews() {
-        Item currentItem = Model.getInstance().getCurrentItem();
-        if(currentItem == null) {
             progressBar.setVisibility(View.VISIBLE);
             contentWrapper.setVisibility(View.GONE);
             return;
+        }
+        else {
+            ((MainActivity) getActivity()).enableEdit();
+            progressBar.setVisibility(View.GONE);
+            contentWrapper.setVisibility(View.VISIBLE);
         }
 
         // felterne udfyld felterne
@@ -161,8 +147,8 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
         producerView.setText(currentItem.getProducer());
         postNummerView.setText(currentItem.getPostalCode());
 
-        progressBar.setVisibility(View.GONE);
-        contentWrapper.setVisibility(View.VISIBLE);
+    //    progressBar.setVisibility(View.GONE);
+    //    contentWrapper.setVisibility(View.VISIBLE);
 
         //create picture thumbnails
         ArrayList<Uri> uris = currentItem.getPictures();

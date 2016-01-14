@@ -59,18 +59,18 @@ public class BitmapEncoder {
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(uri.getPath(), options);
 
-        Log.d("bitmap", "actual width: " + options.outWidth + " actual height: " + options.outHeight);
+    //    Log.d("bitmap", "actual width: " + options.outWidth + " actual height: " + options.outHeight);
 
         //calculate samplesize
         options.inSampleSize = calculateInSampleSize(options, width, height);
 
-        Log.d("bitmap", "samplesize: " + options.inSampleSize);
+    //    Log.d("bitmap", "samplesize: " + options.inSampleSize);
 
         //decode from file and insert into ImageView
         options.inJustDecodeBounds = false;
         Bitmap bitmap = BitmapFactory.decodeFile(uri.getPath(), options);
 
-        Log.d("bitmap", "bitmap width: " + options.outWidth + " bitmap height: " + options.outHeight);
+    //    Log.d("bitmap", "bitmap width: " + options.outWidth + " bitmap height: " + options.outHeight);
 
         return bitmap;
     }

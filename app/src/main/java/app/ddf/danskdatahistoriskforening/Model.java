@@ -90,7 +90,7 @@ public class Model {
     public void setCurrentItem(Item currentItem) {
         this.currentItem = currentItem;
         if(currentItemChangeListener != null){
-            currentItemChangeListener.onCurrentItemChange(getInstance().currentItem);
+            currentItemChangeListener.onCurrentItemChange(this.currentItem);
         }
     }
 
