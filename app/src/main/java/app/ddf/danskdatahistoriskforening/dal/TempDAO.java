@@ -128,6 +128,7 @@ public class TempDAO implements IDAO {
 
     @Override
     public Item getDetailsFromBackEnd(String detailsURI) {
+        canceled = false;
         BufferedReader br;
         StringBuilder sb;
         try {
@@ -174,6 +175,9 @@ public class TempDAO implements IDAO {
                 JSONObject image;
                 int i = 0;
                 while((image = images.optJSONObject("image_" + i)) != null){
+                    if(canceled) {
+                        return null;
+                    }
                     Uri temp = getFile(image.getString("href"), LocalMediaStorage.MEDIA_TYPE_IMAGE);
                     if(temp == null)
                         continue;;
@@ -187,6 +191,9 @@ public class TempDAO implements IDAO {
                 JSONObject audio;
                 int i = 0;
                 while((audio = audios.optJSONObject("audio_" + i)) != null){
+                    if(canceled) {
+                        return null;
+                    }
                     Uri temp = getFile(audio.getString("href"), LocalMediaStorage.MEDIA_TYPE_AUDIO);
                     if(temp == null)
                         continue;
@@ -355,7 +362,13 @@ public class TempDAO implements IDAO {
             e.printStackTrace();
         }
     }
+    private boolean canceled;
 
+    @Override
+    public void cancelDownload() {
+        canceled = true;
+
+    }
 
     public Uri getFile(String filePath, int type){
 
@@ -378,6 +391,9 @@ public class TempDAO implements IDAO {
             byte[] data = new byte[1024];
             int count;
             while ((count = input.read(data)) != -1) {
+                if(canceled) {
+                    return null;
+                }
                 output.write(data, 0, count);
             }
 

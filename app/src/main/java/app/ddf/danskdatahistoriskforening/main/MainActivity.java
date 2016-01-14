@@ -255,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 String query = Model.getInstance().getSearchManager().getCurrentSearch();
                 updateSearchVisibility();
                 searchView.setQuery(query, false);
+                Model.getInstance().cancelFetch();
                 break;
         }
     }
