@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private boolean isSearchExpanded;
     private boolean searchButtonVisible = true;
 
+    private boolean canEdit = false;
+
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -167,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private void updateSearchVisibility() {
         boolean isSerSearchVisible = isSearchButtonVisible();
         searchButton.setVisible(isSerSearchVisible);
-        editButton.setVisible(!isSerSearchVisible);
+        editButton.setVisible(!isSerSearchVisible && canEdit);
 
         if (!isSerSearchVisible) {
             MenuItemCompat.collapseActionView(searchButton);
@@ -191,12 +193,31 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         return true;
     }
 
+    public void disableEdit(){
+        canEdit = false;
+        if(editButton != null) {
+            editButton.setVisible(false);
+        }
+    }
+
+    public void enableEdit(){
+        canEdit = true;
+        if(editButton != null) {
+            editButton.setVisible(true);
+        }
+    }
+
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         if (item == editButton) {
-            Intent i = new Intent(this, ItemActivity.class);
-            i.putExtra("item", Model.getInstance().getCurrentItem());
-            startActivity(i);
+            if(canEdit) {
+                Intent i = new Intent(this, ItemActivity.class);
+                i.putExtra("item", Model.getInstance().getCurrentItem());
+                startActivity(i);
+            }
+            else{
+                Toast.makeText(this, "Vent mens genstandens oplysninger hentes", Toast.LENGTH_LONG).show();
+            }
         }
         return true;
     }

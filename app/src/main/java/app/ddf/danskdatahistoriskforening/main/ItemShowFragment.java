@@ -62,6 +62,8 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
             isLoaded = savedInstanceState.getBoolean("isLoaded");
             loadedURI = savedInstanceState.getString("loadedURI");
         }
+
+        ((MainActivity) getActivity()).disableEdit();
     }
 
     @Override
@@ -100,9 +102,11 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
 
         //avoid downloading details if possible
         if (!isLoaded || Model.getInstance().getCurrentItem() == null || loadedURI != Model.getInstance().getCurrentDetailsURI()) {
+            ((MainActivity) getActivity()).disableEdit();
             setDetailsURI(Model.getInstance().getCurrentDetailsURI());
         }
         else {
+            ((MainActivity) getActivity()).enableEdit();
             updateViews(Model.getInstance().getCurrentItem());
         }
     }
@@ -125,6 +129,10 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
         Object context = getActivity();
         Log.d("ddfstate", "Activity: " + getActivity());
         Log.d("ddfstate", uris + "");
+
+        if(context != null){
+            ((MainActivity) getActivity()).enableEdit();
+        }
 
         if (uris != null && context != null) {//activity may have been destroyed while downloading
             for (int i = 0; i < uris.size(); i++) {
