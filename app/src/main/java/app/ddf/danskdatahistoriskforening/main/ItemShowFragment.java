@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +42,9 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
     private TextView donatorView;
     private TextView producerView;
     private TextView postNummerView;
+
+    private LinearLayout contentWrapper;
+    private ProgressBar progressBar;
 
     private LinearLayout imageContainer;
     private ArrayList<Pair<ImageView, Uri>> imageUris;
@@ -80,6 +84,8 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
         postNummerView = (TextView) layout.findViewById(R.id.postNummer);
         imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
 
+        contentWrapper = (LinearLayout) layout.findViewById(R.id.item_details_wrapper);
+        progressBar = (ProgressBar) layout.findViewById(R.id.item_details_progressbar);
         //    ((MainActivity) getActivity()).updateSearchVisibility();
 
         return layout;
@@ -96,6 +102,9 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
+
+        progressBar.setVisibility(View.VISIBLE);
+        contentWrapper.setVisibility(View.GONE);
 
         Log.d("ddfstate", "isLoaded: " + isLoaded);
         Log.d("ddfstate", "loadedURI: " + loadedURI);
@@ -124,6 +133,9 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
         producerView.setText(currentItem.getProducer());
         postNummerView.setText(currentItem.getPostalCode());
 
+        progressBar.setVisibility(View.GONE);
+        contentWrapper.setVisibility(View.VISIBLE);
+
         //create picture thumbnails
         ArrayList<Uri> uris = currentItem.getPictures();
         Object context = getActivity();
@@ -136,8 +148,6 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
 
         if (uris != null && context != null) {//activity may have been destroyed while downloading
             for (int i = 0; i < uris.size(); i++) {
-
-
                 Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(getActivity()), uris.get(i));
                 LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
                 uriImagePair.first.setLayoutParams(sizeParameters);
