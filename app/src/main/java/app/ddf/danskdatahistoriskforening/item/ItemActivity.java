@@ -418,6 +418,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             if(resultCode == AppCompatActivity.RESULT_OK){
                 ArrayList<Uri> remainingURIs = data.getParcelableArrayListExtra("remainingURIs");
 
+                Log.d("updateImage", "remaining URIs: " + remainingURIs.size());
+
                 //no change
                 if(remainingURIs.size() == imageUris.size()){
                     return;
@@ -427,24 +429,25 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                     item.setPicturesChanged(true);
                 }
 
-         //       ArrayList temp = new ArrayList<>(imageUris);
                 for(int i = 0; i<imageUris.size(); i++){
                     Pair listItem = (Pair) imageUris.get(i);
 
                     if(!remainingURIs.contains(listItem.second)){
                         //image has been removed
 
-                        if(item.getAddedPictures() !=  null){
+                        if(item.getAddedPictures() !=  null){//image may have been added during this registration
                             if(!item.getAddedPictures().contains(listItem.second)){
                                 item.addDeletedPicture((Uri) listItem.second);
                             } else{
                                 item.removeFromAddedPicture((Uri) listItem.second);
                             }
                         }
-              //          temp.remove(listItem);
-                    }
-                    else{
+                        else{//image was taken during earlier registration
+                            item.addDeletedPicture((Uri) listItem.second);
+                        }
 
+                        //remove picture from list of local images
+                        item.removeFromPictures((Uri) listItem.second);
                     }
                 }
             }
