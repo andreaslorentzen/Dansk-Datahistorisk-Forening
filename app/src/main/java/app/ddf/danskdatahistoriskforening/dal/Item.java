@@ -233,6 +233,14 @@ public class Item implements Parcelable {
         pictures.add(picture);
     }
 
+    public void removeFromPictures(Uri uri){
+        if(pictures != null){
+            if (pictures.contains(uri)){
+                pictures.remove(uri);
+            }
+        }
+    }
+
     public ArrayList<Uri> getRecordings() {
         return this.recordings;
     }
