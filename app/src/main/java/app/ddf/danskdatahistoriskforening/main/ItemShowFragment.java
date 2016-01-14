@@ -1,22 +1,23 @@
 package app.ddf.danskdatahistoriskforening.main;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.media.Image;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -27,12 +28,10 @@ import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.image.ImageviewerSimpleActivity;
 
 
-public class ItemShowFragment extends Fragment implements View.OnClickListener {
+public class ItemShowFragment extends Fragment implements View.OnClickListener, Model.OnCurrentItemChangeListener {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
     private final int MAX_THUMBNAIL_WIDTH = 150;
     private final int MAX_THUMBNAIL_HEIGHT = 250;
-
-    private String detailsURI;
 
     private TextView itemheadlineView;
     private TextView itemdescriptionView;
@@ -50,7 +49,7 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
     private ArrayList<Pair<ImageView, Uri>> imageUris;
 
     private boolean isLoaded = false;
-    private String loadedURI = "";
+    private String loadedURI;
 
     public ItemShowFragment() {
         // Required empty public constructor
@@ -102,25 +101,54 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Model.BROADCAST_ACTION);
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
 
-        progressBar.setVisibility(View.VISIBLE);
-        contentWrapper.setVisibility(View.GONE);
+            }
+        }, filter);
+
+        Model.getInstance().setOnCurrentItemChangeListener(this);
+
+        Item currentItem = Model.getInstance().getCurrentItem();
+        onCurrentItemChange(currentItem);
 
         Log.d("ddfstate", "isLoaded: " + isLoaded);
         Log.d("ddfstate", "loadedURI: " + loadedURI);
 
         //avoid downloading details if possible
-        if (!isLoaded || Model.getInstance().getCurrentItem() == null || loadedURI != Model.getInstance().getCurrentDetailsURI()) {
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Model.getInstance().setOnCurrentItemChangeListener(null);
+    }
+
+    @Override
+    public void onCurrentItemChange(Item currentItem) {
+        if (currentItem == null) {
             ((MainActivity) getActivity()).disableEdit();
-            setDetailsURI(Model.getInstance().getCurrentDetailsURI());
+            //   fetchCurrentItem();
         }
         else {
             ((MainActivity) getActivity()).enableEdit();
-            updateViews(Model.getInstance().getCurrentItem());
         }
+        updateViews();
+
     }
 
-    private void updateViews(Item currentItem) {
+    private void updateViews() {
+        Item currentItem = Model.getInstance().getCurrentItem();
+        if(currentItem == null) {
+            progressBar.setVisibility(View.VISIBLE);
+            contentWrapper.setVisibility(View.GONE);
+            return;
+        }
+
         // felterne udfyld felterne
         itemheadlineView.setText(currentItem.getItemHeadline());
         // TODO handle lyd
@@ -142,59 +170,29 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
         Log.d("ddfstate", "Activity: " + getActivity());
         Log.d("ddfstate", uris + "");
 
+        imageContainer.removeAllViews();
+        LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+
         if(context != null){
             ((MainActivity) getActivity()).enableEdit();
-        }
+            if (uris != null) {//activity may have been destroyed while downloading
+                for (int i = 0; i < uris.size(); i++) {
+                    Pair<ImageView, Uri> uriImagePair = new Pair<>(new ImageView(getActivity()), uris.get(i));
+                    uriImagePair.first.setLayoutParams(sizeParameters);
 
-        if (uris != null && context != null) {//activity may have been destroyed while downloading
-            for (int i = 0; i < uris.size(); i++) {
-                Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(getActivity()), uris.get(i));
-                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-                uriImagePair.first.setLayoutParams(sizeParameters);
+                    imageContainer.addView(uriImagePair.first);
+                    imageUris.add(uriImagePair);
 
-                imageContainer.addView(uriImagePair.first);
-                imageUris.add(uriImagePair);
-
-                BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-                uriImagePair.first.setOnClickListener(ItemShowFragment.this);
-            }
-        }
-    }
-
-    public void setDetailsURI(String detailsURI) {
-        this.detailsURI = detailsURI;
-        final String uri = detailsURI;
-
-        new AsyncTask<String, Void, Item>() {
-            @Override
-            protected Item doInBackground(String... params) {
-                Log.d("ddfstate", "start of download details " + params[0]);
-                return Model.getDAO().getDetailsFromBackEnd(params[0]);
-            }
-
-            @Override
-            protected void onPostExecute(Item data) {
-
-                if (data != null) {
-                    Model.getInstance().setCurrentItem(data);
-                    Item currentItem = data;
-                    Log.d("itemdetails", data.toJSON().toString());
-
-                    isLoaded = true;
-                    loadedURI = uri;
-
-                    updateViews(currentItem);
-                } else {
-                    Log.d("itemdetails", "else");
-                    //TODO ERROR HANDLING FOR data = null
+                    BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                    uriImagePair.first.setOnClickListener(ItemShowFragment.this);
                 }
             }
-        }.execute(detailsURI);
+        }
+
+
     }
 
-    public String getDetailsURI() {
-        return this.detailsURI;
-    }
+
 
     @Override
     public void onClick(View v) {
@@ -221,4 +219,11 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener {
             getActivity().startActivity(intent);
         }
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        System.out.println("Fragment destroyed");
+    }
+
 }

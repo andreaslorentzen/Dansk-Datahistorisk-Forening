@@ -151,6 +151,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 // Maybe throw exception
                 return;
             Model.getInstance().setCurrentDetailsURI(detailsURI);
+            Model.getInstance().setCurrentItem(null);
+            Model.getInstance().fetchCurrentItem();
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.frame, new ItemShowFragment())
                     .addToBackStack(null)

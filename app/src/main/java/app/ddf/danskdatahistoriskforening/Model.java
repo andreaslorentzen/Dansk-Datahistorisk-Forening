@@ -1,6 +1,8 @@
 package app.ddf.danskdatahistoriskforening;
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import org.json.JSONObject;
 
@@ -87,6 +89,9 @@ public class Model {
     }
     public void setCurrentItem(Item currentItem) {
         this.currentItem = currentItem;
+        if(currentItemChangeListener != null){
+            currentItemChangeListener.onCurrentItemChange(getInstance().currentItem);
+        }
     }
 
     public String getCurrentDetailsURI() {
@@ -99,5 +104,35 @@ public class Model {
 
     public SearchManager getSearchManager() {
         return sm;
+    }
+
+    public void fetchCurrentItem() {
+        final String uri = Model.getInstance().getCurrentDetailsURI();
+        if(uri == null)
+            return;
+
+        new AsyncTask<String, Void, Item>() {
+            @Override
+            protected Item doInBackground(String... params) {
+                return Model.getDAO().getDetailsFromBackEnd(params[0]);
+            }
+
+            @Override
+            protected void onPostExecute(Item data) {
+                if (data != null) {
+                    Model.getInstance().setCurrentItem(data);
+                }
+            }
+        }.execute(uri);
+    }
+
+    private OnCurrentItemChangeListener currentItemChangeListener;
+
+    public void setOnCurrentItemChangeListener(OnCurrentItemChangeListener currentItemChangeListener) {
+        this.currentItemChangeListener = currentItemChangeListener;
+    }
+
+    public interface OnCurrentItemChangeListener {
+        void onCurrentItemChange(Item currentItem);
     }
 }

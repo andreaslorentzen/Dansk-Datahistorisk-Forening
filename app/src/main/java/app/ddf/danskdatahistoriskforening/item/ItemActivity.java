@@ -74,6 +74,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onReceive(Context context, Intent intent) {
             ItemActivity.this.checkForErrors(intent.getIntExtra("status", 0));
+            Model.getInstance().setCurrentItem(null);
+            Model.getInstance().fetchCurrentItem();
         }
     };
 
@@ -230,11 +232,11 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Kan ikke udføres uden internet", Toast.LENGTH_SHORT).show();
 
         //item.setItemHeadline(itemFragment.getItemTitle());
-
+/*
         for (Pair<ImageView, Uri> pair : imageUris) {
             item.addToPictures(pair.second);
         }
-
+*/
         /*
         HUSK
         HUSK
