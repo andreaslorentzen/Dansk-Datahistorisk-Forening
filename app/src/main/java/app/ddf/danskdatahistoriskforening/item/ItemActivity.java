@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -31,19 +30,16 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-import app.ddf.danskdatahistoriskforening.dal.BackgroundService;
-import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.dal.BackgroundService;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.helper.PagerSlidingTabStrip;
 import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
 
 public class ItemActivity extends AppCompatActivity implements View.OnClickListener {
-    //TODO calculate acceptable thumbnail dimensions based on screensize or available space
-    private final int MAX_THUMBNAIL_WIDTH = 150;
-    private final int MAX_THUMBNAIL_HEIGHT = 250;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
@@ -144,10 +140,10 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
     private void generateImagePair(Uri uri) {
         Pair<ImageView, Uri> uriImagePair = new Pair<>(new ImageView(this), uri);
-        LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+        LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
         uriImagePair.first.setLayoutParams(sizeParameters);
 
-        BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+        BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
 
         uriImagePair.first.setOnClickListener(this);
 
@@ -230,11 +226,11 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Kan ikke udføres uden internet", Toast.LENGTH_SHORT).show();
 
         //item.setItemHeadline(itemFragment.getItemTitle());
-
+/*
         for (Pair<ImageView, Uri> pair : imageUris) {
             item.addToPictures(pair.second);
         }
-
+*/
         /*
         HUSK
         HUSK
