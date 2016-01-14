@@ -11,6 +11,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.main.MainActivity;
 
 public class LocalMediaStorage {
@@ -72,7 +73,10 @@ public class LocalMediaStorage {
             return null;
         }
 
-        File mediaStorageDir = new File(context.getExternalFilesDir(null).getPath());
+        File mediaStorageDir = Model.getCurrentActivity().getExternalFilesDir(null);
+        if(mediaStorageDir == null){
+            return null;
+        }
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
 
