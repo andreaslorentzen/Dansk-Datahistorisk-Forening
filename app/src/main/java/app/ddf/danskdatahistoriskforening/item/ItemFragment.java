@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -140,6 +139,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
     public void onStopTrackingTouch(SeekBar seekBar) {
     }
 
+
     @Override
     public void onClick(View v) {
         if(v == cameraButton){
@@ -157,8 +157,8 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
                 Toast.makeText(getActivity(), "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
             }
         } else if(v == micButton){
-            Intent i = new Intent(getActivity(), RecordingActivity.class);
-            startActivity(i);
+            ((ItemActivity) getActivity()).startRecording();
+
         } else if(v == audioButton) {
             if (mPlayer != null) {
                 if (mPlayer.isPlaying()) {

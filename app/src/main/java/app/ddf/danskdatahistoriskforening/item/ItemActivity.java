@@ -1,12 +1,15 @@
 package app.ddf.danskdatahistoriskforening.item;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -451,6 +454,37 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
             }
+        }
+    }
+    public static final int RECORD_PERMISSION_REQUEST = 2;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        if (requestCode == RECORD_PERMISSION_REQUEST && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            startRecording();
+
+        }
+    }
+
+    public void startRecording() {
+        if (App.hasRecordAudioPermission(this)){
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.RECORD_AUDIO},
+                        ItemActivity.RECORD_PERMISSION_REQUEST);
+
+            }
+            else{
+                Toast.makeText(this, "Funktionen kræver adgang til mikrofonen. Gå til app indstillinger for at give adgang.", Toast.LENGTH_LONG).show();
+            }
+        }
+        else{
+            Intent i = new Intent(this, RecordingActivity.class);
+            startActivity(i);
         }
     }
 
