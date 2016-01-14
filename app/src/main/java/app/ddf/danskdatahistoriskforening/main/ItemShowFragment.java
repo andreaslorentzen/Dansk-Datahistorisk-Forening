@@ -26,7 +26,7 @@ import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.image.ImageviewerSimpleActivity;
 
 
-public class ItemShowFragment extends Fragment implements View.OnClickListener{
+public class ItemShowFragment extends Fragment implements View.OnClickListener {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
     private final int MAX_THUMBNAIL_WIDTH = 150;
     private final int MAX_THUMBNAIL_HEIGHT = 250;
@@ -45,7 +45,8 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
     private LinearLayout imageContainer;
     private ArrayList<Pair<ImageView, Uri>> imageUris;
 
-    private boolean shouldReloadFromAPI = true;
+    private boolean isLoaded = true;
+    private String loadedURI = "";
 
     public ItemShowFragment() {
         // Required empty public constructor
@@ -57,8 +58,11 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
 
         imageUris = new ArrayList<>();
 
-        if(savedInstanceState != null){
-            shouldReloadFromAPI = false;
+        if (savedInstanceState != null) {
+            isLoaded = savedInstanceState.getBoolean("isLoaded");
+            detailsURI = savedInstanceState.getString("detailsURI");
+            Log.d("isLoaded ", "" + isLoaded);
+            Log.d("loadedURI ", loadedURI);
         }
     }
 
@@ -76,26 +80,33 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
         postNummerView = (TextView) layout.findViewById(R.id.postNummer);
         imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
 
-    //    ((MainActivity) getActivity()).updateSearchVisibility();
-
-        //setDetailsURI(Model.getInstance().getCurrentDetailsURI());
+        //    ((MainActivity) getActivity()).updateSearchVisibility();
 
         return layout;
     }
 
     @Override
-    public void onResume(){
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putBoolean("isLoaded", isLoaded);
+        outState.putString("loadedURI", loadedURI);
+    }
+
+    @Override
+    public void onResume() {
         super.onResume();
 
-        if(shouldReloadFromAPI) {
+        //avoid downloading details if possible
+        if (!isLoaded || Model.getInstance().getCurrentItem() == null || loadedURI != Model.getInstance().getCurrentDetailsURI()) {
             setDetailsURI(Model.getInstance().getCurrentDetailsURI());
         }
-        else{
+        else {
             updateViews(Model.getInstance().getCurrentItem());
         }
     }
 
-    private void updateViews(Item currentItem){
+    private void updateViews(Item currentItem) {
         // felterne udfyld felterne
         itemheadlineView.setText(currentItem.getItemHeadline());
         // TODO handle lyd
@@ -114,8 +125,8 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
         Log.d("ddfstate", "Activity: " + getActivity());
         Log.d("ddfstate", uris + "");
 
-        if(uris != null && context != null){//activity may have been destroyed while downloading
-            for(int i = 0; i<uris.size(); i++){
+        if (uris != null && context != null) {//activity may have been destroyed while downloading
+            for (int i = 0; i < uris.size(); i++) {
 
 
                 Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(getActivity()), uris.get(i));
@@ -131,12 +142,13 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
         }
     }
 
-    public void setDetailsURI(String detailsURI){
+    public void setDetailsURI(String detailsURI) {
         this.detailsURI = detailsURI;
+        final String uri = detailsURI;
 
         new AsyncTask<String, Void, Item>() {
             @Override
-            protected Item doInBackground(String ... params) {
+            protected Item doInBackground(String... params) {
                 Log.d("ddfstate", "start of download details " + params[0]);
                 return Model.getDAO().getDetailsFromBackEnd(params[0]);
             }
@@ -144,10 +156,13 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
             @Override
             protected void onPostExecute(Item data) {
 
-                if (data != null){
+                if (data != null) {
                     Model.getInstance().setCurrentItem(data);
                     Item currentItem = data;
                     Log.d("itemdetails", data.toJSON().toString());
+
+                    isLoaded = true;
+                    loadedURI = uri;
 
                     updateViews(currentItem);
                 } else {
@@ -156,32 +171,26 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
                 }
             }
         }.execute(detailsURI);
-
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-    }
-
-    public String getDetailsURI(){
+    public String getDetailsURI() {
         return this.detailsURI;
     }
 
     @Override
     public void onClick(View v) {
-        if(v instanceof ImageView){
+        if (v instanceof ImageView) {
             int index = -1;
             ArrayList<Uri> uris = new ArrayList<>();
-            for(int i=0; i<imageUris.size(); i++){
-                if(v == imageUris.get(i).first){
+            for (int i = 0; i < imageUris.size(); i++) {
+                if (v == imageUris.get(i).first) {
                     index = i;
                 }
 
                 uris.add(imageUris.get(i).second);
             }
 
-            if(index < 0){
+            if (index < 0) {
                 //none of the imageViews matched
                 Log.d("ddf", "no imageView matched");
                 return;
