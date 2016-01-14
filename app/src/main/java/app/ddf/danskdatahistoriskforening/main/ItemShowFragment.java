@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
@@ -25,8 +26,6 @@ import app.ddf.danskdatahistoriskforening.image.ImageviewerSimpleActivity;
 
 public class ItemShowFragment extends Fragment implements View.OnClickListener, Model.OnCurrentItemChangeListener {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
-    private final int MAX_THUMBNAIL_WIDTH = 150;
-    private final int MAX_THUMBNAIL_HEIGHT = 250;
 
     private TextView itemheadlineView;
     private TextView itemdescriptionView;
@@ -43,25 +42,8 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
     private LinearLayout imageContainer;
     private ArrayList<Pair<ImageView, Uri>> imageUris;
 
-    private boolean isLoaded = false;
-    private String loadedURI;
-
     public ItemShowFragment() {
         // Required empty public constructor
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        imageUris = new ArrayList<>();
-
-        if (savedInstanceState != null) {
-            isLoaded = savedInstanceState.getBoolean("isLoaded");
-            loadedURI = savedInstanceState.getString("loadedURI");
-        }
-
-        ((MainActivity) getActivity()).disableEdit();
     }
 
     @Override
@@ -86,28 +68,10 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-    //    outState.putBoolean("isLoaded", isLoaded);
-    //    outState.putString("loadedURI", loadedURI);
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
-
-        Log.d("SHOW", "RESUME");
-
         Model.getInstance().setOnCurrentItemChangeListener(this);
-
         onCurrentItemChange(Model.getInstance().getCurrentItem());
-
-    //    Log.d("ddfstate", "isLoaded: " + isLoaded);
-     //   Log.d("ddfstate", "loadedURI: " + loadedURI);
-
-        //avoid downloading details if possible
-
     }
 
     @Override
@@ -118,22 +82,14 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
 
     @Override
     public void onCurrentItemChange(Item currentItem) {
-        progressBar.setVisibility(View.VISIBLE);
-        contentWrapper.setVisibility(View.GONE);
-
-        Log.d("CURENT ITEM CHANGE",""+(currentItem==null));
-
         if (currentItem == null) {
             ((MainActivity) getActivity()).disableEdit();
             progressBar.setVisibility(View.VISIBLE);
             contentWrapper.setVisibility(View.GONE);
             return;
         }
-        else {
-            ((MainActivity) getActivity()).enableEdit();
-            progressBar.setVisibility(View.GONE);
-            contentWrapper.setVisibility(View.VISIBLE);
-        }
+
+        ((MainActivity) getActivity()).enableEdit();
 
         // felterne udfyld felterne
         itemheadlineView.setText(currentItem.getItemHeadline());
@@ -147,31 +103,28 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
         producerView.setText(currentItem.getProducer());
         postNummerView.setText(currentItem.getPostalCode());
 
-    //    progressBar.setVisibility(View.GONE);
-    //    contentWrapper.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
+        contentWrapper.setVisibility(View.VISIBLE);
 
         //create picture thumbnails
         ArrayList<Uri> uris = currentItem.getPictures();
-        Object context = getActivity();
-        Log.d("ddfstate", "Activity: " + getActivity());
-        Log.d("ddfstate", uris + "");
 
         imageContainer.removeAllViews();
-        LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+        imageUris = new ArrayList<>();
 
-        if(context != null){
-            ((MainActivity) getActivity()).enableEdit();
-            if (uris != null) {//activity may have been destroyed while downloading
-                for (int i = 0; i < uris.size(); i++) {
-                    Pair<ImageView, Uri> uriImagePair = new Pair<>(new ImageView(getActivity()), uris.get(i));
-                    uriImagePair.first.setLayoutParams(sizeParameters);
+        if (uris != null) {//activity may have been destroyed while downloading
 
-                    imageContainer.addView(uriImagePair.first);
-                    imageUris.add(uriImagePair);
+            LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
 
-                    BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-                    uriImagePair.first.setOnClickListener(ItemShowFragment.this);
-                }
+            for (int i = 0; i < uris.size(); i++) {
+                Pair<ImageView, Uri> uriImagePair = new Pair<>(new ImageView(getActivity()), uris.get(i));
+                uriImagePair.first.setLayoutParams(sizeParameters);
+
+                imageContainer.addView(uriImagePair.first);
+                imageUris.add(uriImagePair);
+
+                BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
+                uriImagePair.first.setOnClickListener(ItemShowFragment.this);
             }
         }
 
