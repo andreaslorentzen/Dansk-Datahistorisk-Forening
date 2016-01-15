@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.Date;
 
 import app.ddf.danskdatahistoriskforening.Model;
 
-public class Item implements Parcelable {
+public class Item implements Parcelable{
 
     private int itemId;
     private String itemHeadline;

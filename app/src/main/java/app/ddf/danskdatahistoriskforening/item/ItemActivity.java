@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -30,6 +31,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
@@ -300,15 +305,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void prompt() {
-        updateItem();
-
-        if(item.hasContent() && isNewRegistration){
-            //ask to save draft
-
-        }
-        else {
-            finish();
-        }
+        finish();
     }
 
     public void setTempUri(Uri fileUri) {
@@ -523,5 +520,40 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     public void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        updateItem();
+
+        Log.d("draft", "onDestroy()");
+
+        if(item.hasContent() && isNewRegistration){
+            //save draft
+            Log.d("draft", "Saving Draft");
+
+
+        }
+
+        super.onDestroy();
+    }
+
+    private class SaveDraftTask extends AsyncTask<Void, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                FileOutputStream fos = openFileOutput("draft", Context.MODE_PRIVATE);
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
+                oos.writeObject(item);
+                oos.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
     }
 }
