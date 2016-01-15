@@ -77,27 +77,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         return layout;
     }
 
-    // shit like this maybe
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        killAudioPlayer(); // stop mPlayer and mHandler
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        killAudioPlayer(); // stop mPlayer and mHandler
-
-        updateItem(((ItemActivity) getActivity()).getItem());
-    }
-
-    @Override
-    public void updateItem(Item item){
-        item.setItemHeadline(itemTitle.getText().toString());
-    }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -110,12 +89,33 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             Pair p = (Pair) imageUris.get(i);
 
             imageContainer.addView((View) p.first);
-        //    ((View) p.first).setOnClickListener((View.OnClickListener) getActivity());
-        //    ((View) p.first).setOnClickListener(this);
+            //    ((View) p.first).setOnClickListener((View.OnClickListener) getActivity());
+            //    ((View) p.first).setOnClickListener(this);
         }
 
         setAudioPlayer(); // resets mPlayer
 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        killAudioPlayer(); // stop mPlayer and mHandler
+
+        updateItem(((ItemActivity) getActivity()).getItem());
+    }
+
+    // shit like this maybe
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        killAudioPlayer(); // stop mPlayer and mHandler
+    }
+
+    @Override
+    public void updateItem(Item item){
+        item.setItemHeadline(itemTitle.getText().toString());
     }
 
     @Override
@@ -124,23 +124,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         if(!isVisibleToUser)
             App.hideKeyboard(getActivity(), itemTitle);
     }
-
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        if (mPlayer != null && fromUser) {
-            mPlayer.seekTo(progress);
-            setAudioText(posText, mPlayer.getCurrentPosition());
-        }
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-    }
-
 
     @Override
     public void onClick(View v) {
@@ -175,6 +158,30 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             } else
                 Toast.makeText(getActivity(), "Audio file not found - start recording!", Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        v.clearFocus();
+        App.hideKeyboard(getActivity(), v);
+        return false;
+    }
+
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        if (mPlayer != null && fromUser) {
+            mPlayer.seekTo(progress);
+            setAudioText(posText, mPlayer.getCurrentPosition());
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
     }
 
     Runnable timerRunnable = new Runnable() {
@@ -239,10 +246,4 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             posText.setText("0:00:00");
     }
 
-    @Override
-    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-        v.clearFocus();
-        App.hideKeyboard(getActivity(), v);
-        return false;
-    }
 }

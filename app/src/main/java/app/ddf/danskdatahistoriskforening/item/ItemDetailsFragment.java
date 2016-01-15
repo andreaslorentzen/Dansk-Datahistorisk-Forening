@@ -69,27 +69,6 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
     }
 
     @Override
-    public void onClick(View v) {
-        if (v == dateReceiveWrapper) {
-            currentDateField = dateReceive;
-        } else if (v == dateFromWrapper) {
-            currentDateField = dateFrom;
-        } else if (v == dateToWrapper) {
-            currentDateField = dateTo;
-        } else {
-            return;
-        }
-        DatePickerFragment datePicker = new DatePickerFragment();
-        datePicker.setOnDateSetListener(this);
-        datePicker.show(getActivity().getSupportFragmentManager(), "datePicker");
-    }
-
-    @Override
-    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        currentDateField.setText("" + year + "-" + (((monthOfYear + 1) < 10) ? "0" + (monthOfYear + 1) : (monthOfYear + 1)) + "-" + dayOfMonth);
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
         updateItem(((ItemActivity) getActivity()).getItem());
@@ -108,6 +87,27 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
         }
         if (item.getItemRecievedAsString() != null)
             System.out.println(item.getItemRecievedAsString());
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == dateReceiveWrapper)
+            currentDateField = dateReceive;
+        else if (v == dateFromWrapper)
+            currentDateField = dateFrom;
+        else if (v == dateToWrapper)
+            currentDateField = dateTo;
+        else
+            return;
+
+        DatePickerFragment datePicker = new DatePickerFragment();
+        datePicker.setOnDateSetListener(this);
+        datePicker.show(getActivity().getSupportFragmentManager(), "datePicker");
+    }
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        currentDateField.setText("" + year + "-" + (((monthOfYear + 1) < 10) ? "0" + (monthOfYear + 1) : (monthOfYear + 1)) + "-" + dayOfMonth);
     }
 
     @Override
