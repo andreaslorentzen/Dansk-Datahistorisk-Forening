@@ -5,27 +5,20 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
-import android.support.v4.util.Pair;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
 
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.R;
-import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
 public class ItemDescriptionFragment extends Fragment implements ItemUpdater, View.OnClickListener, SeekBar.OnSeekBarChangeListener{
     EditText itemDescription;
@@ -35,13 +28,18 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
     ImageButton playButton;
     ImageButton prevButton;
     ImageButton nextButton;
-    SeekBar seekBar;
-    MediaPlayer mPlayer;
-    Handler mHandler;
+
     TextView durText;
     TextView posText;
     TextView audioText;
+
+    SeekBar seekBar;
+
+    ArrayList<MediaPlayer> aps;
+
+    Handler apHandler;
     ArrayList<Uri> audioUris;
+    private MediaPlayer currentAP;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,18 +59,19 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         playButton = (ImageButton) layout.findViewById(R.id.playButton);
         nextButton = (ImageButton) layout.findViewById(R.id.nextButton);
         prevButton = (ImageButton) layout.findViewById(R.id.prevButton);
-        seekBar = (SeekBar) layout.findViewById(R.id.seekBar);
 
+        seekBar = (SeekBar) layout.findViewById(R.id.seekBar);
 
         recButton.setOnClickListener(this);
         playButton.setOnClickListener(this);
         nextButton.setOnClickListener(this);
         prevButton.setOnClickListener(this);
+
         seekBar.setOnSeekBarChangeListener(this);
 
-        mHandler=  new Handler();
+        apHandler = new Handler();
         if(savedInstanceState == null){
-            setAudioPlayer(); // sets mPlayer
+            resetAudioPlayer(); // sets mPlayer
         }
 
         return layout;
@@ -90,36 +89,40 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        setAudioPlayer(); // resets mPlayer
-        updateItem(((ItemActivity) getActivity()).getItem());
-    }
-
-    @Override
     public void updateItem(Item item) {
         item.setItemDescription(itemDescription.getText().toString());
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        resetAudioPlayer();
+        updateItem(((ItemActivity) getActivity()).getItem());
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
-        killAudioPlayer(); // stop mPlayer and mHandler
+        forcestopAudioPlayer();
+        destroyAudioPlayer();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        killAudioPlayer(); // stop mPlayer and mHandler
+        forcestopAudioPlayer();
+        destroyAudioPlayer();
     }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        if (mPlayer != null && fromUser) {
-            mPlayer.seekTo(progress);
-            setAudioText(posText, mPlayer.getCurrentPosition());
+        if (fromUser) {
+            seekTo(progress);
+            posText.setText(millisToPlayback(getAPSCurrentPosition()));
         }
     }
+
+
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
@@ -134,80 +137,141 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         if (v == recButton) {
             Intent i = new Intent(getActivity(), RecordingActivity.class);
             startActivity(i);
-        } else if (v == playButton) {
-            if (mPlayer != null) {
-                if (mPlayer.isPlaying()) {
-                    playButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
-                    mPlayer.pause();
-                    mHandler.removeCallbacks(timerRunnable);
+        } else if(v == playButton){
+            if (currentAP != null) { // enabled first when a recording has been made
+                if (currentAP.isPlaying()) {
+                    pauseAudioPlayer();
                 } else {
-                    playButton.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
-                    mPlayer.start();
-                    mHandler.postDelayed(timerRunnable, 0);
+                    startAudioPlayer();
                 }
-            } else
-                Toast.makeText(getActivity(), "Audio file not found - start recording!", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
-    Runnable timerRunnable = new Runnable() {
+    Runnable apRunnable = new Runnable() {
         @Override
         public void run() {
-            if (!mPlayer.isPlaying()) {
-                setAudioText(posText, mPlayer.getDuration());
-                killAudioPlayer();
-                seekBar.setProgress(mPlayer.getDuration());
+            if (!currentAP.isPlaying()) {
+                seekBar.setProgress(0);
+                posText.setText("0:00.00");
+                forcestopAudioPlayer();
                 return;
             }
-            setAudioText(posText, mPlayer.getCurrentPosition());
-            seekBar.setProgress(mPlayer.getCurrentPosition());
-            mHandler.postDelayed(this, 500);
+            seekBar.setProgress(getAPSCurrentPosition());
+            posText.setText(millisToPlayback(getAPSCurrentPosition()));
+            apHandler.postDelayed(this, 250);
         }
     };
 
+    private void destroyAudioPlayer() {
+        if (currentAP == null)
+            return;
+        currentAP.stop();
+        currentAP.release();
+        currentAP = null;
+    }
+
+    private void forcestopAudioPlayer() {
+        apHandler.removeCallbacks(apRunnable);
+        playButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+        audioText.setText("Paused");
+        if (currentAP == null)
+            return;
+        if (currentAP.isPlaying())
+            currentAP.stop();
+    }
+
+    private void pauseAudioPlayer() {
+        currentAP.pause();
+        audioText.setText("Paused");
+        apHandler.removeCallbacks(apRunnable);
+        playButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+
+    }
+    private void startAudioPlayer() {
+        // disable buttons
+        playButton.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
+        currentAP.start();
+        apRunnable.run();
+        audioText.setText("Playing");
+    }
+
+    private void seekTo(int progress) {
+        for (MediaPlayer mr : aps) {
+            if (mr.getDuration() <= progress) {
+                mr.seekTo(progress);
+                currentAP = mr;
+                return;
+            } else {
+                progress-=mr.getDuration();
+            }
+
+
+
+        }
+    }
+
+    private int getAPSCurrentPosition() {
+        int totalDuration = 0;
+        for (MediaPlayer ap: aps) {
+            totalDuration += ap.getDuration();
+            if (ap == currentAP) {
+                totalDuration += currentAP.getCurrentPosition();
+                return totalDuration;
+            }
+        }
+        return totalDuration;
+    }
+
+    private int getAPSDuration() {
+        int duration = 0;
+        for (MediaPlayer ap: aps) {
+            duration += ap.getDuration();
+        }
+        return duration;
+    }
+
+    private void resetAudioPlayer() {
+        if (aps != null) {
+            for (MediaPlayer mp : aps) {
+                mp.release();
+                mp = null;
+            }
+            aps.clear();
+        }
+        seekBar.setProgress(0);
+        posText.setText("0:00.00");
+        durText.setText("0:00.00");
+        if (audioUris != null)
+            for (Uri uri : audioUris) {
+                File audioFile = new File(uri.getPath());
+                if (audioFile.exists()) {
+                    aps.add(MediaPlayer.create(getActivity(), Uri.parse(uri.getPath())));
+                }
+            }
+        if (aps.isEmpty())
+            audioText.setText("No audio files");
+        else {
+            currentAP = aps.get(0);
+            audioText.setText(aps.size() + " audio files");
+        }
+    }
+
+    public static String millisToPlayback(int time) {
+        int hours = time/3600000;
+        time -= hours * 3600000;
+        int minuts = time/60000;
+        time -= minuts * 60000;
+        int seconds = time/1000;
+        time -= seconds * 1000;
+
+        return hours +":"+  String.format("%02d", minuts)+"."+  String.format("%02d", seconds);
+    }
+
+    /*
     private void setAudioText(TextView vt, int millis) {
         String posString = RecordingActivity.millisToPlayback(millis);
         vt.setText(posString.substring(0, posString.length() - 3));
     }
-
-    private void killAudioPlayer() {
-        playButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
-        mHandler.removeCallbacks(timerRunnable);
-        if (mPlayer == null)
-            return;
-        if (mPlayer.isPlaying())
-            mPlayer.stop();
-
-    }
-    private void setAudioPlayer() {
-        MediaPlayer oldPlayer = mPlayer;
-        String filePath = LocalMediaStorage.getOutputMediaFileUri(2).getPath();
-        File mainFile = new File(filePath);
-        if (!mainFile.exists()) {
-            durText.setText("");
-            posText.setText("");
-            audioText.setText("No audio file existing.");
-            seekBar.setProgress(0);
-            seekBar.setEnabled(false);
-            playButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
-            if (mPlayer!=null) {
-                mPlayer.release();
-                mPlayer = null;
-            }
-            return;
-        }
-        audioUris = new ArrayList<Uri>();
-        audioUris.add(LocalMediaStorage.getOutputMediaFileUri(2));
-        seekBar.setEnabled(true);
-        audioText.setText("");
-        mPlayer = MediaPlayer.create(getActivity(), Uri.parse(filePath));
-        seekBar.setMax(mPlayer.getDuration());
-        setAudioText(durText, mPlayer.getDuration());
-        if (oldPlayer != null) {
-            mPlayer.seekTo(oldPlayer.getCurrentPosition());
-            setAudioText(posText, mPlayer.getCurrentPosition());
-            oldPlayer.release();
-        } else
-            posText.setText("0:00:00");
-    }
+    */
 }
