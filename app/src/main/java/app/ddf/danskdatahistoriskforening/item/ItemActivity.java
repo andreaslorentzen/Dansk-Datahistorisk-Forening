@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -31,10 +32,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
@@ -108,8 +111,10 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             Intent intent = getIntent();
             if (intent.hasExtra("item")) {
                 item = intent.getParcelableExtra("item");
+            }
 
-                isNewRegistration = false;
+            if(intent.hasExtra("isNewRegistration")){
+                isNewRegistration = intent.getBooleanExtra("isNewRegistration", false);
             }
             else{
                 isNewRegistration = true;
@@ -236,12 +241,12 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             if (item.getItemId() > 0) {
                 Intent backgroundService = new Intent(this, BackgroundService.class);
                 backgroundService.putExtra("event", "update");
-                backgroundService.putExtra("item", item);
+                backgroundService.putExtra("item", (Parcelable) item);
                 startService(backgroundService);
             } else {
                 Intent backgroundService = new Intent(this, BackgroundService.class);
                 backgroundService.putExtra("event", "create");
-                backgroundService.putExtra("item", item);
+                backgroundService.putExtra("item", (Parcelable) item);
                 startService(backgroundService);
             }
             Model.setListUpdated(false);
@@ -520,22 +525,14 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     public void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
-    }
 
-    @Override
-    protected void onDestroy() {
         updateItem();
-
-        Log.d("draft", "onDestroy()");
 
         if(item.hasContent() && isNewRegistration){
             //save draft
             Log.d("draft", "Saving Draft");
-
-
+            (new SaveDraftTask()).execute();
         }
-
-        super.onDestroy();
     }
 
     private class SaveDraftTask extends AsyncTask<Void, Void, Void>{
@@ -545,13 +542,19 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             try {
                 FileOutputStream fos = openFileOutput("draft", Context.MODE_PRIVATE);
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
+
                 oos.writeObject(item);
+                oos.flush();
                 oos.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            File file = new File(getFilesDir().getPath() + "/" + "draft");
+
+            Log.d("draft", "draft saved: " + file.exists());
 
             return null;
         }

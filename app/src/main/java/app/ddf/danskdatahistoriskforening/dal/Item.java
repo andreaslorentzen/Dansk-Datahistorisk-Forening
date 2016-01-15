@@ -15,7 +15,7 @@ import java.util.Date;
 
 import app.ddf.danskdatahistoriskforening.Model;
 
-public class Item implements Parcelable{
+public class Item implements Parcelable, Serializable{
 
     private int itemId;
     private String itemHeadline;
