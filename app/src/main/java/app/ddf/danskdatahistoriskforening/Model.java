@@ -2,11 +2,14 @@ package app.ddf.danskdatahistoriskforening;
 
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Pair;
 
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 import app.ddf.danskdatahistoriskforening.dal.IDAO;
 import app.ddf.danskdatahistoriskforening.dal.Item;
@@ -21,6 +24,8 @@ public class Model {
     private static boolean isConnected;
     private static AppCompatActivity currentActivity;
     private static SearchManager sm = new SearchManager();
+    private static List<JSONObject> currentJSONObjects;
+
     public static final String BROADCAST_ACTION = "com.datahistoriskforening.android.backgroundservice.BROADCAST";
 
     public static Model getInstance() {
@@ -31,6 +36,7 @@ public class Model {
     }
 
     private Model() {
+
     }
 
     public static boolean isListUpdated() {
@@ -54,6 +60,7 @@ public class Model {
     private String currentDetailsURI;
     private Item currentItem;
 
+
     public static boolean isConnected() {
         return isConnected;
     }
@@ -68,6 +75,14 @@ public class Model {
 
     public static void setCurrentActivity(AppCompatActivity currentActivity) {
         Model.currentActivity = currentActivity;
+    }
+
+    public static List<JSONObject> getCurrentJSONObjects() {
+        return currentJSONObjects;
+    }
+
+    public static void setCurrentJSONObjects(List<JSONObject> currentJSONObjects) {
+        Model.currentJSONObjects = currentJSONObjects;
     }
 
     public List<String> getItemTitles() {
