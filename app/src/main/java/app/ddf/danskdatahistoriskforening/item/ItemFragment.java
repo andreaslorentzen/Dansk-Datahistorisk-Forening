@@ -22,6 +22,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
@@ -74,7 +75,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         if(savedInstanceState == null){
             setAudioPlayer(); // sets mPlayer
         }
-
         return layout;
     }
 
@@ -97,6 +97,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
 
         //if fragment is destroyed imageViews need to be added to a new container
         imageContainer.removeAllViews();
+
     }
 
     @Override
@@ -121,6 +122,14 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         }
 
         setAudioPlayer(); // resets mPlayer
+
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(getActivity() != null && itemTitle != null)
+            App.hideKeyboard(getActivity(), itemTitle);
     }
 
     @Override

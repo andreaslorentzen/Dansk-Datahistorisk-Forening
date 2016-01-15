@@ -4,16 +4,18 @@ package app.ddf.danskdatahistoriskforening.item;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.ParseException;
-import java.util.Date;
 
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
@@ -58,6 +60,8 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
         dateFrom.setText(item.getItemDatingFromAsString() == null ? "Ikke sat" : item.getItemDatingFromAsString());
         dateTo.setText(item.getItemDatingToAsString() == null ? "Ikke sat" : item.getItemDatingToAsString());
 
+
+
         return layout;
     }
 
@@ -83,9 +87,15 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(getActivity() != null && donator != null)
+            App.hideKeyboard(getActivity(), donator);
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
         updateItem(((ItemActivity) getActivity()).getItem());
     }
 

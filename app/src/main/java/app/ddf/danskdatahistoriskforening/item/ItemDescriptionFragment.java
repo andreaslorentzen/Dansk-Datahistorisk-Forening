@@ -5,17 +5,12 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
-import android.support.v4.util.Pair;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +18,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
@@ -75,6 +71,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
             setAudioPlayer(); // sets mPlayer
         }
 
+
         return layout;
     }
 
@@ -93,7 +90,13 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
     public void onResume() {
         super.onResume();
         setAudioPlayer(); // resets mPlayer
-        updateItem(((ItemActivity) getActivity()).getItem());
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(getActivity() != null && itemDescription != null)
+            App.hideKeyboard(getActivity(), itemDescription);
     }
 
     @Override
@@ -111,6 +114,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
     public void onPause() {
         super.onPause();
         killAudioPlayer(); // stop mPlayer and mHandler
+        updateItem(((ItemActivity) getActivity()).getItem());
     }
 
     @Override
