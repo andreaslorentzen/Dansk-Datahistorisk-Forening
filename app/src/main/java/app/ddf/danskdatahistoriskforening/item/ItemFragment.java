@@ -8,7 +8,7 @@ import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +27,7 @@ import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
-public class ItemFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, ItemUpdater {
+public class ItemFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, ItemUpdater, TextView.OnEditorActionListener {
 
     ImageButton cameraButton;
     ImageButton micButton;
@@ -45,7 +45,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d("ddfstate", "onCreateView");
 
         View layout = inflater.inflate(R.layout.fragment_item, container, false);
         cameraButton = (ImageButton) layout.findViewById(R.id.cameraButton);
@@ -53,10 +52,10 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         micButton =  (ImageButton) layout.findViewById(R.id.micButton);
         micButton.setOnClickListener(this);
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
+        itemTitle.setOnEditorActionListener(this);
 
         Item item = ((ItemActivity) getActivity()).getItem();
         itemTitle.setText(item.getItemHeadline());
-
 
         //TODO indsæt lyd
 
@@ -87,17 +86,11 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
 
     @Override
     public void onPause() {
-        Log.d("ddfstate", "onPause");
-
         super.onPause();
 
         killAudioPlayer(); // stop mPlayer and mHandler
 
         updateItem(((ItemActivity) getActivity()).getItem());
-
-        //if fragment is destroyed imageViews need to be added to a new container
-        imageContainer.removeAllViews();
-
     }
 
     @Override
@@ -128,7 +121,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if(getActivity() != null && itemTitle != null)
+        if(!isVisibleToUser)
             App.hideKeyboard(getActivity(), itemTitle);
     }
 
@@ -246,4 +239,10 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             posText.setText("0:00:00");
     }
 
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        v.clearFocus();
+        App.hideKeyboard(getActivity(), v);
+        return false;
+    }
 }

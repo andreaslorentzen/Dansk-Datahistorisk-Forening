@@ -19,11 +19,11 @@ import java.io.File;
 import java.util.ArrayList;
 
 import app.ddf.danskdatahistoriskforening.App;
-import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
-public class ItemDescriptionFragment extends Fragment implements ItemUpdater, View.OnClickListener, SeekBar.OnSeekBarChangeListener{
+public class ItemDescriptionFragment extends Fragment implements ItemUpdater, View.OnClickListener, SeekBar.OnSeekBarChangeListener, View.OnFocusChangeListener {
     EditText itemDescription;
 
     //views
@@ -44,9 +44,10 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         View layout = inflater.inflate(R.layout.fragment_item_description, container, false);
 
         itemDescription = (EditText) layout.findViewById(R.id.itemDescription);
+        itemDescription.setOnFocusChangeListener(this);
 
         Item item = ((ItemActivity) getActivity()).getItem();
-        setItemDescription(item.getItemDescription());
+        itemDescription.setText(item.getItemDescription());
 
         // AUDIO
         posText = (TextView) layout.findViewById(R.id.posText);
@@ -75,28 +76,10 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         return layout;
     }
 
-    public String getItemDescription(){
-        if(itemDescription == null){
-            return "";
-        }
-        return itemDescription.getText().toString();
-    }
-
-    public void setItemDescription(String description) {
-        this.itemDescription.setText(description);
-    }
-
     @Override
     public void onResume() {
         super.onResume();
         setAudioPlayer(); // resets mPlayer
-    }
-
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if(getActivity() != null && itemDescription != null)
-            App.hideKeyboard(getActivity(), itemDescription);
     }
 
     @Override
@@ -200,7 +183,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
             }
             return;
         }
-        audioUris = new ArrayList<Uri>();
+        audioUris = new ArrayList<>();
         audioUris.add(LocalMediaStorage.getOutputMediaFileUri(2));
         seekBar.setEnabled(true);
         audioText.setText("");
@@ -213,5 +196,11 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
             oldPlayer.release();
         } else
             posText.setText("0:00:00");
+    }
+
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        if(!hasFocus)
+            App.hideKeyboard(getActivity(), v);
     }
 }
