@@ -69,6 +69,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     private WeakReference<ItemDetailsFragment> itemDetailsFragmentWeakReference;
     private WeakReference<ItemDescriptionFragment> itemDescriptionFragmentWeakReference;
 
+    private boolean isNewRegistration;
+
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -101,11 +103,17 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             Intent intent = getIntent();
             if (intent.hasExtra("item")) {
                 item = intent.getParcelableExtra("item");
+
+                isNewRegistration = false;
+            }
+            else{
+                isNewRegistration = true;
             }
 
         } else {
             item = savedInstanceState.getParcelable("item");
             tempUri = savedInstanceState.getParcelable("tempUri");
+            isNewRegistration = savedInstanceState.getBoolean("isNewRegistration");
         }
 
         //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
@@ -158,8 +166,9 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         super.onSaveInstanceState(outState);
 
         outState.putParcelable("item", item);
-        outState.putInt("index", viewPager.getCurrentItem());
+        //outState.putInt("index", viewPager.getCurrentItem());
         outState.putParcelable("tempUri", tempUri);
+        outState.putBoolean("isNewRegistration", isNewRegistration);
     }
 
     @Override
@@ -192,35 +201,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void save() {
-        //update item if fragment is instantiated
-        //destroyed fragments will have updated the item during onPause() already
-        ItemFragment itemFragment = null;
-        ItemDetailsFragment itemDetailsFragment = null;
-        ItemDescriptionFragment itemDescriptionFragment = null;
-
-        if (itemFragmentWeakReference != null) {
-            itemFragment = itemFragmentWeakReference.get();
-        }
-
-        if (itemDetailsFragmentWeakReference != null) {
-            itemDetailsFragment = itemDetailsFragmentWeakReference.get();
-        }
-
-        if (itemDescriptionFragmentWeakReference != null) {
-            itemDescriptionFragment = itemDescriptionFragmentWeakReference.get();
-        }
-
-        if (itemFragment != null) {
-            itemFragment.updateItem(item);
-        }
-
-        if (itemDetailsFragment != null) {
-            itemDetailsFragment.updateItem(item);
-        }
-
-        if (itemDescriptionFragment != null) {
-            itemDescriptionFragment.updateItem(item);
-        }
+        updateItem();
 
         if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty())
             Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
@@ -286,8 +267,48 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void updateItem(){
+        //update item if fragment is instantiated
+        //destroyed fragments will have updated the item during onPause() already
+        ItemFragment itemFragment = null;
+        ItemDetailsFragment itemDetailsFragment = null;
+        ItemDescriptionFragment itemDescriptionFragment = null;
+
+        if (itemFragmentWeakReference != null) {
+            itemFragment = itemFragmentWeakReference.get();
+        }
+
+        if (itemDetailsFragmentWeakReference != null) {
+            itemDetailsFragment = itemDetailsFragmentWeakReference.get();
+        }
+
+        if (itemDescriptionFragmentWeakReference != null) {
+            itemDescriptionFragment = itemDescriptionFragmentWeakReference.get();
+        }
+
+        if (itemFragment != null) {
+            itemFragment.updateItem(item);
+        }
+
+        if (itemDetailsFragment != null) {
+            itemDetailsFragment.updateItem(item);
+        }
+
+        if (itemDescriptionFragment != null) {
+            itemDescriptionFragment.updateItem(item);
+        }
+    }
+
     private void prompt() {
-        finish();
+        updateItem();
+
+        if(item.hasContent() && isNewRegistration){
+            //ask to save draft
+
+        }
+        else {
+            finish();
+        }
     }
 
     public void setTempUri(Uri fileUri) {

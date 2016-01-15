@@ -27,6 +27,7 @@ public class Item implements Parcelable {
     private String postalCode;
     private ArrayList<Uri> pictures;
     private ArrayList<Uri> recordings;
+    private ArrayList<Uri> addedRecordings;
     private boolean picturesChanged;
     private boolean recordingsChanged;
     private ArrayList<Uri> deletedPictures;
@@ -317,5 +318,41 @@ public class Item implements Parcelable {
                 addedPictures.remove(uri);
             }
         }
+    }
+
+    public boolean hasContent(){
+        if(itemHeadline != null && !itemHeadline.isEmpty()){
+            return true;
+        }
+
+        if(itemDescription != null && !itemDescription.isEmpty()){
+            return true;
+        }
+
+        if(donator != null && !donator.isEmpty()){
+            return true;
+        }
+
+        if(producer != null && !producer.isEmpty()){
+            return true;
+        }
+
+        if(postalCode != null && !postalCode.isEmpty()){
+            return true;
+        }
+
+        if(addedPictures != null && !addedPictures.isEmpty()){
+            return true;
+        }
+
+        if(itemRecieved != null || itemDatingTo != null || itemDatingFrom != null){
+            return true;
+        }
+
+        if(addedRecordings != null && !addedRecordings.isEmpty()){
+            return true;
+        }
+
+        return false;
     }
 }
