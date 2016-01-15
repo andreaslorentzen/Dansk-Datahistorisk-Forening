@@ -1,9 +1,7 @@
 package app.ddf.danskdatahistoriskforening.main;
 
 import android.content.Intent;
-import android.media.Image;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
@@ -11,27 +9,23 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.image.ImageviewerSimpleActivity;
 
 
-public class ItemShowFragment extends Fragment implements View.OnClickListener{
+public class ItemShowFragment extends Fragment implements View.OnClickListener, Model.OnCurrentItemChangeListener {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
-    private final int MAX_THUMBNAIL_WIDTH = 150;
-    private final int MAX_THUMBNAIL_HEIGHT = 250;
-
-    private String detailsURI;
 
     private TextView itemheadlineView;
     private TextView itemdescriptionView;
@@ -42,24 +36,14 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
     private TextView producerView;
     private TextView postNummerView;
 
+    private LinearLayout contentWrapper;
+    private ProgressBar progressBar;
+
     private LinearLayout imageContainer;
     private ArrayList<Pair<ImageView, Uri>> imageUris;
 
-    private boolean shouldReloadFromAPI = true;
-
     public ItemShowFragment() {
         // Required empty public constructor
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        imageUris = new ArrayList<>();
-
-        if(savedInstanceState != null){
-            shouldReloadFromAPI = false;
-        }
     }
 
     @Override
@@ -76,26 +60,37 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
         postNummerView = (TextView) layout.findViewById(R.id.postNummer);
         imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
 
-    //    ((MainActivity) getActivity()).updateSearchVisibility();
-
-        //setDetailsURI(Model.getInstance().getCurrentDetailsURI());
+        contentWrapper = (LinearLayout) layout.findViewById(R.id.item_details_wrapper);
+        progressBar = (ProgressBar) layout.findViewById(R.id.item_details_progressbar);
+        //    ((MainActivity) getActivity()).updateSearchVisibility();
 
         return layout;
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
-
-        if(shouldReloadFromAPI) {
-            setDetailsURI(Model.getInstance().getCurrentDetailsURI());
-        }
-        else{
-            updateViews(Model.getInstance().getCurrentItem());
-        }
+        Model.getInstance().setOnCurrentItemChangeListener(this);
+        onCurrentItemChange(Model.getInstance().getCurrentItem());
     }
 
-    private void updateViews(Item currentItem){
+    @Override
+    public void onPause() {
+        super.onPause();
+        Model.getInstance().setOnCurrentItemChangeListener(null);
+    }
+
+    @Override
+    public void onCurrentItemChange(Item currentItem) {
+        if (currentItem == null) {
+            ((MainActivity) getActivity()).disableEdit();
+            progressBar.setVisibility(View.VISIBLE);
+            contentWrapper.setVisibility(View.GONE);
+            return;
+        }
+
+        ((MainActivity) getActivity()).enableEdit();
+
         // felterne udfyld felterne
         itemheadlineView.setText(currentItem.getItemHeadline());
         // TODO handle lyd
@@ -108,80 +103,50 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
         producerView.setText(currentItem.getProducer());
         postNummerView.setText(currentItem.getPostalCode());
 
+        progressBar.setVisibility(View.GONE);
+        contentWrapper.setVisibility(View.VISIBLE);
+
         //create picture thumbnails
         ArrayList<Uri> uris = currentItem.getPictures();
-        Object context = getActivity();
-        Log.d("ddfstate", "Activity: " + getActivity());
-        Log.d("ddfstate", uris + "");
 
-        if(uris != null && context != null){//activity may have been destroyed while downloading
-            for(int i = 0; i<uris.size(); i++){
+        imageContainer.removeAllViews();
+        imageUris = new ArrayList<>();
 
+        if (uris != null) {//activity may have been destroyed while downloading
 
-                Pair<ImageView, Uri> uriImagePair = new Pair(new ImageView(getActivity()), uris.get(i));
-                LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+            LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
+
+            for (int i = 0; i < uris.size(); i++) {
+                Pair<ImageView, Uri> uriImagePair = new Pair<>(new ImageView(getActivity()), uris.get(i));
                 uriImagePair.first.setLayoutParams(sizeParameters);
 
                 imageContainer.addView(uriImagePair.first);
                 imageUris.add(uriImagePair);
 
-                BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
                 uriImagePair.first.setOnClickListener(ItemShowFragment.this);
             }
         }
-    }
 
-    public void setDetailsURI(String detailsURI){
-        this.detailsURI = detailsURI;
-
-        new AsyncTask<String, Void, Item>() {
-            @Override
-            protected Item doInBackground(String ... params) {
-                Log.d("ddfstate", "start of download details " + params[0]);
-                return Model.getDAO().getDetailsFromBackEnd(params[0]);
-            }
-
-            @Override
-            protected void onPostExecute(Item data) {
-
-                if (data != null){
-                    Model.getInstance().setCurrentItem(data);
-                    Item currentItem = data;
-                    Log.d("itemdetails", data.toJSON().toString());
-
-                    updateViews(currentItem);
-                } else {
-                    Log.d("itemdetails", "else");
-                    //TODO ERROR HANDLING FOR data = null
-                }
-            }
-        }.execute(detailsURI);
 
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-    }
 
-    public String getDetailsURI(){
-        return this.detailsURI;
-    }
 
     @Override
     public void onClick(View v) {
-        if(v instanceof ImageView){
+        if (v instanceof ImageView) {
             int index = -1;
             ArrayList<Uri> uris = new ArrayList<>();
-            for(int i=0; i<imageUris.size(); i++){
-                if(v == imageUris.get(i).first){
+            for (int i = 0; i < imageUris.size(); i++) {
+                if (v == imageUris.get(i).first) {
                     index = i;
                 }
 
                 uris.add(imageUris.get(i).second);
             }
 
-            if(index < 0){
+            if (index < 0) {
                 //none of the imageViews matched
                 Log.d("ddf", "no imageView matched");
                 return;
@@ -193,4 +158,11 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener{
             getActivity().startActivity(intent);
         }
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        System.out.println("Fragment destroyed");
+    }
+
 }

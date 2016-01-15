@@ -1,13 +1,15 @@
 package app.ddf.danskdatahistoriskforening.item;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -31,19 +33,16 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-import app.ddf.danskdatahistoriskforening.dal.BackgroundService;
-import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.dal.BackgroundService;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.helper.PagerSlidingTabStrip;
 import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
 
 public class ItemActivity extends AppCompatActivity implements View.OnClickListener {
-    //TODO calculate acceptable thumbnail dimensions based on screensize or available space
-    private final int MAX_THUMBNAIL_WIDTH = 150;
-    private final int MAX_THUMBNAIL_HEIGHT = 250;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
@@ -144,10 +143,10 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
     private void generateImagePair(Uri uri) {
         Pair<ImageView, Uri> uriImagePair = new Pair<>(new ImageView(this), uri);
-        LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+        LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
         uriImagePair.first.setLayoutParams(sizeParameters);
 
-        BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+        BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
 
         uriImagePair.first.setOnClickListener(this);
 
@@ -230,11 +229,11 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Kan ikke udføres uden internet", Toast.LENGTH_SHORT).show();
 
         //item.setItemHeadline(itemFragment.getItemTitle());
-
+/*
         for (Pair<ImageView, Uri> pair : imageUris) {
             item.addToPictures(pair.second);
         }
-
+*/
         /*
         HUSK
         HUSK
@@ -422,6 +421,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             if(resultCode == AppCompatActivity.RESULT_OK){
                 ArrayList<Uri> remainingURIs = data.getParcelableArrayListExtra("remainingURIs");
 
+                Log.d("updateImage", "remaining URIs: " + remainingURIs.size());
+
                 //no change
                 if(remainingURIs.size() == imageUris.size()){
                     return;
@@ -431,27 +432,59 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                     item.setPicturesChanged(true);
                 }
 
-         //       ArrayList temp = new ArrayList<>(imageUris);
                 for(int i = 0; i<imageUris.size(); i++){
                     Pair listItem = (Pair) imageUris.get(i);
 
                     if(!remainingURIs.contains(listItem.second)){
                         //image has been removed
 
-                        if(item.getAddedPictures() !=  null){
+                        if(item.getAddedPictures() !=  null){//image may have been added during this registration
                             if(!item.getAddedPictures().contains(listItem.second)){
                                 item.addDeletedPicture((Uri) listItem.second);
                             } else{
                                 item.removeFromAddedPicture((Uri) listItem.second);
                             }
                         }
-              //          temp.remove(listItem);
-                    }
-                    else{
+                        else{//image was taken during earlier registration
+                            item.addDeletedPicture((Uri) listItem.second);
+                        }
 
+                        //remove picture from list of local images
+                        item.removeFromPictures((Uri) listItem.second);
                     }
                 }
             }
+        }
+    }
+    public static final int RECORD_PERMISSION_REQUEST = 2;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        if (requestCode == RECORD_PERMISSION_REQUEST && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            startRecording();
+
+        }
+    }
+
+    public void startRecording() {
+        if (App.hasRecordAudioPermission(this)){
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.RECORD_AUDIO},
+                        ItemActivity.RECORD_PERMISSION_REQUEST);
+
+            }
+            else{
+                Toast.makeText(this, "Funktionen kræver adgang til mikrofonen. Gå til app indstillinger for at give adgang.", Toast.LENGTH_LONG).show();
+            }
+        }
+        else{
+            Intent i = new Intent(this, RecordingActivity.class);
+            startActivity(i);
         }
     }
 

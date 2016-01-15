@@ -11,6 +11,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,10 +43,16 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private boolean isSearchExpanded;
     private boolean searchButtonVisible = true;
 
+    private boolean canEdit = false;
+
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+        //    intent.getAction()
             MainActivity.this.checkForErrors(intent.getIntExtra("status", 0));
+            Model.getInstance().setCurrentItem(null);
+            Log.d("Current sat til null", "" + (Model.getInstance().getCurrentItem() == null));
+            Model.getInstance().fetchCurrentItem();
         }
     };
 
@@ -149,6 +156,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 // Maybe throw exception
                 return;
             Model.getInstance().setCurrentDetailsURI(detailsURI);
+            Model.getInstance().setCurrentItem(null);
+            Model.getInstance().fetchCurrentItem();
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.frame, new ItemShowFragment())
                     .addToBackStack(null)
@@ -167,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private void updateSearchVisibility() {
         boolean isSerSearchVisible = isSearchButtonVisible();
         searchButton.setVisible(isSerSearchVisible);
-        editButton.setVisible(!isSerSearchVisible);
+        editButton.setVisible(!isSerSearchVisible && canEdit);
 
         if (!isSerSearchVisible) {
             MenuItemCompat.collapseActionView(searchButton);
@@ -191,12 +200,31 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         return true;
     }
 
+    public void disableEdit(){
+        canEdit = false;
+        if(editButton != null) {
+            editButton.setVisible(false);
+        }
+    }
+
+    public void enableEdit(){
+        canEdit = true;
+        if(editButton != null) {
+            editButton.setVisible(true);
+        }
+    }
+
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         if (item == editButton) {
-            Intent i = new Intent(this, ItemActivity.class);
-            i.putExtra("item", Model.getInstance().getCurrentItem());
-            startActivity(i);
+            if(canEdit) {
+                Intent i = new Intent(this, ItemActivity.class);
+                i.putExtra("item", Model.getInstance().getCurrentItem());
+                startActivity(i);
+            }
+            else{
+                Toast.makeText(this, "Vent mens genstandens oplysninger hentes", Toast.LENGTH_LONG).show();
+            }
         }
         return true;
     }
@@ -227,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 String query = Model.getInstance().getSearchManager().getCurrentSearch();
                 updateSearchVisibility();
                 searchView.setQuery(query, false);
+                Model.getInstance().cancelFetch();
                 break;
         }
     }

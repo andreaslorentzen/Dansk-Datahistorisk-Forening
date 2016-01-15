@@ -11,6 +11,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.main.MainActivity;
 
 public class LocalMediaStorage {
@@ -44,7 +45,15 @@ public class LocalMediaStorage {
             Log.d("DDF", "SD card not mounted");
             return null;
         }
-        File mediaStorageDir = new File(context.getExternalFilesDir(null).getPath());
+
+        File mediaStorageDir = Model.getCurrentActivity().getExternalFilesDir(null);
+        if(mediaStorageDir == null){
+            return null;
+        }
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
         if (! mediaStorageDir.exists()){
             if (! mediaStorageDir.mkdirs()){
                 Log.d("DDF", "Failed to create folder"+mediaStorageDir.getPath());
@@ -55,7 +64,6 @@ public class LocalMediaStorage {
     }
 
     private static File getOutputMediaFile(String filename, int type, File mediaStorageDir){
-        System.out.println(filename +" " + type);
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE)
             mediaFile = new File(mediaStorageDir.getPath() + File.separator + filename);

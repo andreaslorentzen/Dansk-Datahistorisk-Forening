@@ -1,5 +1,6 @@
 package app.ddf.danskdatahistoriskforening;
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 
 import org.json.JSONObject;
@@ -12,9 +13,6 @@ import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.dal.TempDAO;
 import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 
-/**
- * Created by mathias on 05/01/16.
- */
 public class Model {
     private static Model ourInstance;
     private static IDAO dao = new TempDAO();
@@ -35,15 +33,21 @@ public class Model {
     private Model() {
     }
 
-    public static boolean isListUpdated(){return itemListUpdated;}
+    public static boolean isListUpdated() {
+        return itemListUpdated;
+    }
 
-    public static void setListUpdated(boolean listUpdated){itemListUpdated = listUpdated;}
+    public static void setListUpdated(boolean listUpdated) {
+        itemListUpdated = listUpdated;
+    }
 
-    public static IDAO getDAO(){
+    public static IDAO getDAO() {
         return dao;
     }
 
-    public static SimpleDateFormat getFormatter(){return formatter;}
+    public static SimpleDateFormat getFormatter() {
+        return formatter;
+    }
 
     private List<JSONObject> items;
     private List<String> itemTitles;
@@ -82,11 +86,15 @@ public class Model {
         this.items = items;
     }
 
-    public Item getCurrentItem(){
+    public Item getCurrentItem() {
         return currentItem;
     }
+
     public void setCurrentItem(Item currentItem) {
         this.currentItem = currentItem;
+        if (currentItemChangeListener != null) {
+            currentItemChangeListener.onCurrentItemChange(this.currentItem);
+        }
     }
 
     public String getCurrentDetailsURI() {
@@ -99,5 +107,49 @@ public class Model {
 
     public SearchManager getSearchManager() {
         return sm;
+    }
+
+    private AsyncTask<String, Void, Item> currentFetchTask;
+
+    public void fetchCurrentItem() {
+        final String uri = Model.getInstance().getCurrentDetailsURI();
+        if (uri == null)
+            return;
+
+        currentFetchTask = new AsyncTask<String, Void, Item>() {
+            @Override
+            protected Item doInBackground(String... params) {
+                return Model.getDAO().getDetailsFromBackEnd(params[0]);
+            }
+
+            @Override
+            protected void onPostExecute(Item data) {
+                if (data != null) {
+                    Model.getInstance().setCurrentItem(data);
+                }
+            }
+
+        };
+        currentFetchTask.execute(uri);
+
+    }
+
+    private OnCurrentItemChangeListener currentItemChangeListener;
+
+    public void setOnCurrentItemChangeListener(OnCurrentItemChangeListener currentItemChangeListener) {
+        this.currentItemChangeListener = currentItemChangeListener;
+    }
+
+    public void cancelFetch() {
+        if (currentFetchTask != null) {
+            currentFetchTask.cancel(true);
+            currentFetchTask = null;
+        }
+
+        Model.getDAO().cancelDownload();
+    }
+
+    public interface OnCurrentItemChangeListener {
+        void onCurrentItemChange(Item currentItem);
     }
 }

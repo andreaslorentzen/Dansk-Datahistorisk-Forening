@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">G31 Dansk Datahistorisk Forening</string>
+    <string name="app_name">g31 Dansk Datahistorisk Forening</string>
     <string name="no_internet">Ingen internet forbindelse</string>
     <string name="toolbar_title">DDF</string>
 </resources>
