@@ -4,6 +4,7 @@ package app.ddf.danskdatahistoriskforening.item;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,14 +13,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.ParseException;
-import java.util.Date;
 
-import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.dal.Item;
 
 
-public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener, ItemUpdater {
+public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener, ItemUpdater, TextView.OnEditorActionListener, View.OnFocusChangeListener {
 
     TextView dateFrom;
     TextView dateTo;
@@ -39,6 +40,12 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
 
         producer = (TextView) layout.findViewById(R.id.Producer);
         donator = (TextView) layout.findViewById(R.id.Donator);
+
+        producer.setOnEditorActionListener(this);
+
+        producer.setOnFocusChangeListener(this);
+        donator.setOnFocusChangeListener(this);
+
 
         dateFrom = (TextView) layout.findViewById(R.id.DateFrom);
         dateTo = (TextView) layout.findViewById(R.id.DateTo);
@@ -62,30 +69,8 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
     }
 
     @Override
-    public void onClick(View v) {
-        if (v == dateReceiveWrapper || v == dateFromWrapper || v == dateToWrapper) {
-            if (v == dateReceiveWrapper) {
-                currentDateField = dateReceive;
-            } else if (v == dateFromWrapper) {
-                currentDateField = dateFrom;
-            } else if (v == dateToWrapper) {
-                currentDateField = dateTo;
-            }
-            DatePickerFragment datePicker = new DatePickerFragment();
-            datePicker.setOnDateSetListener(this);
-            datePicker.show(getActivity().getSupportFragmentManager(), "datePicker");
-        }
-    }
-
-    @Override
-    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        currentDateField.setText("" + year + "-" + (((monthOfYear + 1) < 10) ? "0" + (monthOfYear + 1) : (monthOfYear + 1)) + "-" + dayOfMonth);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
+    public void onPause() {
+        super.onPause();
         updateItem(((ItemActivity) getActivity()).getItem());
     }
 
@@ -102,5 +87,39 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
         }
         if (item.getItemRecievedAsString() != null)
             System.out.println(item.getItemRecievedAsString());
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == dateReceiveWrapper)
+            currentDateField = dateReceive;
+        else if (v == dateFromWrapper)
+            currentDateField = dateFrom;
+        else if (v == dateToWrapper)
+            currentDateField = dateTo;
+        else
+            return;
+
+        DatePickerFragment datePicker = new DatePickerFragment();
+        datePicker.setOnDateSetListener(this);
+        datePicker.show(getActivity().getSupportFragmentManager(), "datePicker");
+    }
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        currentDateField.setText("" + year + "-" + (((monthOfYear + 1) < 10) ? "0" + (monthOfYear + 1) : (monthOfYear + 1)) + "-" + dayOfMonth);
+    }
+
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        v.clearFocus();
+        App.hideKeyboard(getActivity(), v);
+        return false;
+    }
+
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        if(!hasFocus)
+            App.hideKeyboard(getActivity(), v);
     }
 }

@@ -8,7 +8,7 @@ import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,11 +22,12 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
-public class ItemFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, ItemUpdater {
+public class ItemFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, ItemUpdater, TextView.OnEditorActionListener {
 
     ImageButton cameraButton;
     ImageButton micButton;
@@ -44,7 +45,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d("ddfstate", "onCreateView");
 
         View layout = inflater.inflate(R.layout.fragment_item, container, false);
         cameraButton = (ImageButton) layout.findViewById(R.id.cameraButton);
@@ -52,10 +52,10 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         micButton =  (ImageButton) layout.findViewById(R.id.micButton);
         micButton.setOnClickListener(this);
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
+        itemTitle.setOnEditorActionListener(this);
 
         Item item = ((ItemActivity) getActivity()).getItem();
         itemTitle.setText(item.getItemHeadline());
-
 
         //TODO indsæt lyd
 
@@ -74,34 +74,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
         if(savedInstanceState == null){
             setAudioPlayer(); // sets mPlayer
         }
-
         return layout;
-    }
-
-    // shit like this maybe
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        killAudioPlayer(); // stop mPlayer and mHandler
-    }
-
-    @Override
-    public void onPause() {
-        Log.d("ddfstate", "onPause");
-
-        super.onPause();
-
-        killAudioPlayer(); // stop mPlayer and mHandler
-
-        updateItem(((ItemActivity) getActivity()).getItem());
-
-        //if fragment is destroyed imageViews need to be added to a new container
-        imageContainer.removeAllViews();
-    }
-
-    @Override
-    public void updateItem(Item item){
-        item.setItemHeadline(itemTitle.getText().toString());
     }
 
     @Override
@@ -116,29 +89,41 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             Pair p = (Pair) imageUris.get(i);
 
             imageContainer.addView((View) p.first);
-        //    ((View) p.first).setOnClickListener((View.OnClickListener) getActivity());
-        //    ((View) p.first).setOnClickListener(this);
+            //    ((View) p.first).setOnClickListener((View.OnClickListener) getActivity());
+            //    ((View) p.first).setOnClickListener(this);
         }
 
         setAudioPlayer(); // resets mPlayer
+
     }
 
     @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        if (mPlayer != null && fromUser) {
-            mPlayer.seekTo(progress);
-            setAudioText(posText, mPlayer.getCurrentPosition());
-        }
+    public void onPause() {
+        super.onPause();
+
+        killAudioPlayer(); // stop mPlayer and mHandler
+
+        updateItem(((ItemActivity) getActivity()).getItem());
+    }
+
+    // shit like this maybe
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        killAudioPlayer(); // stop mPlayer and mHandler
     }
 
     @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
+    public void updateItem(Item item){
+        item.setItemHeadline(itemTitle.getText().toString());
     }
 
     @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(!isVisibleToUser)
+            App.hideKeyboard(getActivity(), itemTitle);
     }
-
 
     @Override
     public void onClick(View v) {
@@ -173,6 +158,30 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Seek
             } else
                 Toast.makeText(getActivity(), "Audio file not found - start recording!", Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        v.clearFocus();
+        App.hideKeyboard(getActivity(), v);
+        return false;
+    }
+
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        if (mPlayer != null && fromUser) {
+            mPlayer.seekTo(progress);
+            setAudioText(posText, mPlayer.getCurrentPosition());
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
     }
 
     Runnable timerRunnable = new Runnable() {
