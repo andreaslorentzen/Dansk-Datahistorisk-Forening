@@ -117,7 +117,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                 isNewRegistration = intent.getBooleanExtra("isNewRegistration", false);
             }
             else{
-                isNewRegistration = true;
+                isNewRegistration = false;
             }
 
         } else {
@@ -250,6 +250,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                 startService(backgroundService);
             }
             Model.setListUpdated(false);
+            isNewRegistration = false; //do not save draft if item is being sent to API
             finish();
         } else{
             Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();

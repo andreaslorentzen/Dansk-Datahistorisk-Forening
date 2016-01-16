@@ -37,9 +37,10 @@ import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
+import app.ddf.danskdatahistoriskforening.item.LoadDraftDialogFragment;
 
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener, LoadDraftDialogFragment.ConfirmDraftLoadListener {
 
     Toolbar mainToolbar;
 
@@ -155,6 +156,29 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         startActivity(i);
     }
 
+    @Override
+    public void onDialogPositiveClick(Item draft) {
+        (new DeleteDraftTask()).execute();
+        startRegisterDraft(draft);
+    }
+
+    @Override
+    public void onDialogNegativeClick() {
+        (new DeleteDraftTask()).execute();
+        startRegisterDraft(null);
+    }
+
+    private class DeleteDraftTask extends AsyncTask<Void, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            File file = new File(getFilesDir().getPath() + "/" + "draft");
+            file.delete();
+
+            return null;
+        }
+    }
+
     private class LoadDraftTask extends AsyncTask<Void, Void, Item> {
 
         @Override
@@ -185,6 +209,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         protected void onPostExecute(Item item) {
             if(item != null && item.hasContent()){
                 //load draft dialog
+                LoadDraftDialogFragment dialog = new LoadDraftDialogFragment();
+                dialog.setDraft(item);
+                dialog.show(getSupportFragmentManager(), "LoadDraftDialog");
             }
             else {
                 startRegisterDraft(null);
