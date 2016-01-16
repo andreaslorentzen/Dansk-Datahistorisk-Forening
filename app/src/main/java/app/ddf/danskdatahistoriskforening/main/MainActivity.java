@@ -239,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             return;
         }
         try {
-            String detailsURI = Model.getInstance().getItems().get(position).getString("detailsuri");
+            String detailsURI = Model.getCurrentJSONObjects().get(position).getString("detailsuri");
             if (detailsURI == null)
                 // Maybe throw exception
                 return;
