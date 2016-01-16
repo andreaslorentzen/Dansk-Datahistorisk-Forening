@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -22,17 +23,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
+import app.ddf.danskdatahistoriskforening.item.LoadDraftDialogFragment;
 
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener, LoadDraftDialogFragment.ConfirmDraftLoadListener {
 
     Toolbar mainToolbar;
 
@@ -127,8 +135,88 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void startRegister() {
+        File file = new File(getFilesDir().getPath() + "/" + "draft");
+
+        Log.d("draft", "draft to load: " + file.exists());
+
+        if(!file.exists()){
+            startRegisterDraft(null);
+        }
+        else {
+            (new LoadDraftTask()).execute();
+        }
+    }
+
+    private void startRegisterDraft(Item draft){
         Intent i = new Intent(this, ItemActivity.class);
+        if(draft != null) {
+            i.putExtra("item", (Parcelable) draft);
+        }
+        i.putExtra("isNewRegistration", true);
         startActivity(i);
+    }
+
+    @Override
+    public void onDialogPositiveClick(Item draft) {
+        (new DeleteDraftTask()).execute();
+        startRegisterDraft(draft);
+    }
+
+    @Override
+    public void onDialogNegativeClick() {
+        (new DeleteDraftTask()).execute();
+        startRegisterDraft(null);
+    }
+
+    private class DeleteDraftTask extends AsyncTask<Void, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            File file = new File(getFilesDir().getPath() + "/" + "draft");
+            file.delete();
+
+            return null;
+        }
+    }
+
+    private class LoadDraftTask extends AsyncTask<Void, Void, Item> {
+
+        @Override
+        protected Item doInBackground(Void... params) {
+            Item draft;
+
+            try {
+                FileInputStream fis = new FileInputStream(getFilesDir().getPath() + "/" + "draft");
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                draft = (Item) ois.readObject();
+                ois.close();
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                return null;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                return null;
+            }
+
+            return draft;
+        }
+
+        @Override
+        protected void onPostExecute(Item item) {
+            if(item != null && item.hasContent()){
+                //load draft dialog
+                LoadDraftDialogFragment dialog = new LoadDraftDialogFragment();
+                dialog.setDraft(item);
+                dialog.show(getSupportFragmentManager(), "LoadDraftDialog");
+            }
+            else {
+                startRegisterDraft(null);
+            }
+        }
     }
 
     public void setFragmentList() {
@@ -151,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             return;
         }
         try {
-            String detailsURI = Model.getInstance().getItems().get(position).getString("detailsuri");
+            String detailsURI = Model.getCurrentJSONObjects().get(position).getString("detailsuri");
             if (detailsURI == null)
                 // Maybe throw exception
                 return;
@@ -219,7 +307,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if (item == editButton) {
             if(canEdit) {
                 Intent i = new Intent(this, ItemActivity.class);
-                i.putExtra("item", Model.getInstance().getCurrentItem());
+                i.putExtra("item", (Parcelable) Model.getInstance().getCurrentItem());
                 startActivity(i);
             }
             else{

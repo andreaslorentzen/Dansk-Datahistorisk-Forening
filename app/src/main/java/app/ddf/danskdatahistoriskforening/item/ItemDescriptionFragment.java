@@ -17,10 +17,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.dal.Item;
 
-public class ItemDescriptionFragment extends Fragment implements ItemUpdater, View.OnClickListener, SeekBar.OnSeekBarChangeListener{
+public class ItemDescriptionFragment extends Fragment implements ItemUpdater, View.OnClickListener, SeekBar.OnSeekBarChangeListener, View.OnFocusChangeListener {
     EditText itemDescription;
 
     ImageButton recButton;
@@ -44,8 +45,10 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.fragment_item_description, container, false);
         itemDescription = (EditText) layout.findViewById(R.id.itemDescription);
+        itemDescription.setOnFocusChangeListener(this);
+
         Item item = ((ItemActivity) getActivity()).getItem();
-        setItemDescription(item.getItemDescription());
+        itemDescription.setText(item.getItemDescription());
 
         // AUDIO
         posText = (TextView) layout.findViewById(R.id.posText);
@@ -71,27 +74,16 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         return layout;
     }
 
-    public String getItemDescription(){
-        if(itemDescription == null){
-            return "";
-        }
-        return itemDescription.getText().toString();
-    }
-
-    public void setItemDescription(String description) {
-        this.itemDescription.setText(description);
-    }
-
-    @Override
-    public void updateItem(Item item) {
-        item.setItemDescription(itemDescription.getText().toString());
-    }
-
     @Override
     public void onResume() {
         super.onResume();
         resetAudioPlayer();
         updateItem(((ItemActivity) getActivity()).getItem());
+    }
+
+    @Override
+    public void updateItem(Item item) {
+        item.setItemDescription(itemDescription.getText().toString());
     }
 
     @Override
@@ -106,6 +98,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         super.onPause();
         forcestopAudioPlayer();
         destroyAudioPlayer();
+        updateItem(((ItemActivity) getActivity()).getItem());
     }
 
     @Override
@@ -173,9 +166,8 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
             posText.setText(millisToPlayback(getAPSCurrentPosition()));
             apHandler.postDelayed(this, 250);
         }
-
-
     };
+    
     private boolean setNextAP() {
         for (int i = 0; i < aps.size(); i++) {
             if (aps.get(i) == currentAP && i+1 < aps.size()) {
@@ -314,7 +306,13 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
             durText.setText(millisToPlayback(getAPSDuration()));
         }
     }
-
+    
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        if(!hasFocus)
+            App.hideKeyboard(getActivity(), v);
+    }
+    
     public static String millisToPlayback(int time) {
         int hours = time/3600000;
         time -= hours * 3600000;

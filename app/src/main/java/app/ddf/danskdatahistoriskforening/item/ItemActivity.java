@@ -8,7 +8,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -30,6 +33,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
@@ -39,7 +48,6 @@ import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.BackgroundService;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
-import app.ddf.danskdatahistoriskforening.helper.PagerSlidingTabStrip;
 import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
 
 public class ItemActivity extends AppCompatActivity implements View.OnClickListener {
@@ -71,6 +79,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     private WeakReference<ItemDetailsFragment> itemDetailsFragmentWeakReference;
     private WeakReference<ItemDescriptionFragment> itemDescriptionFragmentWeakReference;
 
+    private boolean isNewRegistration;
+
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -94,8 +104,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         viewPager = (ViewPager) findViewById(R.id.pager);
         PagerAdapter mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(mPagerAdapter);
-        PagerSlidingTabStrip pagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tab_strip);
-        pagerSlidingTabStrip.setViewPager(viewPager);
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_strip);
+        tabLayout.setupWithViewPager(viewPager);
         
         if(savedInstanceState == null) {
 
@@ -105,9 +115,17 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                 item = intent.getParcelableExtra("item");
             }
 
+            if(intent.hasExtra("isNewRegistration")){
+                isNewRegistration = intent.getBooleanExtra("isNewRegistration", false);
+            }
+            else{
+                isNewRegistration = false;
+            }
+
         } else {
             item = savedInstanceState.getParcelable("item");
             tempUri = savedInstanceState.getParcelable("tempUri");
+            isNewRegistration = savedInstanceState.getBoolean("isNewRegistration");
         }
 
         //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
@@ -160,8 +178,9 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         super.onSaveInstanceState(outState);
 
         outState.putParcelable("item", item);
-        outState.putInt("index", viewPager.getCurrentItem());
+        //outState.putInt("index", viewPager.getCurrentItem());
         outState.putParcelable("tempUri", tempUri);
+        outState.putBoolean("isNewRegistration", isNewRegistration);
     }
 
     @Override
@@ -194,6 +213,66 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void save() {
+        updateItem();
+
+        if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty())
+            Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
+
+        if(!Model.isConnected())
+            Toast.makeText(this, "Kan ikke udføres uden internet", Toast.LENGTH_SHORT).show();
+
+        //item.setItemHeadline(itemFragment.getItemTitle());
+/*
+        for (Pair<ImageView, Uri> pair : imageUris) {
+            item.addToPictures(pair.second);
+        }
+*/
+
+        /*item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
+        item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
+        item.setItemDescription(descriptionFragment.getItemDescription());*/
+        if(Model.isConnected()) {
+            if (item.getItemId() > 0) {
+                Intent backgroundService = new Intent(this, BackgroundService.class);
+                backgroundService.putExtra("event", "update");
+                backgroundService.putExtra("item", (Parcelable) item);
+                startService(backgroundService);
+            } else {
+                Intent backgroundService = new Intent(this, BackgroundService.class);
+                backgroundService.putExtra("event", "create");
+                backgroundService.putExtra("item", (Parcelable) item);
+                startService(backgroundService);
+            }
+            Model.setListUpdated(false);
+            isNewRegistration = false; //do not save draft if item is being sent to API
+            finish();
+        } else{
+            Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void checkForErrors(int responseCode) {
+        switch (responseCode) {
+            case -1:
+                Toast.makeText(this, "Genstanden blev sendt til severen", Toast.LENGTH_SHORT).show();
+                break;
+            case 2:
+                Toast.makeText(this, "Enheden er ikke forbundet til internettet!", Toast.LENGTH_LONG).show();
+                break;
+            case 3:
+                Toast.makeText(this, "Server problem", Toast.LENGTH_LONG).show();
+                break;
+            case 4:
+                Toast.makeText(this, "Kunne ikke forbinde til serveren", Toast.LENGTH_LONG).show();
+                break;
+            case 5:
+                Toast.makeText(this, "Server problem", Toast.LENGTH_LONG).show(); // JSON problem
+            default:
+                Toast.makeText(this, "Noget gik galt", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void updateItem(){
         //update item if fragment is instantiated
         //destroyed fragments will have updated the item during onPause() already
         ItemFragment itemFragment = null;
@@ -222,61 +301,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
         if (itemDescriptionFragment != null) {
             itemDescriptionFragment.updateItem(item);
-        }
-
-        if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty())
-            Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
-
-        if(!Model.isConnected())
-            Toast.makeText(this, "Kan ikke udføres uden internet", Toast.LENGTH_SHORT).show();
-
-        //item.setItemHeadline(itemFragment.getItemTitle());
-/*
-        for (Pair<ImageView, Uri> pair : imageUris) {
-            item.addToPictures(pair.second);
-        }
-*/
-
-        /*item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
-        item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
-        item.setItemDescription(descriptionFragment.getItemDescription());*/
-        if(Model.isConnected()) {
-            if (item.getItemId() > 0) {
-                Intent backgroundService = new Intent(this, BackgroundService.class);
-                backgroundService.putExtra("event", "update");
-                backgroundService.putExtra("item", item);
-                startService(backgroundService);
-            } else {
-                Intent backgroundService = new Intent(this, BackgroundService.class);
-                backgroundService.putExtra("event", "create");
-                backgroundService.putExtra("item", item);
-                startService(backgroundService);
-            }
-            Model.setListUpdated(false);
-            finish();
-        } else{
-            Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void checkForErrors(int responseCode) {
-        switch (responseCode) {
-            case -1:
-                Toast.makeText(this, "Genstanden blev sendt til severen", Toast.LENGTH_SHORT).show();
-                break;
-            case 2:
-                Toast.makeText(this, "Enheden er ikke forbundet til internettet!", Toast.LENGTH_LONG).show();
-                break;
-            case 3:
-                Toast.makeText(this, "Server problem", Toast.LENGTH_LONG).show();
-                break;
-            case 4:
-                Toast.makeText(this, "Kunne ikke forbinde til serveren", Toast.LENGTH_LONG).show();
-                break;
-            case 5:
-                Toast.makeText(this, "Server problem", Toast.LENGTH_LONG).show(); // JSON problem
-            default:
-                Toast.makeText(this, "Noget gik galt", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -504,5 +528,38 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     public void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+
+        updateItem();
+
+        if(item.hasContent() && isNewRegistration){
+            //save draft
+            Log.d("draft", "Saving Draft");
+            (new SaveDraftTask()).execute();
+        }
+    }
+
+    private class SaveDraftTask extends AsyncTask<Void, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                FileOutputStream fos = openFileOutput("draft", Context.MODE_PRIVATE);
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
+
+                oos.writeObject(item);
+                oos.flush();
+                oos.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            File file = new File(getFilesDir().getPath() + "/" + "draft");
+
+            Log.d("draft", "draft saved: " + file.exists());
+
+            return null;
+        }
     }
 }
