@@ -134,7 +134,16 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void startRegister() {
-        (new LoadDraftTask()).execute();
+        File file = new File(getFilesDir().getPath() + "/" + "draft");
+
+        Log.d("draft", "draft to load: " + file.exists());
+
+        if(!file.exists()){
+            startRegisterDraft(null);
+        }
+        else {
+            (new LoadDraftTask()).execute();
+        }
     }
 
     private void startRegisterDraft(Item draft){
@@ -150,14 +159,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         @Override
         protected Item doInBackground(Void... params) {
-            Item draft = new Item();
-            File file = new File(getFilesDir().getPath() + "/" + "draft");
-
-            Log.d("draft", "draft to load: " + file.exists());
-
-            if(!file.exists()){
-                return null;
-            }
+            Item draft;
 
             try {
                 FileInputStream fis = new FileInputStream(getFilesDir().getPath() + "/" + "draft");
@@ -185,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 //load draft dialog
             }
             else {
-                startRegisterDraft(item);
+                startRegisterDraft(null);
             }
         }
     }
