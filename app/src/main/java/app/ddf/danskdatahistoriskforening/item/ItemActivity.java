@@ -8,8 +8,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -31,6 +33,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
@@ -69,6 +77,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     private WeakReference<ItemDetailsFragment> itemDetailsFragmentWeakReference;
     private WeakReference<ItemDescriptionFragment> itemDescriptionFragmentWeakReference;
 
+    private boolean isNewRegistration;
+
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -103,9 +113,17 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                 item = intent.getParcelableExtra("item");
             }
 
+            if(intent.hasExtra("isNewRegistration")){
+                isNewRegistration = intent.getBooleanExtra("isNewRegistration", false);
+            }
+            else{
+                isNewRegistration = false;
+            }
+
         } else {
             item = savedInstanceState.getParcelable("item");
             tempUri = savedInstanceState.getParcelable("tempUri");
+            isNewRegistration = savedInstanceState.getBoolean("isNewRegistration");
         }
 
         //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
@@ -158,8 +176,9 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         super.onSaveInstanceState(outState);
 
         outState.putParcelable("item", item);
-        outState.putInt("index", viewPager.getCurrentItem());
+        //outState.putInt("index", viewPager.getCurrentItem());
         outState.putParcelable("tempUri", tempUri);
+        outState.putBoolean("isNewRegistration", isNewRegistration);
     }
 
     @Override
@@ -192,35 +211,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void save() {
-        //update item if fragment is instantiated
-        //destroyed fragments will have updated the item during onPause() already
-        ItemFragment itemFragment = null;
-        ItemDetailsFragment itemDetailsFragment = null;
-        ItemDescriptionFragment itemDescriptionFragment = null;
-
-        if (itemFragmentWeakReference != null) {
-            itemFragment = itemFragmentWeakReference.get();
-        }
-
-        if (itemDetailsFragmentWeakReference != null) {
-            itemDetailsFragment = itemDetailsFragmentWeakReference.get();
-        }
-
-        if (itemDescriptionFragmentWeakReference != null) {
-            itemDescriptionFragment = itemDescriptionFragmentWeakReference.get();
-        }
-
-        if (itemFragment != null) {
-            itemFragment.updateItem(item);
-        }
-
-        if (itemDetailsFragment != null) {
-            itemDetailsFragment.updateItem(item);
-        }
-
-        if (itemDescriptionFragment != null) {
-            itemDescriptionFragment.updateItem(item);
-        }
+        updateItem();
 
         if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty())
             Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
@@ -250,15 +241,16 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             if (item.getItemId() > 0) {
                 Intent backgroundService = new Intent(this, BackgroundService.class);
                 backgroundService.putExtra("event", "update");
-                backgroundService.putExtra("item", item);
+                backgroundService.putExtra("item", (Parcelable) item);
                 startService(backgroundService);
             } else {
                 Intent backgroundService = new Intent(this, BackgroundService.class);
                 backgroundService.putExtra("event", "create");
-                backgroundService.putExtra("item", item);
+                backgroundService.putExtra("item", (Parcelable) item);
                 startService(backgroundService);
             }
             Model.setListUpdated(false);
+            isNewRegistration = false; //do not save draft if item is being sent to API
             finish();
         } else{
             Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
@@ -283,6 +275,38 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(this, "Server problem", Toast.LENGTH_LONG).show(); // JSON problem
             default:
                 Toast.makeText(this, "Noget gik galt", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void updateItem(){
+        //update item if fragment is instantiated
+        //destroyed fragments will have updated the item during onPause() already
+        ItemFragment itemFragment = null;
+        ItemDetailsFragment itemDetailsFragment = null;
+        ItemDescriptionFragment itemDescriptionFragment = null;
+
+        if (itemFragmentWeakReference != null) {
+            itemFragment = itemFragmentWeakReference.get();
+        }
+
+        if (itemDetailsFragmentWeakReference != null) {
+            itemDetailsFragment = itemDetailsFragmentWeakReference.get();
+        }
+
+        if (itemDescriptionFragmentWeakReference != null) {
+            itemDescriptionFragment = itemDescriptionFragmentWeakReference.get();
+        }
+
+        if (itemFragment != null) {
+            itemFragment.updateItem(item);
+        }
+
+        if (itemDetailsFragment != null) {
+            itemDetailsFragment.updateItem(item);
+        }
+
+        if (itemDescriptionFragment != null) {
+            itemDescriptionFragment.updateItem(item);
         }
     }
 
@@ -502,5 +526,38 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     public void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+
+        updateItem();
+
+        if(item.hasContent() && isNewRegistration){
+            //save draft
+            Log.d("draft", "Saving Draft");
+            (new SaveDraftTask()).execute();
+        }
+    }
+
+    private class SaveDraftTask extends AsyncTask<Void, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                FileOutputStream fos = openFileOutput("draft", Context.MODE_PRIVATE);
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
+
+                oos.writeObject(item);
+                oos.flush();
+                oos.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            File file = new File(getFilesDir().getPath() + "/" + "draft");
+
+            Log.d("draft", "draft saved: " + file.exists());
+
+            return null;
+        }
     }
 }
