@@ -27,6 +27,7 @@ public class Item implements Parcelable {
     private String postalCode;
     private ArrayList<Uri> pictures;
     private ArrayList<Uri> recordings;
+    private ArrayList<Uri> addedRecordings;
     private boolean picturesChanged;
     private boolean recordingsChanged;
     private ArrayList<Uri> deletedPictures;
@@ -95,6 +96,7 @@ public class Item implements Parcelable {
         this.postalCode = in.readString();
         this.pictures = in.readArrayList(Uri.class.getClassLoader());
         this.recordings = in.readArrayList(Uri.class.getClassLoader());
+        this.addedRecordings = in.readArrayList(Uri.class.getClassLoader());
         this.picturesChanged = in.readInt() == 1;
         this.recordingsChanged = in.readInt() == 1;
         this.deletedPictures = in.readArrayList(Uri.class.getClassLoader());
@@ -119,6 +121,7 @@ public class Item implements Parcelable {
         dest.writeString(postalCode);
         dest.writeList(pictures);
         dest.writeList(recordings);
+        dest.writeList(addedRecordings);
         dest.writeInt(picturesChanged ? 1 : 0);
         dest.writeInt(recordingsChanged ? 1 : 0);
         dest.writeList(deletedPictures);
@@ -245,7 +248,14 @@ public class Item implements Parcelable {
         return this.recordings;
     }
 
+    public ArrayList<Uri> getAddedRecordings() {
+        return this.addedRecordings;
+    }
+
     public void setRecordings(ArrayList<Uri> recordings) {
+        this.recordings = recordings;
+    }
+    public void setAddedRecordings(ArrayList<Uri> addedRecordings) {
         this.recordings = recordings;
     }
 
@@ -253,6 +263,12 @@ public class Item implements Parcelable {
         if (recordings == null)
             recordings = new ArrayList<Uri>();
         recordings.add(recording);
+    }
+
+    public void addToAddRecordings(Uri addedRecording) {
+        if (addedRecordings == null)
+            addedRecordings = new ArrayList<Uri>();
+        addedRecordings.add(addedRecording);
     }
 
     public boolean hasPicturesChanged() {

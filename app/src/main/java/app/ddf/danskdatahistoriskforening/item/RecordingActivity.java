@@ -1,5 +1,7 @@
 package app.ddf.danskdatahistoriskforening.item;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -86,6 +88,17 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
             finish();
         } else  if(v == doneButton){
             destroyAudioPlayer();
+            Intent result = new Intent();
+            String fileName = "recording_" + System.nanoTime() +".mp4";
+            System.out.println(fileName);
+            File file = new File(LocalMediaStorage.getOutputMediaFileUri(null, 3).getPath());
+            System.out.println(file);
+            file.renameTo(new File(LocalMediaStorage.getOutputMediaFileUri(fileName, 2).getPath()));
+            System.out.println(file);
+            System.out.println(LocalMediaStorage.getOutputMediaFileUri(fileName, 2));
+            result.putExtra("recordingUri", LocalMediaStorage.getOutputMediaFileUri(fileName, 2));
+            System.out.println(result);
+            setResult(Activity.RESULT_OK, result);
             finish();
         } else  if(v == recButton){
             if (ar.isRecording()) {
@@ -136,8 +149,6 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
-
-
     private void setEnableScreen(boolean active) {
         trashButton.setEnabled(active);
         cancelButton.setEnabled(active);
@@ -155,7 +166,6 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
             arHandler.postDelayed(this, 1000);
         }
     };
-
 
     @Override
     public void onResume() {
@@ -182,8 +192,6 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
      * MEDIA PLAYER START
      *
      */
-
-
 
     Runnable apRunnable = new Runnable() {
         @Override
@@ -273,10 +281,6 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         setEnableAP(false);
     }
 
-
-
-
-
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (ap != null && fromUser) {
@@ -321,9 +325,6 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
 
         return hours +":"+  String.format("%02d", minuts)+"."+  String.format("%02d", seconds);
     }
-
-
-
 
 /*
     private void setAlpha(int  a) {
