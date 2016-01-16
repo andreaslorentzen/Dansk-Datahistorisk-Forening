@@ -61,17 +61,17 @@ public class Item implements Parcelable, Serializable{
 
     private void writeObject(final ObjectOutputStream oos) throws IOException {
         oos.write(itemId);
-        oos.writeUTF(itemHeadline);
-        oos.writeUTF(itemDescription);
+        oos.writeUTF(itemHeadline != null? itemHeadline: "");
+        oos.writeUTF(itemDescription != null? itemDescription: "");
         oos.writeObject(itemRecieved);
         oos.writeObject(itemDatingFrom);
         oos.writeObject(itemDatingTo);
-        oos.writeUTF(donator);
-        oos.writeUTF(producer);
-        oos.writeUTF(postalCode);
+        oos.writeUTF(donator != null? donator: "");
+        oos.writeUTF(producer != null? producer: "");
+        oos.writeUTF(postalCode != null? postalCode: "");
         oos.writeObject(getFileList(pictures));
         oos.writeObject(getFileList(recordings));
-        oos.writeObject(getFileList(addedPictures));
+        oos.writeObject(getFileList(addedRecordings));
         oos.writeBoolean(picturesChanged);
         oos.writeBoolean(recordingsChanged);
         oos.writeObject(getFileList(deletedPictures));
@@ -79,6 +79,10 @@ public class Item implements Parcelable, Serializable{
     }
 
     private ArrayList<File> getFileList(ArrayList<Uri> uriList){
+        if(uriList == null){
+            return null;
+        }
+
         ArrayList<File> fileList = new ArrayList<>(uriList.size());
 
         for (int i = 0; i<uriList.size(); i++){
@@ -89,10 +93,29 @@ public class Item implements Parcelable, Serializable{
     }
 
     private void readObject(final ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        itemId = ois.read();
         itemHeadline = ois.readUTF();
+        itemDescription = ois.readUTF();
+        itemRecieved = (Date) ois.readObject();
+        itemDatingFrom = (Date) ois.readObject();
+        itemDatingTo = (Date) ois.readObject();
+        donator = ois.readUTF();
+        producer = ois.readUTF();
+        postalCode = ois.readUTF();
+        pictures = getUriList((ArrayList<File>) ois.readObject());
+        recordings = getUriList((ArrayList<File>) ois.readObject());
+        addedRecordings = getUriList((ArrayList<File>) ois.readObject());
+        picturesChanged = ois.readBoolean();
+        recordingsChanged = ois.readBoolean();
+        deletedPictures = getUriList((ArrayList<File>) ois.readObject());
+        addedPictures = getUriList((ArrayList<File>) ois.readObject());
     }
 
     private ArrayList<Uri> getUriList(ArrayList<File> fileList){
+        if(fileList == null){
+            return null;
+        }
+
         ArrayList<Uri> uriList = new ArrayList<>(fileList.size());
 
         for(int i=0; i<fileList.size(); i++){
