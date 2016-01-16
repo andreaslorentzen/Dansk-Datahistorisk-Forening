@@ -9,11 +9,10 @@ import java.util.List;
 import java.util.Stack;
 
 import app.ddf.danskdatahistoriskforening.Model;
-import app.ddf.danskdatahistoriskforening.main.ItemListFragment;
 
 public class SearchManager {
 
-    private static SearchListener usedSearchListener;
+    private static OnSearchListener usedOnSearchListener;
     private Stack<Pair<List<String>, List<JSONObject>>> stackTitleAndObjects;
     private String lastSearch = "";
     private List<String> itemTitles;
@@ -57,7 +56,7 @@ public class SearchManager {
         }
         lastSearch = search;
         Model.setCurrentJSONObjects(stackTitleAndObjects.peek().second);
-        usedSearchListener.onSearch(searchedTitles);
+        usedOnSearchListener.onSearch(searchedTitles);
         return searchedTitles;
     }
 
@@ -74,19 +73,19 @@ public class SearchManager {
         return new Pair<List<String>, List<JSONObject>>(result, resultObjects);
     }
 
-    public static void setSearchList(SearchListener searchListener){
-        usedSearchListener = searchListener;
+    public static void setOnSearchListener(OnSearchListener onSearchListener){
+        usedOnSearchListener = onSearchListener;
     }
 
-    public static SearchListener getSearchList(){
-        return usedSearchListener;
+    public static OnSearchListener getSearchList(){
+        return usedOnSearchListener;
     }
 
     public String getCurrentSearch() {
         return lastSearch;
     }
 
-    public interface SearchListener{
+    public interface OnSearchListener {
         public void onSearch(List<String> result);
     }
 }

@@ -42,8 +42,6 @@ import app.ddf.danskdatahistoriskforening.item.LoadDraftDialogFragment;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener, LoadDraftDialogFragment.ConfirmDraftLoadListener {
 
-    Toolbar mainToolbar;
-
     MenuItem searchButton;
     MenuItem editButton;
     SearchView searchView;
@@ -69,18 +67,18 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         super.onCreate(savedInstanceState);
         Model.setCurrentActivity(this);
         setContentView(R.layout.activity_main);
-        LocalMediaStorage.setContext(this);
         if (savedInstanceState == null) {
 
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.frame, new FrontFragment())
+                    .add(R.id.frame, new FrontFragment())
                     .commit();
+
         } else {
             setSearchExpanded(savedInstanceState.getBoolean("isSearchExpanded"));
             setSearchButtonVisible(savedInstanceState.getBoolean("isSearchButtonVisible", true));
 
         }
-        mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        Toolbar mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
         mainToolbar.setNavigationIcon(null);
         setSupportActionBar(mainToolbar);
     }

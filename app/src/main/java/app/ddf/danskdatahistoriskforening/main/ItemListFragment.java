@@ -17,13 +17,12 @@ import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 
-public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener, SearchManager.SearchListener {
+public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener, SearchManager.OnSearchListener {
 
     ListView itemList;
     JSONArray items;
@@ -37,13 +36,12 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
         View layout = inflater.inflate(R.layout.fragment_item_list, container, false);
         emptyText = (TextView) layout.findViewById(R.id.emptyText);
 
-        SearchManager.setSearchList(this);
+        SearchManager.setOnSearchListener(this);
         itemList = (ListView) layout.findViewById(R.id.itemList);
         itemList.setOnItemClickListener(this);
         ArrayAdapter adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1,  new ArrayList<String>());
         itemList.setAdapter(adapter);
-        updateItemList(null);
-
+        updateItemList(Model.getInstance().getItemTitles());
 
         FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fab);
         fab.setOnClickListener(this);
@@ -54,9 +52,6 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     private void updateItemList(List<String> titles){
         ArrayAdapter adapter = (ArrayAdapter) itemList.getAdapter();
         adapter.clear();
-        List<String>  itemTitles = Model.getInstance().getItemTitles();
-        if (itemTitles != null && titles == null)
-            titles = itemTitles;
         if (titles == null || titles.isEmpty())
             emptyText.setVisibility(View.VISIBLE);
         else {
@@ -69,7 +64,7 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     @Override
     public void onDestroy() {
         super.onDestroy();
-        SearchManager.setSearchList(null);
+        SearchManager.setOnSearchListener(null);
     }
 
     @Override
