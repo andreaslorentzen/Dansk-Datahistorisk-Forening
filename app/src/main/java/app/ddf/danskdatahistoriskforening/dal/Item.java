@@ -7,6 +7,10 @@ import android.os.Parcelable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.text.ParseException;
@@ -53,6 +57,49 @@ public class Item implements Parcelable, Serializable{
         this.donator = donator;
         this.producer = producer;
         this.postalCode = postalCode;
+    }
+
+    private void writeObject(final ObjectOutputStream oos) throws IOException {
+        oos.write(itemId);
+        oos.writeUTF(itemHeadline);
+        oos.writeUTF(itemDescription);
+        oos.writeObject(itemRecieved);
+        oos.writeObject(itemDatingFrom);
+        oos.writeObject(itemDatingTo);
+        oos.writeUTF(donator);
+        oos.writeUTF(producer);
+        oos.writeUTF(postalCode);
+        oos.writeObject(getFileList(pictures));
+        oos.writeObject(getFileList(recordings));
+        oos.writeObject(getFileList(addedPictures));
+        oos.writeBoolean(picturesChanged);
+        oos.writeBoolean(recordingsChanged);
+        oos.writeObject(getFileList(deletedPictures));
+        oos.writeObject(getFileList(addedPictures));
+    }
+
+    private ArrayList<File> getFileList(ArrayList<Uri> uriList){
+        ArrayList<File> fileList = new ArrayList<>(uriList.size());
+
+        for (int i = 0; i<uriList.size(); i++){
+            fileList.add(new File(uriList.get(i).getPath()));
+        }
+
+        return fileList;
+    }
+
+    private void readObject(final ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        itemHeadline = ois.readUTF();
+    }
+
+    private ArrayList<Uri> getUriList(ArrayList<File> fileList){
+        ArrayList<Uri> uriList = new ArrayList<>(fileList.size());
+
+        for(int i=0; i<fileList.size(); i++){
+            uriList.add(Uri.fromFile(fileList.get(i)));
+        }
+
+        return uriList;
     }
 
     public JSONObject toJSON() {
