@@ -112,7 +112,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
             seekTo(progress);
-            posText.setText(millisToPlayback(getAPSCurrentPosition()));
+            setSB(getAPSCurrentPosition());
         }
     }
 
@@ -129,81 +129,43 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         if (v == recButton) {
             ((ItemActivity) getActivity()).startRecording();
         } else if(v == playButton){
-            if (currentAP != null) { // enabled first when a recording has been made
-                if (currentAP.isPlaying()) {
-                    pauseAudioPlayer();
-                } else {
-                    startAudioPlayer();
-                }
-            }
-        }else if(v == prevButton){
-            if (currentAP != null) { // enabled first when a recording has been made
-                    if (!currentAP.isPlaying()) {
-                        if (setPrevAP())
-                            startAudioPlayer();
-                    } else
-                        setPrevAP();
+            if (currentAP.isPlaying())
+                pauseAP();
+            else
+                setStartAP();
+        } else if(v == prevButton){
+            if (currentAP.getCurrentPosition() > 0) {
+                pauseAP();
+                currentAP.seekTo(0);
+                setSB(getAPSCurrentPosition());
+            } else if (setMP(getPrevAP(), 0, false)) {
+                pauseAP();
+                setSB(getAPSCurrentPosition());
             }
         }else if(v == nextButton){
-            if (currentAP != null) { // enabled first when a recording has been made
-                if (!currentAP.isPlaying()) {
-                    if (setNextAP())
-                        startAudioPlayer();
-                } else
-                    setNextAP();
-            }
+            if (setMP(getNextAP(), 0, currentAP.isPlaying()))
+                setSB(getAPSCurrentPosition());
         }
     }
 
-    Runnable apRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (!currentAP.isPlaying()) {
-                boolean hasNext = setNextAP();
-                if (hasNext) {
-                    currentAP.start();
-                } else {
-                    seekBar.setProgress(0);
-                    posText.setText("0:00.00");
-                    forcestopAudioPlayer();
-                    return;
-                }
-            }
-            seekBar.setProgress(getAPSCurrentPosition());
-            posText.setText(millisToPlayback(getAPSCurrentPosition()));
-            apHandler.postDelayed(this, 250);
-        }
 
 
-    };
-    private boolean setNextAP() {
+
+    private MediaPlayer getNextAP() {
         for (int i = 0; i < aps.size(); i++) {
             if (aps.get(i) == currentAP && i+1 < aps.size()) {
-                if (currentAP.isPlaying())
-                    currentAP.pause();
-                currentAP = aps.get(i+1);
-                currentAP.seekTo(0);
-                seekBar.setProgress(getAPSCurrentPosition());
-                posText.setText(millisToPlayback(getAPSCurrentPosition()));
-                return true;
+                return aps.get(i+1);
             }
         }
-        return false;
+        return null;
     }
 
-    private boolean setPrevAP() {
-        for (int i = 0; i < aps.size(); i++) {
-            if (aps.get(i) == currentAP && i-1 > 0) {
-                if (currentAP.isPlaying())
-                    currentAP.pause();
-                currentAP = aps.get(i-1);
-                currentAP.seekTo(0);
-                seekBar.setProgress(getAPSCurrentPosition());
-                posText.setText(millisToPlayback(getAPSCurrentPosition()));
-                return true;
+    private MediaPlayer getPrevAP() {
+        for (int i = 0; i < aps.size(); i++)
+            if (aps.get(i) == currentAP && i-1 >= 0) {
+                return aps.get(i-1);
             }
-        }
-        return false;
+        return null;
     }
 
     private void destroyAudioPlayer() {
@@ -227,14 +189,55 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         currentAP.seekTo(0);
     }
 
-    private void pauseAudioPlayer() {
-        currentAP.pause();
+    Runnable apRunnable = new Runnable() {
+        @Override
+        public void run() {
+            System.out.println("       run       run        run       run");
+            if (!currentAP.isPlaying()) { // currentMP is done
+                MediaPlayer nextMP = getNextAP();
+                if (nextMP == null){ // no nextMP -> start from beginning
+                    System.out.println();
+                    pauseAP();
+                    setMP(aps.get(0), 0, false);
+                    setSB(0);
+                    return;
+                } else {
+                    setMP(nextMP, 0, true); // continue at nextMP
+                }
+            }
+            setSB(getAPSCurrentPosition());
+            apHandler.postDelayed(this, 500);
+        }
+    };
+
+    private boolean setMP(MediaPlayer mp, int pos, boolean play) {
+        System.out.println("Current: " + currentAP);
+        System.out.println("New:     " + mp);
+        if (mp == null)
+            return false;
+        if (currentAP.isPlaying())
+            currentAP.pause();
+        currentAP = mp;
+        mp.seekTo(pos);
+        if (play)
+            mp.start();
+        return true;
+    }
+
+    private void setSB(int pos) {
+        seekBar.setProgress(pos);
+        posText.setText(millisToPlayback(pos));
+    }
+
+    private void pauseAP() {
+        if (currentAP.isPlaying())
+            currentAP.pause();
         audioText.setText("Paused");
         apHandler.removeCallbacks(apRunnable);
         playButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
     }
 
-    private void startAudioPlayer() {
+    private void setStartAP() {
         // disable buttons
         playButton.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
         currentAP.start();
@@ -245,9 +248,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
     private void seekTo(int progress) {
         for (MediaPlayer ap : aps) {
             if (ap.getDuration() >= progress) {
-                currentAP = ap;
-                ap.seekTo(progress);
-                currentAP = ap;
+                setMP(ap, progress, currentAP.isPlaying());
                 return;
             } else {
                 progress-=ap.getDuration();
