@@ -65,7 +65,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="00:00.00"
+                    android:text="0:00.00"
                     android:id="@+id/recText"
                     android:textSize="40dp"
                     android:textColor="#000000"
@@ -91,7 +91,7 @@
                     android:layout_gravity="center"
                     android:layout_below="@+id/imageButton2"
                     android:layout_centerHorizontal="true"
-                    android:background = "@drawable/ic_pause_circle_filled_white_48dp" />
+                    android:background = "@drawable/ic_fiber_manual_record_black_48dp" />
             </LinearLayout>
 
             <Space
@@ -124,7 +124,8 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#999999" >
+                android:background="#999999"
+                android:id="@+id/mpLayout">
 
                 <LinearLayout
                     android:orientation="horizontal"
@@ -182,7 +183,7 @@
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:id="@+id/durText"
-                        android:text="9:99:99" />
+                        android:text="0:00.00" />
 
                 </LinearLayout>
 

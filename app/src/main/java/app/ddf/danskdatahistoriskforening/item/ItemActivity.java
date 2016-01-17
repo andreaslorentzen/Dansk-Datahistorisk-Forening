@@ -54,9 +54,11 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
+    public static final int  AUDIORECORDING_REQUEST_CODE = 300;
 
     private Item item;
     private ArrayList<Pair<ImageView, Uri>> imageUris;
+    ArrayList<Uri> audioUris;
     private Uri tempUri;
 
     public Item getItem() {
@@ -225,14 +227,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             item.addToPictures(pair.second);
         }
 */
-        /*
-        HUSK
-        HUSK
-        HUSK
-        HUSK
-        HUSK
-        item.setRecordings(itemFragment.audioUris);*/
-
 
         /*item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
         item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
@@ -424,6 +418,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        System.out.println("AJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ " + requestCode + " " + resultCode);
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             //itemFragment.onActivityResult(requestCode, resultCode, data);
             Log.d("updateImage", "Result");
@@ -478,6 +473,13 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
             }
+        } else if(requestCode == ItemActivity.AUDIORECORDING_REQUEST_CODE){
+            System.out.println(".");
+            if (resultCode == Activity.RESULT_OK) {
+                System.out.println(". result ok");
+                item.addToAddRecordings((Uri) data.getParcelableExtra("recordingUri"));
+                Toast.makeText(this, "Audio file added!", Toast.LENGTH_LONG).show();
+            }
         }
     }
     public static final int RECORD_PERMISSION_REQUEST = 2;
@@ -508,7 +510,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         }
         else{
             Intent i = new Intent(this, RecordingActivity.class);
-            startActivity(i);
+            startActivityForResult(i, ItemActivity.AUDIORECORDING_REQUEST_CODE);
         }
     }
 
