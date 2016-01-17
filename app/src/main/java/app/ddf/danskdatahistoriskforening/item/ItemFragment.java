@@ -6,22 +6,25 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
-public class ItemFragment extends Fragment implements View.OnClickListener, ItemUpdater {
+public class ItemFragment extends Fragment implements View.OnClickListener, ItemUpdater, TextView.OnEditorActionListener {
+
     ImageButton cameraButton;
     EditText itemTitle;
     LinearLayout imageContainer;
@@ -29,31 +32,25 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d("ddfstate", "onCreateView");
+
         View layout = inflater.inflate(R.layout.fragment_item, container, false);
         cameraButton = (ImageButton) layout.findViewById(R.id.cameraButton);
         cameraButton.setOnClickListener(this);
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
+        itemTitle.setOnEditorActionListener(this);
+
         Item item = ((ItemActivity) getActivity()).getItem();
         itemTitle.setText(item.getItemHeadline());
         //((HorizontalScrollView) layout.findViewById(R.id.horizontalScrollView)).setFillViewport(true);
         imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
         return layout;
     }
-
-    // shit like this maybe
-    @Override
-    public void onDetach() {
-        super.onDetach();
-    }
-
+    
     @Override
     public void onPause() {
-        Log.d("ddfstate", "onPause");
         super.onPause();
         updateItem(((ItemActivity) getActivity()).getItem());
         //if fragment is destroyed imageViews need to be added to a new container
-        imageContainer.removeAllViews();
     }
 
     @Override
@@ -69,8 +66,8 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
         for(int i=0; i<imageUris.size(); i++){
             Pair p = (Pair) imageUris.get(i);
             imageContainer.addView((View) p.first);
-        //    ((View) p.first).setOnClickListener((View.OnClickListener) getActivity());
-        //    ((View) p.first).setOnClickListener(this);
+            //    ((View) p.first).setOnClickListener((View.OnClickListener) getActivity());
+            //    ((View) p.first).setOnClickListener(this);
         }
     }
 
@@ -87,5 +84,19 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
             } else
                 Toast.makeText(getActivity(), "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        v.clearFocus();
+        App.hideKeyboard(getActivity(), v);
+        return false;
+    }
+    
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(!isVisibleToUser)
+            App.hideKeyboard(getActivity(), itemTitle);
     }
 }
