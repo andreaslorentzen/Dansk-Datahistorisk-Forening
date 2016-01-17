@@ -28,7 +28,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +37,6 @@ import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.domain.ListItem;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
 import app.ddf.danskdatahistoriskforening.domain.UserSelection;
-import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 import app.ddf.danskdatahistoriskforening.item.LoadDraftDialogFragment;
 
@@ -239,27 +237,23 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             Toast.makeText(this, "Detaljer kan ikke hentes, da der ikke er internet", Toast.LENGTH_LONG).show();
             return;
         }
-        try {
-            String detailsURI = Model.getCurrentJSONObjects().get(position).getString("detailsuri");
-            if (detailsURI == null)
-                // Maybe throw exception
-                return;
-            Model.getInstance().setCurrentDetailsURI(detailsURI);
-            Model.getInstance().setCurrentItem(null);
-            Model.getInstance().fetchCurrentItem();
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.frame, new ItemShowFragment())
-                    .addToBackStack(null)
-                    .commit();
-            boolean expanded = isSearchExpanded();
-            setSearchButtonVisible(false);
-            updateSearchVisibility();
-            setSearchExpanded(expanded);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        String detailsURI = Logic.instance.userSelection.selectedListItem.details;
+        if (detailsURI == null)
+            // Maybe throw exception
             return;
-            //TODO DO SOMETHING USEFULL
-        }
+        Model.getInstance().setCurrentDetailsURI(detailsURI);
+        Model.getInstance().setCurrentItem(null);
+        Logic.instance.userSelection.selectedItem = null;
+        Logic.instance.model.fetchSelectedListItem();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.frame, new ItemShowFragment())
+                .addToBackStack(null)
+                .commit();
+        boolean expanded = isSearchExpanded();
+        setSearchButtonVisible(false);
+        updateSearchVisibility();
+        setSearchExpanded(expanded);
+
     }
 
     private void updateSearchVisibility() {
