@@ -11,9 +11,12 @@ import android.os.Build;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+
+import app.ddf.danskdatahistoriskforening.domain.Logic;
 
 /**
  * Created by mathias on 12/01/16.
@@ -39,6 +42,8 @@ public class App extends Application {
 
     @Override
     public void onCreate(){
+        Logic.instance = new Logic();
+
         System.out.println("Inside the APP");
         ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 

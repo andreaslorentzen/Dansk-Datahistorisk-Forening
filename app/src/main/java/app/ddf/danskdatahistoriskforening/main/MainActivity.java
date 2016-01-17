@@ -28,13 +28,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
-import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
+import app.ddf.danskdatahistoriskforening.domain.ListItem;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
 import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 import app.ddf.danskdatahistoriskforening.item.LoadDraftDialogFragment;
@@ -394,11 +396,25 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         items = new ArrayList<>();
                         JSONArray jsonItems = new JSONArray(data);
 
+                        List<ListItem> listItems = new ArrayList<>();
+
+
                         for (int n = 0; n < jsonItems.length(); n++) {
                             JSONObject item = jsonItems.getJSONObject(n);
+
                             itemTitles.add(item.optString("itemheadline", "(ukendt)"));
                             items.add(item);
+
+                            ListItem listItem = new ListItem();
+                            listItem.details = item.optString("detailsuri");
+                            listItem.id = item.optInt("itemid");
+                            listItem.title = item.optString("itemheadline", "(ukendt)");
+                            listItem.image = item.getString("defaultimage");
+                            listItems.add(listItem);
                         }
+
+                        Logic.instance.items = listItems;
+
                         Model.getInstance().setItemTitles(itemTitles);
                         Model.getInstance().setItems(items);
                         if (SearchManager.getSearchList() != null)
