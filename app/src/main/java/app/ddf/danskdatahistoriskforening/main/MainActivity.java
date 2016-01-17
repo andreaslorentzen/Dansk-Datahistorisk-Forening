@@ -37,6 +37,7 @@ import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.domain.ListItem;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
+import app.ddf.danskdatahistoriskforening.domain.UserSelection;
 import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 import app.ddf.danskdatahistoriskforening.item.LoadDraftDialogFragment;
@@ -284,7 +285,17 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        Model.getInstance().getSearchManager().searchItemList(newText);
+        Logic.instance.userSelection.searchQuery = newText;
+
+        Logic.instance.searchedItems = Logic.instance.searchManager.search(newText);
+
+        for (UserSelection.SearchObservator observator : Logic.instance.userSelection.searchObservators) {
+            observator.onSearchChange();
+        }
+
+    //    Logic.instance.searchManager.searchItemList();
+
+        //    Model.getInstance().getSearchManager().searchItemList(newText);
         return true;
     }
 
@@ -414,11 +425,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         }
 
                         Logic.instance.items = listItems;
+                        onQueryTextChange(Logic.instance.userSelection.searchQuery);
+
 
                         Model.getInstance().setItemTitles(itemTitles);
                         Model.getInstance().setItems(items);
-                        if (SearchManager.getSearchList() != null)
-                            Model.getInstance().getSearchManager().searchItemList(Model.getInstance().getSearchManager().getCurrentSearch());
+                //        if (SearchManager.getSearchList() != null)
+                //            Model.getInstance().getSearchManager().searchItemList(Model.getInstance().getSearchManager().getCurrentSearch());
                         Model.setListUpdated(true);
                     } catch (JSONException e) {
                         e.printStackTrace();

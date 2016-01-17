@@ -6,4 +6,8 @@ public class ListItem {
     public String image;
     public String title;
 
+    @Override
+    public String toString() {
+        return title;
+    }
 }
