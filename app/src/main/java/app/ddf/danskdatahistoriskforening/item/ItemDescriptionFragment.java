@@ -141,7 +141,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         }
     }
     
-    private boolean getNextAP() {
+    private MediaPlayer getNextAP() {
         for (int i = 0; i < aps.size(); i++) {
             if (aps.get(i) == currentAP && i+1 < aps.size()) {
                 return aps.get(i+1);
