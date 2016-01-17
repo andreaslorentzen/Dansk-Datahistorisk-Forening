@@ -167,6 +167,7 @@ public class Item implements Parcelable, Serializable{
         this.postalCode = in.readString();
         this.pictures = in.readArrayList(Uri.class.getClassLoader());
         this.recordings = in.readArrayList(Uri.class.getClassLoader());
+        this.addedRecordings = in.readArrayList(Uri.class.getClassLoader());
         this.picturesChanged = in.readInt() == 1;
         this.recordingsChanged = in.readInt() == 1;
         this.deletedPictures = in.readArrayList(Uri.class.getClassLoader());
@@ -191,6 +192,7 @@ public class Item implements Parcelable, Serializable{
         dest.writeString(postalCode);
         dest.writeList(pictures);
         dest.writeList(recordings);
+        dest.writeList(addedRecordings);
         dest.writeInt(picturesChanged ? 1 : 0);
         dest.writeInt(recordingsChanged ? 1 : 0);
         dest.writeList(deletedPictures);
@@ -317,7 +319,14 @@ public class Item implements Parcelable, Serializable{
         return this.recordings;
     }
 
+    public ArrayList<Uri> getAddedRecordings() {
+        return this.addedRecordings;
+    }
+
     public void setRecordings(ArrayList<Uri> recordings) {
+        this.recordings = recordings;
+    }
+    public void setAddedRecordings(ArrayList<Uri> addedRecordings) {
         this.recordings = recordings;
     }
 
@@ -325,6 +334,12 @@ public class Item implements Parcelable, Serializable{
         if (recordings == null)
             recordings = new ArrayList<Uri>();
         recordings.add(recording);
+    }
+
+    public void addToAddRecordings(Uri addedRecording) {
+        if (addedRecordings == null)
+            addedRecordings = new ArrayList<Uri>();
+        addedRecordings.add(addedRecording);
     }
 
     public boolean hasPicturesChanged() {
