@@ -182,7 +182,6 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
     Runnable apRunnable = new Runnable() {
         @Override
         public void run() {
-            System.out.println("       run       run        run       run");
             if (!currentAP.isPlaying()) { // currentMP is done
                 MediaPlayer nextMP = getNextAP();
                 if (nextMP == null){ // no nextMP -> start from beginning
@@ -201,8 +200,6 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
     };
 
     private boolean setMP(MediaPlayer mp, int pos, boolean play) {
-        System.out.println("Current: " + currentAP);
-        System.out.println("New:     " + mp);
         if (mp == null)
             return false;
         if (currentAP.isPlaying())
@@ -266,8 +263,6 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
     }
 
     private void resetAudioPlayer() {
-        System.out.println();
-        System.out.println("RESET AUDIO PLAYER DESCRIPTION");
         seekBar.setProgress(0);
         posText.setText("0:00.00");
         if (aps != null) {
