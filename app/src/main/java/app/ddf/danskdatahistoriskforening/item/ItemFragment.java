@@ -95,7 +95,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
             //http://developer.android.com/guide/topics/media/camera.html#intents
             Uri fileUri = LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_IMAGE);
             if(fileUri != null) {
-                ((ItemActivity)getActivity()).setTempUri(fileUri);
+                Logic.instance.tempUri = fileUri;
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
                 getActivity().startActivityForResult(intent, ItemActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);

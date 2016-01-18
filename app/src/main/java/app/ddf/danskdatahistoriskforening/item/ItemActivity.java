@@ -52,8 +52,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
  //   private Item item;
     ArrayList<Pair<ImageView, Uri>> imageViews;
 
-    private Uri tempUri;
-
  //   public Item getItem() {
  //       return item;
  //   }
@@ -115,7 +113,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
         } else {
         //    item = savedInstanceState.getParcelable("item");
-            tempUri = savedInstanceState.getParcelable("tempUri");
             isNewRegistration = savedInstanceState.getBoolean("isNewRegistration");
         }
 
@@ -175,7 +172,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
         //outState.putParcelable("item", item);
         //outState.putInt("index", viewPager.getCurrentItem());
-        outState.putParcelable("tempUri", tempUri);
         outState.putBoolean("isNewRegistration", isNewRegistration);
     }
 
@@ -313,10 +309,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         finish();
     }
 
-    public void setTempUri(Uri fileUri) {
-        tempUri = fileUri;
-    }
-
     @Override
     public void onClick(View v) {
         Log.d("DDF", "imageClick");
@@ -426,7 +418,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             Log.d("updateImage", "Result");
 
             if (resultCode == Activity.RESULT_OK) {
-                item.addToAddedPictures(tempUri);
+                item.addToAddedPictures(Logic.instance.tempUri);
 
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // User cancelled the image capture
@@ -436,7 +428,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(this, "Der opstod en fejl under brug af kameraet", Toast.LENGTH_LONG).show();
             }
 
-            setTempUri(null);
+            Logic.instance.tempUri = null;
 
         } else if(requestCode == ItemActivity.IMAGEVIEWER_REQUEST_CODE){
             if(resultCode == AppCompatActivity.RESULT_OK){

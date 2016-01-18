@@ -1,5 +1,7 @@
 package app.ddf.danskdatahistoriskforening.domain;
 
+import android.net.Uri;
+
 import java.util.List;
 
 import app.ddf.danskdatahistoriskforening.dal.Item;
@@ -19,6 +21,7 @@ public class Logic {
     public Model model;
     public Item editItem;
     public DraftManager draftManager;
+    public Uri tempUri;
 
     public Logic() {
         this.userSelection = new UserSelection();

@@ -17,7 +17,7 @@ public class BackgroundService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Context context = getApplication();
-        Item item = intent.getParcelableExtra("item");
+        Item item = Logic.instance.editItem;
         int returnValue = -1;
         if(intent.getStringExtra("event").equals("create")){
             returnValue = Logic.instance.model.dao.saveItemToDB(context, item);
