@@ -76,13 +76,13 @@ public class TempDAO implements IDAO {
             is.close();
             int itemID = createdItem.getInt("itemid");
 
-            if(item.getPictures() != null) {
-                for (Uri picture : item.getPictures()) {
+            if(item.getAddedPictures() != null) {
+                for (Uri picture : item.getAddedPictures()) {
                     postFile(context, picture, itemID, "jpg");
                 }
             }
-            if(item.getRecordings() != null) {
-                for (Uri recording : item.getRecordings()) {
+            if(item.getAddedRecordings() != null) {
+                for (Uri recording : item.getAddedRecordings()) {
                     postFile(context, recording, itemID, "mp4");
                 }
             }

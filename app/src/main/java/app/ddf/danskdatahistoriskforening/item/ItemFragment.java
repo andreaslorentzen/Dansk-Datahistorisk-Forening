@@ -17,8 +17,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import app.ddf.danskdatahistoriskforening.App;
@@ -59,6 +57,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
     public void onPause() {
         super.onPause();
         updateItem(Logic.instance.editItem);
+
         //if fragment is destroyed imageViews need to be added to a new container
     }
 
@@ -71,24 +70,16 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
     public void onResume() {
         super.onResume();
 
-        HashMap<Uri, ImageView> imageViews = ((ItemActivity)getActivity()).imageViews;
+        List<Pair<ImageView, Uri>> imageViews = ((ItemActivity)getActivity()).imageViews;
 
         imageContainer.removeAllViews();
 
         Item item = Logic.instance.editItem;
 
-        ArrayList<Uri> uris = item.getPictures();
-        if (uris != null)
-            for (Uri uri : uris) {
-                imageContainer.addView(imageViews.get(uri));
-            }
+        for (Pair<ImageView, Uri> pair : imageViews) {
+            imageContainer.addView(pair.first);
 
-        uris = item.getAddedPictures();
-        if (uris != null)
-            for (Uri uri : uris) {
-                imageContainer.addView(imageViews.get(uri));
-            }
-
+        }
 
 /*
         for(int i=0; i<imageViews.size(); i++){
@@ -104,7 +95,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
             //http://developer.android.com/guide/topics/media/camera.html#intents
             Uri fileUri = LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_IMAGE);
             if(fileUri != null) {
-                ((ItemActivity)getActivity()).setTempUri(fileUri);
+                Logic.instance.tempUri = fileUri;
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
                 getActivity().startActivityForResult(intent, ItemActivity.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
