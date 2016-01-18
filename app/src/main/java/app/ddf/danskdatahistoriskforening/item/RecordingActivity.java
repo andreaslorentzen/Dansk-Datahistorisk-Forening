@@ -1,7 +1,12 @@
 package app.ddf.danskdatahistoriskforening.item;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -76,68 +81,23 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         arHandler = new Handler();
         apHandler = new Handler();
         ar = new AudioRecorder();
+        startRecording();
     }
 
     @Override
     public void onClick(View v) {
         if(v == cancelButton){
-            File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, 3).getPath());
-            if (recordedFile.exists())
-                recordedFile.delete();
-            destroyAudioPlayer();
-            finish();
+            cancelRecording();
         } else  if(v == doneButton){
-            destroyAudioPlayer();
-            Intent result = new Intent();
-            String fileName = "recording_" + System.nanoTime() +".mp4";
-            System.out.println(fileName);
-            File file = new File(LocalMediaStorage.getOutputMediaFileUri(null, 3).getPath());
-            System.out.println(file);
-            file.renameTo(new File(LocalMediaStorage.getOutputMediaFileUri(fileName, 2).getPath()));
-            System.out.println(file);
-            System.out.println(LocalMediaStorage.getOutputMediaFileUri(fileName, 2));
-            result.putExtra("recordingUri", LocalMediaStorage.getOutputMediaFileUri(fileName, 2));
-            System.out.println(result);
-            setResult(Activity.RESULT_OK, result);
-            finish();
+            finishRecording();
         } else  if(v == recButton){
             if (ar.isRecording()) {
-                try {
-                    ar.stopRecording();
-                    recButton.setBackgroundResource(R.drawable.ic_fiber_manual_record_black_48dp);
-                    arHandler.removeCallbacks(arRunnable);
-                    audioText.setText("Pausing");
-                    recText.setText(millisToPlayback(getAudioDuration()));
-                    durText.setText(millisToPlayback(getAudioDuration()));
-                    resetAudioPlayer();
-
-                    // enable buttons
-                    setEnableScreen(true);
-                    setEnableAP(true);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                stopRecording();
             } else {
-                try {
-                    // disable buttons
-                    setEnableScreen(false);
-                    setEnableAP(false);
-
-                    ar.startRecording();
-                    startTime = System.currentTimeMillis();
-                    recButton.setBackgroundResource(R.drawable.ic_pause_circle_filled_white_48dp);
-                    arHandler.postDelayed(arRunnable, 0);
-                    audioText.setText("Recording");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                startRecording();
             }
         } else  if(v == trashButton){
-            File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, 3).getPath());
-            if (recordedFile.exists())
-                recordedFile.delete();
-            recText.setText("0:00.00");
-            resetAudioPlayer();
+            trashRecording();
         } else if(v == playButton){
             if (ap != null) { // enabled first when a recording has been made
                 if (ap.isPlaying()) {
@@ -149,10 +109,128 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
+    private void finishRecording() {
+        destroyAudioPlayer();
+        Intent result = new Intent();
+        String fileName = "recording_" + System.nanoTime() +".mp4";
+        File file = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+        file.renameTo(new File(LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO).getPath()));
+        result.putExtra("recordingUri", LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO));
+        setResult(Activity.RESULT_OK, result);
+        finish();
+    }
+
+    private void cancelRecording() {
+        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+        if (recordedFile.exists()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setTitle("Annulere optagelse");
+            builder.setMessage("Vil slette optagelsen?");
+            builder.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+                    recordedFile.delete();
+                    destroyAudioPlayer();
+                    finish();
+                }
+            });
+            builder.setNegativeButton("NEJ", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            });
+            builder.create().show();
+        } else {
+            destroyAudioPlayer();
+            finish();
+        }
+
+    }
+
+
+    private void trashRecording() {
+        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+        if (recordedFile.exists()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setTitle("Slet optagelse");
+            builder.setMessage("Vil slette optagelsen?");
+            builder.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+                    recordedFile.delete();
+                    recText.setText("0:00.00");
+                    resetAudioPlayer();
+                }
+            });
+            builder.setNegativeButton("NEJ", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+            builder.create().show();
+        }
+    }
+
+    private void setEnabledTrash(boolean active) {
+        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, 3).getPath());
+        if (recordedFile.exists() && active) {
+            trashButton.setEnabled(true);
+            trashButton.setAlpha(1.0f);
+        } else {
+            trashButton.setEnabled(false);
+            trashButton.setAlpha(0.35f);
+        }
+    }
+
+    private void stopRecording() {
+        try {
+            if (!ar.isRecording())
+                return;
+            ar.stopRecording();
+            recButton.setBackgroundResource(R.drawable.ic_fiber_manual_record_black_48dp);
+            arHandler.removeCallbacks(arRunnable);
+            resetAudioPlayer();
+            // enable buttons
+            setEnableScreen(true);
+            setEnableAP(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void startRecording() {
+        try {
+            // disable buttons
+            setEnableScreen(false);
+            setEnableAP(false);
+            ar.startRecording();
+            startTime = System.currentTimeMillis();
+            recButton.setBackgroundResource(R.drawable.ic_pause_circle_filled_white_48dp);
+            arHandler.postDelayed(arRunnable, 0);
+            audioText.setText("Recording");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void setEnableScreen(boolean active) {
-        trashButton.setEnabled(active);
+        setEnabledTrash(active);
         cancelButton.setEnabled(active);
         doneButton.setEnabled(active);
+        if (active) {
+            //derp.setBackgroundColor(Color.parseColor("#999999"));
+            cancelButton.setAlpha(1f);
+            doneButton.setAlpha(1f);
+        } else {
+            cancelButton.setAlpha(0.35f);
+            doneButton.setAlpha(0.35f);
+            //derp.setBackgroundColor(Color.parseColor("#333333"));
+        }
     }
 
     Runnable arRunnable = new Runnable() {
@@ -178,6 +256,19 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         super.onPause();
         forcestopAudioPlayer();
         destroyAudioPlayer();
+        stopRecording();
+    }
+
+    @Override
+    public void onBackPressed() {
+        cancelRecording();
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        forcestopAudioPlayer();
+        destroyAudioPlayer();
+        stopRecording();
     }
 
     @Override
@@ -185,7 +276,9 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         super.onStop();
         forcestopAudioPlayer();
         destroyAudioPlayer();
+        stopRecording();
     }
+
 
     /**
      *
@@ -199,6 +292,8 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
             if (!ap.isPlaying()) {
                 seekBar.setProgress(0);
                 posText.setText("0:00.00");
+                recButton.setAlpha(1.0f);
+                recText.setAlpha(1.0f);
                 forcestopAudioPlayer();
                 return;
             }
@@ -225,7 +320,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         if (ap == null)
             return;
         if (ap.isPlaying())
-            ap.stop();
+            ap.pause();
     }
 
     // PAUSE does NOT reset seek/pos
@@ -237,12 +332,16 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         playButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
         setEnableScreen(true);
         recButton.setEnabled(true);
+        recButton.setAlpha(1.0f);
+        recText.setAlpha(1.0f);
     }
 
     private void startAudioPlayer() {
         // disable buttons
         setEnableScreen(false);
         recButton.setEnabled(false);
+        recText.setAlpha(0.35f);
+        recButton.setAlpha(0.35f);
 
         playButton.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
         ap.start();
@@ -253,13 +352,20 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     private void setEnableAP(boolean active) {
         seekBar.setEnabled(active);
         playButton.setEnabled(active);
+        if (active) {
+            playButton.setAlpha(1f);
+        } else {
+            playButton.setAlpha(0.35f);
+        }
     }
 
     private void resetAudioPlayer() {
+
         MediaPlayer old = ap;
         ap = new MediaPlayer();
         String filePath = LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath();
         if (new File(filePath).exists()) {
+            setEnabledTrash(true);
             ap = MediaPlayer.create(this, Uri.parse(filePath));
             seekBar.setMax(ap.getDuration());
             durText.setText(millisToPlayback(ap.getDuration()));
@@ -274,10 +380,11 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
             old.release();
             return;
         }
+        setEnabledTrash(false);
         seekBar.setProgress(0);
         posText.setText("0:00.00");
         durText.setText("0:00.00");
-        audioText.setText("Go ahead and record! :)");
+        audioText.setText("Nothing recorded");
         setEnableAP(false);
     }
 

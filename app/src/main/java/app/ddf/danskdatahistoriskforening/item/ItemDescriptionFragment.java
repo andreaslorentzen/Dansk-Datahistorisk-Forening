@@ -283,11 +283,11 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         if (recordingsFE != null)
             recordings.addAll(recordingsFE);
         if (recordings.isEmpty()) {
-            seekBar.setEnabled(false);
+            setEnableAP(false);
             audioText.setText("No audio files");
             durText.setText("0:00.00");
         } else {
-            seekBar.setEnabled(true);
+            setEnableAP(true);
             System.out.println(recordings.size());
             aps = new ArrayList<MediaPlayer>();
             for (Uri uri : recordings) {
@@ -319,6 +319,25 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         time -= seconds * 1000;
 
         return hours +":"+  String.format("%02d", minuts)+"."+  String.format("%02d", seconds);
+    }
+
+    private void setEnableAP(boolean active) {
+        seekBar.setEnabled(active);
+        playButton.setEnabled(active);
+        nextButton.setEnabled(active);
+        prevButton.setEnabled(active);
+        if (active) {
+            playButton.setAlpha(1.0f);
+            nextButton.setAlpha(1.0f);
+            prevButton.setAlpha(1.0f);
+        } else {
+            playButton.setAlpha(0.35f);
+            nextButton.setAlpha(0.35f);
+            prevButton.setAlpha(0.35f);
+        }
+
+
+
     }
 
     /*
