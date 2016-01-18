@@ -1,20 +1,14 @@
 package app.ddf.danskdatahistoriskforening;
 
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Pair;
 
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Stack;
 
 import app.ddf.danskdatahistoriskforening.dal.IDAO;
-import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.dal.TempDAO;
-import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 
 public class Model {
     private static Model ourInstance;
@@ -23,8 +17,6 @@ public class Model {
     private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
     private static boolean isConnected;
     private static AppCompatActivity currentActivity;
-    private static SearchManager sm = new SearchManager();
-    private static List<JSONObject> currentJSONObjects;
 
     public static final String BROADCAST_ACTION = "com.datahistoriskforening.android.backgroundservice.BROADCAST";
 
@@ -55,10 +47,6 @@ public class Model {
         return formatter;
     }
 
-    private List<JSONObject> items;
-    private List<String> itemTitles;
-    private String currentDetailsURI;
-
     public static boolean isConnected() {
         return isConnected;
     }
@@ -74,42 +62,5 @@ public class Model {
     public static void setCurrentActivity(AppCompatActivity currentActivity) {
         Model.currentActivity = currentActivity;
     }
-
-    public static List<JSONObject> getCurrentJSONObjects() {
-        return currentJSONObjects;
-    }
-
-    public static void setCurrentJSONObjects(List<JSONObject> currentJSONObjects) {
-        Model.currentJSONObjects = currentJSONObjects;
-    }
-
-    public List<String> getItemTitles() {
-        return itemTitles;
-    }
-
-    public void setItemTitles(List<String> itemTitles) {
-        this.itemTitles = itemTitles;
-    }
-
-    public List<JSONObject> getItems() {
-        return items;
-    }
-
-    public void setItems(List<JSONObject> items) {
-        this.items = items;
-    }
-
-    public String getCurrentDetailsURI() {
-        return currentDetailsURI;
-    }
-
-    public void setCurrentDetailsURI(String currentDetailsURI) {
-        this.currentDetailsURI = currentDetailsURI;
-    }
-
-    public SearchManager getSearchManager() {
-        return sm;
-    }
-
 
 }

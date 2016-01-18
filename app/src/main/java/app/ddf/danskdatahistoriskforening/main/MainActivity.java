@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         updateSearchVisibility();
 
-        searchView.setQuery(Model.getInstance().getSearchManager().getCurrentSearch(), false);
+        searchView.setQuery(Logic.instance.userSelection.searchQuery, false);
 
         searchView.setOnQueryTextListener(this);
 
@@ -222,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentList() {
-        if (!Model.isConnected() && Model.getInstance().getItemTitles() == null) {
+        if (!Model.isConnected() && Logic.instance.items == null) {
             Toast.makeText(this, "Der kan ikke hentes nogen liste uden internet", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -240,11 +240,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             Toast.makeText(this, "Detaljer kan ikke hentes, da der ikke er internet", Toast.LENGTH_LONG).show();
             return;
         }
-        String detailsURI = Logic.instance.userSelection.selectedListItem.details;
-        if (detailsURI == null)
-            // Maybe throw exception
+
+        if (Logic.instance.userSelection.selectedListItem.details == null) {
+            Toast.makeText(this, "Kan ikke hente detaljer: fejl i liste data", Toast.LENGTH_LONG).show();
             return;
-        Model.getInstance().setCurrentDetailsURI(detailsURI);
+        }
+
         Logic.instance.userSelection.setSelectedItem(null);
 
         Logic.instance.model.fetchSelectedListItem();
@@ -253,9 +254,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 .addToBackStack(null)
                 .commit();
         boolean expanded = isSearchExpanded();
+        String query = Logic.instance.userSelection.searchQuery;
         setSearchButtonVisible(false);
         updateSearchVisibility();
         setSearchExpanded(expanded);
+        Logic.instance.userSelection.searchQuery = query;
 
     }
 
@@ -282,6 +285,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextChange(String newText) {
+        Log.d("Search",""+newText);
         Logic.instance.userSelection.searchQuery = newText;
 
         Logic.instance.searchedItems = Logic.instance.searchManager.search(newText);
@@ -342,6 +346,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        Log.d("Main", "" + getSupportFragmentManager().getBackStackEntryCount());
+
 
         switch (getSupportFragmentManager().getBackStackEntryCount()) {
             case 0:
@@ -349,9 +355,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 break;
             case 1:
                 setSearchButtonVisible(true);
-                String query = Model.getInstance().getSearchManager().getCurrentSearch();
                 updateSearchVisibility();
-                searchView.setQuery(query, false);
+                searchView.setQuery(Logic.instance.userSelection.searchQuery, true);
+                Log.d("Main", Logic.instance.userSelection.searchQuery );
                 Logic.instance.model.cancelFetch();
                 break;
         }
@@ -411,9 +417,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         for (int n = 0; n < jsonItems.length(); n++) {
                             JSONObject item = jsonItems.getJSONObject(n);
 
-                            itemTitles.add(item.optString("itemheadline", "(ukendt)"));
-                            items.add(item);
-
                             ListItem listItem = new ListItem();
                             listItem.details = item.optString("detailsuri");
                             listItem.id = item.optInt("itemid");
@@ -425,11 +428,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         Logic.instance.items = listItems;
                         onQueryTextChange(Logic.instance.userSelection.searchQuery);
 
-
-                        Model.getInstance().setItemTitles(itemTitles);
-                        Model.getInstance().setItems(items);
-                //        if (SearchManager.getSearchList() != null)
-                //            Model.getInstance().getSearchManager().searchItemList(Model.getInstance().getSearchManager().getCurrentSearch());
                         Model.setListUpdated(true);
                     } catch (JSONException e) {
                         e.printStackTrace();

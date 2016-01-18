@@ -24,7 +24,7 @@ import app.ddf.danskdatahistoriskforening.domain.Logic;
 import app.ddf.danskdatahistoriskforening.domain.UserSelection;
 import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 
-public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener, SearchManager.OnSearchListener, UserSelection.SearchObservator {
+public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener, UserSelection.SearchObservator {
 
     ListView itemList;
     JSONArray items;
@@ -76,29 +76,6 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
         adapter.notifyDataSetChanged();
     }
 
-    private void updateItemList(List<String> titles){
-        ArrayAdapter adapter = (ArrayAdapter) itemList.getAdapter();
-        adapter.clear();
-        if (titles == null || titles.isEmpty())
-            emptyText.setVisibility(View.VISIBLE);
-        else {
-            emptyText.setVisibility(View.GONE);
-            adapter.addAll(titles);
-        }
-        adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        SearchManager.setOnSearchListener(null);
-    }
-
-    @Override
-    public void onSearch(List<String> result) {
-        updateItemList(result);
-    }
-
     @Override
     public void onItemClick(AdapterView<?> aV, View v, int position, long l){
         ListItem item = Logic.instance.searchedItems.get(position);
@@ -111,7 +88,5 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     public void onClick(View v) {
         ((MainActivity)getActivity()).startRegister();
     }
-
-
 
 }
