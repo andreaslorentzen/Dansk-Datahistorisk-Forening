@@ -19,30 +19,25 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
-import app.ddf.danskdatahistoriskforening.domain.ListItem;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
 import app.ddf.danskdatahistoriskforening.domain.UserSelection;
+import app.ddf.danskdatahistoriskforening.helper.DraftManager;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 import app.ddf.danskdatahistoriskforening.item.LoadDraftDialogFragment;
 
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener, LoadDraftDialogFragment.ConfirmDraftLoadListener {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener, LoadDraftDialogFragment.ConfirmDraftLoadListener, DraftManager.OnDraftLoaded {
 
+    private static final int REGISTER_REQUEST = 12;
     MenuItem searchButton;
     MenuItem editButton;
     SearchView searchView;
@@ -57,8 +52,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         public void onReceive(Context context, Intent intent) {
         //    intent.getAction()
             MainActivity.this.checkForErrors(intent.getIntExtra("status", 0));
-            Logic.instance.userSelection.setSelectedItem(null);
-            Logic.instance.model.fetchSelectedListItem();
+
+            Logic.instance.model.updateItemList();
+            // is an edit
+            if(Logic.instance.userSelection.selectedListItem != null){
+
+                Logic.instance.userSelection.setSelectedItem(null);
+                Logic.instance.model.fetchSelectedListItem();
+
+            }
         }
     };
 
@@ -120,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
 
         if (!Logic.isListUpdated() && App.isConnected()) {
-            updateItemList();
+            Logic.instance.model.updateItemList();
         }
         super.onResume();
     }
@@ -141,7 +143,19 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             startRegisterDraft(null);
         }
         else {
-            (new LoadDraftTask()).execute();
+            Logic.instance.draftManager.loadDraft(this);
+        }
+    }
+
+    @Override
+    public void onDraftLoaded(Item item) {
+        if (item != null && item.hasContent()) {
+            //load draft dialog
+            LoadDraftDialogFragment dialog = new LoadDraftDialogFragment();
+            dialog.setDraft(item);
+            dialog.show(getSupportFragmentManager(), "LoadDraftDialog");
+        } else {
+            startRegisterDraft(null);
         }
     }
 
@@ -155,70 +169,28 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             Logic.instance.editItem = new Item();
         }
         i.putExtra("isNewRegistration", true);
-        startActivity(i);
+        startActivityForResult(i, REGISTER_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REGISTER_REQUEST) {
+            if(resultCode == RESULT_OK && data.hasExtra("saved")){
+                Logic.instance.draftManager.deleteDraft();
+            }
+        }
     }
 
     @Override
     public void onDialogPositiveClick(Item draft) {
-        (new DeleteDraftTask()).execute();
+        Logic.instance.draftManager.deleteDraft();
         startRegisterDraft(draft);
     }
 
     @Override
     public void onDialogNegativeClick() {
-        (new DeleteDraftTask()).execute();
+        Logic.instance.draftManager.deleteDraft();
         startRegisterDraft(null);
-    }
-
-    private class DeleteDraftTask extends AsyncTask<Void, Void, Void>{
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            File file = new File(getFilesDir().getPath() + "/" + "draft");
-            file.delete();
-
-            return null;
-        }
-    }
-
-    private class LoadDraftTask extends AsyncTask<Void, Void, Item> {
-
-        @Override
-        protected Item doInBackground(Void... params) {
-            Item draft;
-
-            try {
-                FileInputStream fis = new FileInputStream(getFilesDir().getPath() + "/" + "draft");
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                draft = (Item) ois.readObject();
-                ois.close();
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                return null;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                return null;
-            }
-
-            return draft;
-        }
-
-        @Override
-        protected void onPostExecute(Item item) {
-            if(item != null && item.hasContent()){
-                //load draft dialog
-                LoadDraftDialogFragment dialog = new LoadDraftDialogFragment();
-                dialog.setDraft(item);
-                dialog.show(getSupportFragmentManager(), "LoadDraftDialog");
-            }
-            else {
-                startRegisterDraft(null);
-            }
-        }
     }
 
     public void setFragmentList() {
@@ -354,8 +326,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 setSearchButtonVisible(true);
                 updateSearchVisibility();
                 searchView.setQuery(Logic.instance.userSelection.searchQuery, true);
-                Log.d("Main", Logic.instance.userSelection.searchQuery );
                 Logic.instance.model.cancelFetch();
+                Logic.instance.userSelection.selectedListItem = null;
                 break;
         }
     }
@@ -382,56 +354,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             if (isConnected) {
                 iBar.setVisibility(View.GONE);
                 if (!Logic.isListUpdated()) {
-                    updateItemList();
+                    Logic.instance.model.updateItemList();
+                //    updateItemList();
                 }
             } else
                 iBar.setVisibility(View.VISIBLE);
         }
-    }
-
-    public void updateItemList() {
-        new AsyncTask<Void, Void, String>() {
-            @Override
-            protected String doInBackground(Void... params) {
-                return Logic.instance.model.dao.getOverviewFromBackend();
-            }
-
-            @Override
-            protected void onPostExecute(String data) {
-                if (data != null) {
-                    System.out.println("data = " + data);
-
-                    try {
-                        List<JSONObject> items;
-                        List<String> itemTitles;
-                        itemTitles = new ArrayList<>();
-                        items = new ArrayList<>();
-                        JSONArray jsonItems = new JSONArray(data);
-
-                        List<ListItem> listItems = new ArrayList<>();
-
-
-                        for (int n = 0; n < jsonItems.length(); n++) {
-                            JSONObject item = jsonItems.getJSONObject(n);
-
-                            ListItem listItem = new ListItem();
-                            listItem.details = item.optString("detailsuri");
-                            listItem.id = item.optInt("itemid");
-                            listItem.title = item.optString("itemheadline", "(ukendt)");
-                            listItem.image = item.getString("defaultimage");
-                            listItems.add(listItem);
-                        }
-
-                        Logic.instance.items = listItems;
-                        onQueryTextChange(Logic.instance.userSelection.searchQuery);
-
-                        Logic.setListUpdated(true);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.execute();
     }
 
     private void checkForErrors(int responseCode) {
@@ -460,4 +388,5 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
     }
+
 }

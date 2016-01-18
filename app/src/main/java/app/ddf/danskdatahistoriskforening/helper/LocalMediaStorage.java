@@ -20,6 +20,8 @@ public class LocalMediaStorage {
     public static final int MEDIA_TYPE_AUDIO_RECORD_MERGED = 5;
     private static Context context;
 
+
+
     /** Create a file Uri for saving an image or video */
     public static Uri getOutputMediaFileUri(String filename, int type){
         File file = getOutputMediaFile(filename, type);
@@ -64,7 +66,7 @@ public class LocalMediaStorage {
     private static File getOutputMediaFile(String filename, int type, File mediaStorageDir){
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE)
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator + filename);
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator + System.nanoTime()+".jpeg");
         else if(type == MEDIA_TYPE_AUDIO)
             mediaFile = new File(mediaStorageDir.getPath() + File.separator + filename);
         else if(type == MEDIA_TYPE_AUDIO_RECORD)
