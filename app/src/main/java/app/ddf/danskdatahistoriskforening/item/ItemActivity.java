@@ -66,6 +66,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
  //   }
 
     HashMap<Uri, ImageView> imageViews;
+    private boolean itemSaved;
 
     public ArrayList<Pair<ImageView, Uri>> getImageUris() {
         return imageUris;
@@ -254,6 +255,12 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             }
             Logic.setListUpdated(false);
             isNewRegistration = false; //do not save draft if item is being sent to API
+
+            Intent i = new Intent();
+            i.putExtra("saved", true);
+            setResult(Activity.RESULT_OK, i);
+            itemSaved = true;
+
             finish();
         } else{
             Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
@@ -316,6 +323,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void prompt() {
+        setResult(Activity.RESULT_CANCELED, new Intent());
         finish();
     }
 
@@ -545,7 +553,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         updateItem();
         Item item = Logic.instance.editItem;
 
-        if(item.hasContent() && Logic.instance.isNewRegistration()){
+        if(item.hasContent() && Logic.instance.isNewRegistration() && !itemSaved){
             //save draft
             Log.d("draft", "Saving Draft");
             (new SaveDraftTask()).execute();

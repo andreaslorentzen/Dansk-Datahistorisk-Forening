@@ -1,13 +1,16 @@
 package app.ddf.danskdatahistoriskforening.main;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.util.Pair;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -43,6 +46,7 @@ import app.ddf.danskdatahistoriskforening.item.LoadDraftDialogFragment;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener, LoadDraftDialogFragment.ConfirmDraftLoadListener {
 
+    private static final int REGISTER_REQUEST = 12;
     MenuItem searchButton;
     MenuItem editButton;
     SearchView searchView;
@@ -57,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         public void onReceive(Context context, Intent intent) {
         //    intent.getAction()
             MainActivity.this.checkForErrors(intent.getIntExtra("status", 0));
+
             Logic.instance.model.updateItemList();
             // is an edit
             if(Logic.instance.userSelection.selectedListItem != null){
@@ -161,7 +166,16 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             Logic.instance.editItem = new Item();
         }
         i.putExtra("isNewRegistration", true);
-        startActivity(i);
+        startActivityForResult(i, REGISTER_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REGISTER_REQUEST) {
+            if(resultCode == RESULT_OK && data.hasExtra("saved")){
+                (new DeleteDraftTask()).execute();
+            }
+        }
     }
 
     @Override
