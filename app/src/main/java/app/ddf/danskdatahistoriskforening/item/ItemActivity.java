@@ -47,28 +47,15 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
-    public static final int  AUDIORECORDING_REQUEST_CODE = 300;
+    public static final int AUDIORECORDING_REQUEST_CODE = 300;
 
- //   private Item item;
     ArrayList<Pair<ImageView, Uri>> imageViews;
 
- //   public Item getItem() {
- //       return item;
- //   }
-
     private boolean itemSaved;
-
-    /**
-     * http://developer.android.com/training/animation/screen-slide.html
-     */
-
-    private ViewPager viewPager;
 
     private WeakReference<ItemFragment> itemFragmentWeakReference;
     private WeakReference<ItemDetailsFragment> itemDetailsFragmentWeakReference;
     private WeakReference<ItemDescriptionFragment> itemDescriptionFragmentWeakReference;
-
-    private boolean isNewRegistration;
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -84,41 +71,26 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_register);
 
         Toolbar registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
-        registerToolbar.setTitle("Registrer genstand");
-        registerToolbar.setTitleTextColor(-1); // #FFF
         registerToolbar.setNavigationIcon(R.drawable.ic_close);
+
+        if(Logic.instance.isNewRegistration()){
+            registerToolbar.setTitle("Registrer genstand");
+        }
+        else{
+            registerToolbar.setTitle("Rediger genstand");
+        }
+
         setSupportActionBar(registerToolbar);
 
-        // Instantiate a ViewPager and a PagerAdapter.
-        viewPager = (ViewPager) findViewById(R.id.pager);
+        /*
+         * http://developer.android.com/training/animation/screen-slide.html
+         */
+
+        ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
         PagerAdapter mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(mPagerAdapter);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_strip);
         tabLayout.setupWithViewPager(viewPager);
-        
-        if(savedInstanceState == null) {
-
-        //    item = new Item();
-            Intent intent = getIntent();
-            if (intent.hasExtra("item")) {
-        //        item = intent.getParcelableExtra("item");
-            }
-
-            if(intent.hasExtra("isNewRegistration")){
-                isNewRegistration = intent.getBooleanExtra("isNewRegistration", false);
-            }
-            else{
-                isNewRegistration = false;
-            }
-
-        } else {
-        //    item = savedInstanceState.getParcelable("item");
-            isNewRegistration = savedInstanceState.getBoolean("isNewRegistration");
-        }
-
-
-        //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
-        //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
 
     }
 
@@ -146,8 +118,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         }
 
 
-   //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
-   //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
+        //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
+        //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
 
     }
 
@@ -172,7 +144,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
         //outState.putParcelable("item", item);
         //outState.putInt("index", viewPager.getCurrentItem());
-        outState.putBoolean("isNewRegistration", isNewRegistration);
     }
 
     @Override
@@ -210,7 +181,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty())
             Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
 
-        if(!App.isConnected())
+        if (!App.isConnected())
             Toast.makeText(this, "Kan ikke udføres uden internet", Toast.LENGTH_SHORT).show();
 
         //item.setItemHeadline(itemFragment.getItemTitle());
@@ -223,7 +194,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         /*item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
         item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
         item.setItemDescription(descriptionFragment.getItemDescription());*/
-        if(App.isConnected()) {
+        if (App.isConnected()) {
             if (item.getItemId() > 0) {
                 Intent backgroundService = new Intent(this, BackgroundService.class);
                 backgroundService.putExtra("event", "update");
@@ -236,15 +207,15 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                 startService(backgroundService);
             }
             Logic.setListUpdated(false);
-            isNewRegistration = false; //do not save draft if item is being sent to API
 
             Intent i = new Intent();
             i.putExtra("saved", true);
             setResult(Activity.RESULT_OK, i);
-            itemSaved = true;
+
+            itemSaved = true; // do not save draft if item is being sent to API
 
             finish();
-        } else{
+        } else {
             Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
         }
     }
@@ -270,7 +241,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void updateItem(){
+    private void updateItem() {
         //update item if fragment is instantiated
         //destroyed fragments will have updated the item during onPause() already
         ItemFragment itemFragment = null;
@@ -412,6 +383,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         System.out.println("AJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ " + requestCode + " " + resultCode);
         Item item = Logic.instance.editItem;
+        if (item == null)
+            return;
 
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             //itemFragment.onActivityResult(requestCode, resultCode, data);
@@ -430,44 +403,41 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
             Logic.instance.tempUri = null;
 
-        } else if(requestCode == ItemActivity.IMAGEVIEWER_REQUEST_CODE){
-            if(resultCode == AppCompatActivity.RESULT_OK){
+        } else if (requestCode == ItemActivity.IMAGEVIEWER_REQUEST_CODE) {
+            if (resultCode == AppCompatActivity.RESULT_OK) {
                 ArrayList<Uri> remainingURIs = data.getParcelableArrayListExtra("remainingURIs");
 
                 Log.d("updateImage", "remaining URIs: " + remainingURIs.size());
 
                 //no change
-                if(remainingURIs.size() == imageViews.size()){
+                if (remainingURIs.size() == imageViews.size()) {
                     return;
                 }
 
-                if(item != null){
-                    item.setPicturesChanged(true);
-                }
+                //    item.setPicturesChanged(true);
 
-                for(int i = 0; i< imageViews.size(); i++){
-                    Pair listItem = (Pair) imageViews.get(i);
+                for (int i = 0; i < imageViews.size(); i++) {
+                    Pair<ImageView, Uri> listItem = imageViews.get(i);
 
-                    if(!remainingURIs.contains(listItem.second)){
+                    if (!remainingURIs.contains(listItem.second)) {
                         //image has been removed
 
-                        if(item.getAddedPictures() !=  null){//image may have been added during this registration
-                            if(!item.getAddedPictures().contains(listItem.second)){
-                                item.addDeletedPicture((Uri) listItem.second);
-                            } else{
-                                item.removeFromAddedPicture((Uri) listItem.second);
+                        if (item.getAddedPictures() != null) {//image may have been added during this registration
+                            if (!item.getAddedPictures().contains(listItem.second)) {
+                                item.addDeletedPicture(listItem.second);
+                            } else {
+                                item.removeFromAddedPicture(listItem.second);
                             }
-                        }
-                        else{//image was taken during earlier registration
-                            item.addDeletedPicture((Uri) listItem.second);
+                        } else {//image was taken during earlier registration
+                            item.addDeletedPicture(listItem.second);
                         }
 
                         //remove picture from list of local images
-                        item.removeFromPictures((Uri) listItem.second);
+                        item.removeFromPictures(listItem.second);
                     }
                 }
             }
-        } else if(requestCode == ItemActivity.AUDIORECORDING_REQUEST_CODE){
+        } else if (requestCode == ItemActivity.AUDIORECORDING_REQUEST_CODE) {
             System.out.println(".");
             if (resultCode == Activity.RESULT_OK) {
                 System.out.println(". result ok");
@@ -476,6 +446,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
+
     public static final int RECORD_PERMISSION_REQUEST = 2;
 
     @Override
@@ -489,7 +460,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void startRecording() {
-        if (App.hasRecordAudioPermission(this)){
+        if (App.hasRecordAudioPermission(this)) {
 
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)) {
 
@@ -497,12 +468,10 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                         new String[]{Manifest.permission.RECORD_AUDIO},
                         ItemActivity.RECORD_PERMISSION_REQUEST);
 
-            }
-            else{
+            } else {
                 Toast.makeText(this, "Funktionen kræver adgang til mikrofonen. Gå til app indstillinger for at give adgang.", Toast.LENGTH_LONG).show();
             }
-        }
-        else{
+        } else {
             Intent i = new Intent(this, RecordingActivity.class);
             startActivityForResult(i, ItemActivity.AUDIORECORDING_REQUEST_CODE);
         }
@@ -526,7 +495,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         updateItem();
         Item item = Logic.instance.editItem;
 
-        if(item.hasContent() && Logic.instance.isNewRegistration() && !itemSaved){
+        if (item.hasContent() && Logic.instance.isNewRegistration() && !itemSaved) {
             //save draft
             Log.d("draft", "Saving Draft");
 
