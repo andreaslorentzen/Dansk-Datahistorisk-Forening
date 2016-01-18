@@ -28,10 +28,7 @@ public class Model {
             protected void onPostExecute(Item data) {
                 if (data != null) {
                 //    Model.getInstance().setCurrentItem(data);
-                    Logic.instance.userSelection.selectedItem = data;
-                    for (UserSelection.OnSelectItemListener listener : Logic.instance.userSelection.selectItemListeners) {
-                        listener.OnSelectItem();
-                    }
+                    Logic.instance.userSelection.setSelectedItem(data);
 
                 }
             }
@@ -41,4 +38,12 @@ public class Model {
 
     }
 
+    public void cancelFetch() {
+        if (currentFetchTask != null) {
+            currentFetchTask.cancel(true);
+            currentFetchTask = null;
+        }
+
+        dao.cancelDownload();
+    }
 }

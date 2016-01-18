@@ -26,7 +26,7 @@ import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.image.ImageviewerSimpleActivity;
 
 
-public class ItemShowFragment extends Fragment implements View.OnClickListener, Model.OnCurrentItemChangeListener, UserSelection.OnSelectItemListener {
+public class ItemShowFragment extends Fragment implements View.OnClickListener, UserSelection.OnSelectItemListener {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
 
     private TextView itemheadlineView;
@@ -80,7 +80,7 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
 
     @Override
     public void OnSelectItem() {
-        Item item = Logic.instance.userSelection.selectedItem;
+        Item item = Logic.instance.userSelection.getSelectedItem();
         if (item == null) {
             ((MainActivity) getActivity()).disableEdit();
             progressBar.setVisibility(View.VISIBLE);
@@ -127,73 +127,6 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
             }
         }
     }
-
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Model.getInstance().setOnCurrentItemChangeListener(this);
-        onCurrentItemChange(Model.getInstance().getCurrentItem());
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        Model.getInstance().setOnCurrentItemChangeListener(null);
-    }
-
-    @Override
-    public void onCurrentItemChange(Item currentItem) {
-        if (currentItem == null) {
-            ((MainActivity) getActivity()).disableEdit();
-            progressBar.setVisibility(View.VISIBLE);
-            contentWrapper.setVisibility(View.GONE);
-            return;
-        }
-
-        ((MainActivity) getActivity()).enableEdit();
-
-        // felterne udfyld felterne
-        itemheadlineView.setText(currentItem.getItemHeadline());
-        // TODO handle lyd
-        itemdescriptionView.setText(currentItem.getItemDescription());
-        receivedView.setText(((currentItem.getItemRecievedAsString() == null) ? null : currentItem.getItemRecievedAsString()));
-        datingFromView.setText(((currentItem.getItemDatingFromAsString() == null) ? null : currentItem.getItemDatingFromAsString()));
-        datingToView.setText(((currentItem.getItemDatingToAsString() == null) ? null : currentItem.getItemDatingToAsString()));
-
-        donatorView.setText(currentItem.getDonator());
-        producerView.setText(currentItem.getProducer());
-        postNummerView.setText(currentItem.getPostalCode());
-
-        progressBar.setVisibility(View.GONE);
-        contentWrapper.setVisibility(View.VISIBLE);
-
-        //create picture thumbnails
-        ArrayList<Uri> uris = currentItem.getPictures();
-
-        imageContainer.removeAllViews();
-        imageUris = new ArrayList<>();
-
-        if (uris != null) {//activity may have been destroyed while downloading
-
-            LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
-
-            for (int i = 0; i < uris.size(); i++) {
-                Pair<ImageView, Uri> uriImagePair = new Pair<>(new ImageView(getActivity()), uris.get(i));
-                uriImagePair.first.setLayoutParams(sizeParameters);
-
-                imageContainer.addView(uriImagePair.first);
-                imageUris.add(uriImagePair);
-
-                BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
-                uriImagePair.first.setOnClickListener(ItemShowFragment.this);
-            }
-        }
-
-
-    }
-
-
 
     @Override
     public void onClick(View v) {

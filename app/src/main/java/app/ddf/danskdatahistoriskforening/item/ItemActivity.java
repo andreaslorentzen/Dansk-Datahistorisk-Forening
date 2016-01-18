@@ -41,6 +41,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.Model;
@@ -65,6 +66,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
  //   public Item getItem() {
  //       return item;
  //   }
+
+    HashMap<Uri, ImageView> imageViews;
 
     public ArrayList<Pair<ImageView, Uri>> getImageUris() {
         return imageUris;
@@ -144,6 +147,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         Item item = Logic.instance.editItem;
 
         imageUris = new ArrayList<>();
+        imageViews = new HashMap<>();
         ArrayList<Uri> uris = item.getPictures();
         if (uris != null) {
             for (int i = 0; i < uris.size(); i++) {
@@ -165,15 +169,18 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void generateImagePair(Uri uri) {
-        Pair<ImageView, Uri> uriImagePair = new Pair<>(new ImageView(this), uri);
+
+        ImageView imageView = new ImageView(this);
+
         LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
-        uriImagePair.first.setLayoutParams(sizeParameters);
+        imageView.setLayoutParams(sizeParameters);
 
-        BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
+        BitmapEncoder.loadBitmapFromURI(imageView, uri, App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
 
-        uriImagePair.first.setOnClickListener(this);
+        imageView.setOnClickListener(this);
 
-        imageUris.add(uriImagePair);
+        imageUris.add(new Pair<ImageView, Uri>(imageView, uri));
+        imageViews.put(uri, imageView);
     }
 
     @Override

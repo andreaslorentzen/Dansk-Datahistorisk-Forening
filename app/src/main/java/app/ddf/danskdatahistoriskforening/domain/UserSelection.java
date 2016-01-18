@@ -11,6 +11,17 @@ public class UserSelection {
 
     public List<SearchObservator> searchObservators = new ArrayList<>();
 
+    public Item getSelectedItem() {
+        return selectedItem;
+    }
+
+    public void setSelectedItem(Item selectedItem) {
+        this.selectedItem = selectedItem;
+        for (UserSelection.OnSelectItemListener listener : Logic.instance.userSelection.selectItemListeners) {
+            listener.OnSelectItem();
+        }
+    }
+
     public interface SearchObservator {
         void onSearchChange();
     }
@@ -18,7 +29,7 @@ public class UserSelection {
     public ListItem selectedListItem;
 
 
-    public Item selectedItem;
+    private Item selectedItem;
 
     public List<OnSelectItemListener> selectItemListeners = new ArrayList<>();
 

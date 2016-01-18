@@ -57,9 +57,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         public void onReceive(Context context, Intent intent) {
         //    intent.getAction()
             MainActivity.this.checkForErrors(intent.getIntExtra("status", 0));
-            Model.getInstance().setCurrentItem(null);
-            Log.d("Current sat til null", "" + (Model.getInstance().getCurrentItem() == null));
-            Model.getInstance().fetchCurrentItem();
+            Logic.instance.userSelection.setSelectedItem(null);
+            Logic.instance.model.fetchSelectedListItem();
         }
     };
 
@@ -246,8 +245,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             // Maybe throw exception
             return;
         Model.getInstance().setCurrentDetailsURI(detailsURI);
-        Model.getInstance().setCurrentItem(null);
-        Logic.instance.userSelection.selectedItem = null;
+        Logic.instance.userSelection.setSelectedItem(null);
+
         Logic.instance.model.fetchSelectedListItem();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.frame, new ItemShowFragment())
@@ -316,10 +315,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if (item == editButton) {
             if(canEdit) {
 
-                Logic.instance.editItem = Logic.instance.userSelection.selectedItem.clone();
-                Intent i = new Intent(this, ItemActivity.class);
-                i.putExtra("item", (Parcelable) Model.getInstance().getCurrentItem());
-                startActivity(i);
+                Logic.instance.editItem = Logic.instance.userSelection.getSelectedItem().clone();
+                startActivity(new Intent(this, ItemActivity.class));
+
             }
             else{
                 Toast.makeText(this, "Vent mens genstandens oplysninger hentes", Toast.LENGTH_LONG).show();
@@ -354,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 String query = Model.getInstance().getSearchManager().getCurrentSearch();
                 updateSearchVisibility();
                 searchView.setQuery(query, false);
-                Model.getInstance().cancelFetch();
+                Logic.instance.model.cancelFetch();
                 break;
         }
     }

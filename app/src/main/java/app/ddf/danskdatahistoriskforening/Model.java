@@ -58,8 +58,6 @@ public class Model {
     private List<JSONObject> items;
     private List<String> itemTitles;
     private String currentDetailsURI;
-    private Item currentItem;
-
 
     public static boolean isConnected() {
         return isConnected;
@@ -101,17 +99,6 @@ public class Model {
         this.items = items;
     }
 
-    public Item getCurrentItem() {
-        return currentItem;
-    }
-
-    public void setCurrentItem(Item currentItem) {
-        this.currentItem = currentItem;
-        if (currentItemChangeListener != null) {
-            currentItemChangeListener.onCurrentItemChange(this.currentItem);
-        }
-    }
-
     public String getCurrentDetailsURI() {
         return currentDetailsURI;
     }
@@ -124,47 +111,5 @@ public class Model {
         return sm;
     }
 
-    private AsyncTask<String, Void, Item> currentFetchTask;
 
-    public void fetchCurrentItem() {
-        final String uri = Model.getInstance().getCurrentDetailsURI();
-        if (uri == null)
-            return;
-
-        currentFetchTask = new AsyncTask<String, Void, Item>() {
-            @Override
-            protected Item doInBackground(String... params) {
-                return Model.getDAO().getDetailsFromBackEnd(params[0]);
-            }
-
-            @Override
-            protected void onPostExecute(Item data) {
-                if (data != null) {
-                    Model.getInstance().setCurrentItem(data);
-                }
-            }
-
-        };
-        currentFetchTask.execute(uri);
-
-    }
-
-    private OnCurrentItemChangeListener currentItemChangeListener;
-
-    public void setOnCurrentItemChangeListener(OnCurrentItemChangeListener currentItemChangeListener) {
-        this.currentItemChangeListener = currentItemChangeListener;
-    }
-
-    public void cancelFetch() {
-        if (currentFetchTask != null) {
-            currentFetchTask.cancel(true);
-            currentFetchTask = null;
-        }
-
-        Model.getDAO().cancelDownload();
-    }
-
-    public interface OnCurrentItemChangeListener {
-        void onCurrentItemChange(Item currentItem);
-    }
 }
