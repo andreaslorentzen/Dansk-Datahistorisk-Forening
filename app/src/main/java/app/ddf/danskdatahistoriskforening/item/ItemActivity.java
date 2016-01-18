@@ -130,6 +130,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             isNewRegistration = savedInstanceState.getBoolean("isNewRegistration");
         }
 
+
         //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
         //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
 

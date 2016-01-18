@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,6 +60,7 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
     public void onPause() {
         super.onPause();
         updateItem(Logic.instance.editItem);
+
         //if fragment is destroyed imageViews need to be added to a new container
     }
 
@@ -80,12 +82,15 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
         ArrayList<Uri> uris = item.getPictures();
         if (uris != null)
             for (Uri uri : uris) {
+                Log.d("uri", uri.toString());
                 imageContainer.addView(imageViews.get(uri));
             }
 
         uris = item.getAddedPictures();
         if (uris != null)
             for (Uri uri : uris) {
+
+                Log.d("uri added", uri.toString());
                 imageContainer.addView(imageViews.get(uri));
             }
 

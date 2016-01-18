@@ -57,8 +57,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         public void onReceive(Context context, Intent intent) {
         //    intent.getAction()
             MainActivity.this.checkForErrors(intent.getIntExtra("status", 0));
-            Logic.instance.userSelection.setSelectedItem(null);
-            Logic.instance.model.fetchSelectedListItem();
+
+            // is an edit
+            if(Logic.instance.userSelection.getSelectedItem() != null){
+
+                Logic.instance.userSelection.setSelectedItem(null);
+                Logic.instance.model.fetchSelectedListItem();
+            }
         }
     };
 
@@ -354,8 +359,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 setSearchButtonVisible(true);
                 updateSearchVisibility();
                 searchView.setQuery(Logic.instance.userSelection.searchQuery, true);
-                Log.d("Main", Logic.instance.userSelection.searchQuery );
                 Logic.instance.model.cancelFetch();
+                Logic.instance.userSelection.selectedListItem = null;
                 break;
         }
     }
