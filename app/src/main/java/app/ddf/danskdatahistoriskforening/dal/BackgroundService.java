@@ -1,18 +1,13 @@
 package app.ddf.danskdatahistoriskforening.dal;
 
 import android.app.IntentService;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 
-import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.App;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
 
-/**
- * Created by mathias on 13/01/16.
- */
 public class BackgroundService extends IntentService {
 
     public BackgroundService() {
@@ -25,12 +20,12 @@ public class BackgroundService extends IntentService {
         Item item = intent.getParcelableExtra("item");
         int returnValue = -1;
         if(intent.getStringExtra("event").equals("create")){
-            returnValue = Model.getDAO().saveItemToDB(context, item);
+            returnValue = Logic.instance.model.dao.saveItemToDB(context, item);
         } else if(intent.getStringExtra("event").equals("update")){
-            returnValue = Model.getDAO().updateItem(context, item);
+            returnValue = Logic.instance.model.dao.updateItem(context, item);
         }
         Intent localIntent = new Intent();
-        localIntent.setAction(Model.BROADCAST_ACTION);
+        localIntent.setAction(App.BROADCAST_ACTION);
         localIntent.putExtra("status", returnValue);
         LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
     }

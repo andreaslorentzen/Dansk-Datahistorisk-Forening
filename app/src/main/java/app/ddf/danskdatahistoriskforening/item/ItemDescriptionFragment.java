@@ -20,6 +20,7 @@ import java.util.List;
 import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
 
 public class ItemDescriptionFragment extends Fragment implements ItemUpdater, View.OnClickListener, SeekBar.OnSeekBarChangeListener, View.OnFocusChangeListener {
     EditText itemDescription;
@@ -47,7 +48,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         itemDescription = (EditText) layout.findViewById(R.id.itemDescription);
         itemDescription.setOnFocusChangeListener(this);
 
-        Item item = ((ItemActivity) getActivity()).getItem();
+        Item item = Logic.instance.editItem;
         itemDescription.setText(item.getItemDescription());
 
         // AUDIO
@@ -78,7 +79,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
     public void onResume() {
         super.onResume();
         resetAudioPlayer();
-        updateItem(((ItemActivity) getActivity()).getItem());
+        updateItem(Logic.instance.editItem);
     }
 
     @Override
@@ -98,7 +99,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         super.onPause();
         forcestopAudioPlayer();
         destroyAudioPlayer();
-        updateItem(((ItemActivity) getActivity()).getItem());
+        updateItem(Logic.instance.editItem);
     }
 
     @Override
@@ -263,6 +264,8 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
     }
 
     private void resetAudioPlayer() {
+        Item item = Logic.instance.editItem;
+
         seekBar.setProgress(0);
         posText.setText("0:00.00");
         if (aps != null) {
@@ -273,8 +276,8 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
             aps.clear();
         }
         List<Uri> recordings = new ArrayList<Uri>();
-        List<Uri> recordingsBE = ((ItemActivity) getActivity()).getItem().getRecordings();
-        List<Uri> recordingsFE = ((ItemActivity) getActivity()).getItem().getAddedRecordings();
+        List<Uri> recordingsBE = item.getRecordings();
+        List<Uri> recordingsFE = item.getAddedRecordings();
         if (recordingsBE != null)
             recordings.addAll(recordingsBE);
         if (recordingsFE != null)

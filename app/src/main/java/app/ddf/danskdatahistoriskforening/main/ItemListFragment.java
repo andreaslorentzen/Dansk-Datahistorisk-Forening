@@ -17,13 +17,14 @@ import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
-import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.domain.ListItem;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
+import app.ddf.danskdatahistoriskforening.domain.UserSelection;
 import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 
-public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener, SearchManager.SearchListener {
+public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener, UserSelection.SearchObservator {
 
     ListView itemList;
     JSONArray items;
@@ -35,50 +36,47 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d("ItemListFragment", "created");
         View layout = inflater.inflate(R.layout.fragment_item_list, container, false);
+
         emptyText = (TextView) layout.findViewById(R.id.emptyText);
 
-        SearchManager.setSearchList(this);
         itemList = (ListView) layout.findViewById(R.id.itemList);
-        itemList.setOnItemClickListener(this);
-        ArrayAdapter adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1,  new ArrayList<String>());
+        ArrayAdapter adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_list_item_1, android.R.id.text1,  new ArrayList<ListItem>());
         itemList.setAdapter(adapter);
-        updateItemList(null);
+        itemList.setOnItemClickListener(this);
 
+        Logic.instance.userSelection.searchObservators.add(this);
+        onSearchChange();
 
         FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fab);
         fab.setOnClickListener(this);
         return layout;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Logic.instance.userSelection.searchObservators.remove(this);
+    }
 
-    private void updateItemList(List<String> titles){
+    @Override
+    public void onSearchChange() {
         ArrayAdapter adapter = (ArrayAdapter) itemList.getAdapter();
         adapter.clear();
-        List<String>  itemTitles = Model.getInstance().getItemTitles();
-        if (itemTitles != null && titles == null)
-            titles = itemTitles;
-        if (titles == null || titles.isEmpty())
+
+        List<ListItem> items =  Logic.instance.searchedItems;
+        if(items == null || items.isEmpty())
             emptyText.setVisibility(View.VISIBLE);
         else {
             emptyText.setVisibility(View.GONE);
-            adapter.addAll(titles);
+            adapter.addAll(items);
         }
         adapter.notifyDataSetChanged();
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        SearchManager.setSearchList(null);
-    }
-
-    @Override
-    public void onSearch(List<String> result) {
-        updateItemList(result);
-    }
-
-    @Override
     public void onItemClick(AdapterView<?> aV, View v, int position, long l){
+        ListItem item = Logic.instance.searchedItems.get(position);
+        Logic.instance.userSelection.selectedListItem = item;
         Log.d("ItemListFragment", "OnItemClick");
         ((MainActivity)getActivity()).setFragmentDetails(position);
     }
@@ -87,6 +85,5 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     public void onClick(View v) {
         ((MainActivity)getActivity()).startRegister();
     }
-
 
 }

@@ -12,15 +12,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
 public class ItemFragment extends Fragment implements View.OnClickListener, ItemUpdater, TextView.OnEditorActionListener {
@@ -28,7 +32,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
     ImageButton cameraButton;
     EditText itemTitle;
     LinearLayout imageContainer;
-    ImageButton audioButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -39,17 +42,23 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
         itemTitle.setOnEditorActionListener(this);
 
-        Item item = ((ItemActivity) getActivity()).getItem();
+        Item item = Logic.instance.editItem;
         itemTitle.setText(item.getItemHeadline());
         //((HorizontalScrollView) layout.findViewById(R.id.horizontalScrollView)).setFillViewport(true);
         imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
         return layout;
     }
-    
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        imageContainer.removeAllViews();
+    }
+
     @Override
     public void onPause() {
         super.onPause();
-        updateItem(((ItemActivity) getActivity()).getItem());
+        updateItem(Logic.instance.editItem);
         //if fragment is destroyed imageViews need to be added to a new container
     }
 
@@ -61,14 +70,32 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
     @Override
     public void onResume() {
         super.onResume();
-        ArrayList imageUris = ((ItemActivity)getActivity()).getImageUris();
+
+        HashMap<Uri, ImageView> imageViews = ((ItemActivity)getActivity()).imageViews;
+
         imageContainer.removeAllViews();
-        for(int i=0; i<imageUris.size(); i++){
-            Pair p = (Pair) imageUris.get(i);
-            imageContainer.addView((View) p.first);
+
+        Item item = Logic.instance.editItem;
+
+        ArrayList<Uri> uris = item.getPictures();
+        if (uris != null)
+            for (Uri uri : uris) {
+                imageContainer.addView(imageViews.get(uri));
+            }
+
+        uris = item.getAddedPictures();
+        if (uris != null)
+            for (Uri uri : uris) {
+                imageContainer.addView(imageViews.get(uri));
+            }
+
+
+/*
+        for(int i=0; i<imageViews.size(); i++){
             //    ((View) p.first).setOnClickListener((View.OnClickListener) getActivity());
             //    ((View) p.first).setOnClickListener(this);
         }
+*/
     }
 
     @Override

@@ -17,14 +17,15 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import app.ddf.danskdatahistoriskforening.App;
-import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
+import app.ddf.danskdatahistoriskforening.domain.UserSelection;
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.image.ImageviewerSimpleActivity;
 
 
-public class ItemShowFragment extends Fragment implements View.OnClickListener, Model.OnCurrentItemChangeListener {
+public class ItemShowFragment extends Fragment implements View.OnClickListener, UserSelection.OnSelectItemListener {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
 
     private TextView itemheadlineView;
@@ -64,25 +65,22 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
         progressBar = (ProgressBar) layout.findViewById(R.id.item_details_progressbar);
         //    ((MainActivity) getActivity()).updateSearchVisibility();
 
+        Logic.instance.userSelection.selectItemListeners.add(this);
+        OnSelectItem();
+
         return layout;
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        Model.getInstance().setOnCurrentItemChangeListener(this);
-        onCurrentItemChange(Model.getInstance().getCurrentItem());
+    public void onDestroyView() {
+        super.onDestroyView();
+        Logic.instance.userSelection.selectItemListeners.remove(this);
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        Model.getInstance().setOnCurrentItemChangeListener(null);
-    }
-
-    @Override
-    public void onCurrentItemChange(Item currentItem) {
-        if (currentItem == null) {
+    public void OnSelectItem() {
+        Item item = Logic.instance.userSelection.getSelectedItem();
+        if (item == null) {
             ((MainActivity) getActivity()).disableEdit();
             progressBar.setVisibility(View.VISIBLE);
             contentWrapper.setVisibility(View.GONE);
@@ -92,22 +90,22 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
         ((MainActivity) getActivity()).enableEdit();
 
         // felterne udfyld felterne
-        itemheadlineView.setText(currentItem.getItemHeadline());
+        itemheadlineView.setText(item.getItemHeadline());
         // TODO handle lyd
-        itemdescriptionView.setText(currentItem.getItemDescription());
-        receivedView.setText(((currentItem.getItemRecievedAsString() == null) ? null : currentItem.getItemRecievedAsString()));
-        datingFromView.setText(((currentItem.getItemDatingFromAsString() == null) ? null : currentItem.getItemDatingFromAsString()));
-        datingToView.setText(((currentItem.getItemDatingToAsString() == null) ? null : currentItem.getItemDatingToAsString()));
+        itemdescriptionView.setText(item.getItemDescription());
+        receivedView.setText(((item.getItemRecievedAsString() == null) ? null : item.getItemRecievedAsString()));
+        datingFromView.setText(((item.getItemDatingFromAsString() == null) ? null : item.getItemDatingFromAsString()));
+        datingToView.setText(((item.getItemDatingToAsString() == null) ? null : item.getItemDatingToAsString()));
 
-        donatorView.setText(currentItem.getDonator());
-        producerView.setText(currentItem.getProducer());
-        postNummerView.setText(currentItem.getPostalCode());
+        donatorView.setText(item.getDonator());
+        producerView.setText(item.getProducer());
+        postNummerView.setText(item.getPostalCode());
 
         progressBar.setVisibility(View.GONE);
         contentWrapper.setVisibility(View.VISIBLE);
 
         //create picture thumbnails
-        ArrayList<Uri> uris = currentItem.getPictures();
+        ArrayList<Uri> uris = item.getPictures();
 
         imageContainer.removeAllViews();
         imageUris = new ArrayList<>();
@@ -127,11 +125,7 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
                 uriImagePair.first.setOnClickListener(ItemShowFragment.this);
             }
         }
-
-
     }
-
-
 
     @Override
     public void onClick(View v) {

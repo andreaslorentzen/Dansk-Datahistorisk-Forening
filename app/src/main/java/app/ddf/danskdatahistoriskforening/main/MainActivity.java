@@ -31,18 +31,17 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
-import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
-import app.ddf.danskdatahistoriskforening.helper.SearchManager;
+import app.ddf.danskdatahistoriskforening.domain.ListItem;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
+import app.ddf.danskdatahistoriskforening.domain.UserSelection;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 import app.ddf.danskdatahistoriskforening.item.LoadDraftDialogFragment;
 
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener, LoadDraftDialogFragment.ConfirmDraftLoadListener {
-
-    Toolbar mainToolbar;
 
     MenuItem searchButton;
     MenuItem editButton;
@@ -58,29 +57,28 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         public void onReceive(Context context, Intent intent) {
         //    intent.getAction()
             MainActivity.this.checkForErrors(intent.getIntExtra("status", 0));
-            Model.getInstance().setCurrentItem(null);
-            Log.d("Current sat til null", "" + (Model.getInstance().getCurrentItem() == null));
-            Model.getInstance().fetchCurrentItem();
+            Logic.instance.userSelection.setSelectedItem(null);
+            Logic.instance.model.fetchSelectedListItem();
         }
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Model.setCurrentActivity(this);
+        App.setCurrentActivity(this);
         setContentView(R.layout.activity_main);
-        LocalMediaStorage.setContext(this);
         if (savedInstanceState == null) {
 
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.frame, new FrontFragment())
+                    .add(R.id.frame, new FrontFragment())
                     .commit();
+
         } else {
             setSearchExpanded(savedInstanceState.getBoolean("isSearchExpanded"));
             setSearchButtonVisible(savedInstanceState.getBoolean("isSearchButtonVisible", true));
 
         }
-        mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        Toolbar mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
         mainToolbar.setNavigationIcon(null);
         setSupportActionBar(mainToolbar);
     }
@@ -101,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         updateSearchVisibility();
 
-        searchView.setQuery(Model.getInstance().getSearchManager().getCurrentSearch(), false);
+        searchView.setQuery(Logic.instance.userSelection.searchQuery, false);
 
         searchView.setOnQueryTextListener(this);
 
@@ -110,18 +108,18 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     protected void onResume() {
-        System.out.println(Model.isConnected());
-        if (!Model.isConnected()) {
+        System.out.println(App.isConnected());
+        if (!App.isConnected()) {
             findViewById(R.id.internetConnBar).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.internetConnBar).setVisibility(View.GONE);
         }
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Model.BROADCAST_ACTION);
+        filter.addAction(App.BROADCAST_ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
 
-        if (!Model.isListUpdated() && Model.isConnected()) {
+        if (!Logic.isListUpdated() && App.isConnected()) {
             updateItemList();
         }
         super.onResume();
@@ -151,6 +149,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         Intent i = new Intent(this, ItemActivity.class);
         if(draft != null) {
             i.putExtra("item", (Parcelable) draft);
+            Logic.instance.editItem = draft;
+        }
+        else{
+            Logic.instance.editItem = new Item();
         }
         i.putExtra("isNewRegistration", true);
         startActivity(i);
@@ -220,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentList() {
-        if (!Model.isConnected() && Model.getInstance().getItemTitles() == null) {
+        if (!App.isConnected() && Logic.instance.items == null) {
             Toast.makeText(this, "Der kan ikke hentes nogen liste uden internet", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -234,31 +236,30 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentDetails(int position) {
-        if (!Model.isConnected()) {
+        if (!App.isConnected()) {
             Toast.makeText(this, "Detaljer kan ikke hentes, da der ikke er internet", Toast.LENGTH_LONG).show();
             return;
         }
-        try {
-            String detailsURI = Model.getCurrentJSONObjects().get(position).getString("detailsuri");
-            if (detailsURI == null)
-                // Maybe throw exception
-                return;
-            Model.getInstance().setCurrentDetailsURI(detailsURI);
-            Model.getInstance().setCurrentItem(null);
-            Model.getInstance().fetchCurrentItem();
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.frame, new ItemShowFragment())
-                    .addToBackStack(null)
-                    .commit();
-            boolean expanded = isSearchExpanded();
-            setSearchButtonVisible(false);
-            updateSearchVisibility();
-            setSearchExpanded(expanded);
-        } catch (JSONException e) {
-            e.printStackTrace();
+
+        if (Logic.instance.userSelection.selectedListItem.details == null) {
+            Toast.makeText(this, "Kan ikke hente detaljer: fejl i liste data", Toast.LENGTH_LONG).show();
             return;
-            //TODO DO SOMETHING USEFULL
         }
+
+        Logic.instance.userSelection.setSelectedItem(null);
+
+        Logic.instance.model.fetchSelectedListItem();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.frame, new ItemShowFragment())
+                .addToBackStack(null)
+                .commit();
+        boolean expanded = isSearchExpanded();
+        String query = Logic.instance.userSelection.searchQuery;
+        setSearchButtonVisible(false);
+        updateSearchVisibility();
+        setSearchExpanded(expanded);
+        Logic.instance.userSelection.searchQuery = query;
+
     }
 
     private void updateSearchVisibility() {
@@ -284,7 +285,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        Model.getInstance().getSearchManager().searchItemList(newText);
+        Log.d("Search",""+newText);
+        Logic.instance.userSelection.searchQuery = newText;
+
+        Logic.instance.searchedItems = Logic.instance.searchManager.search(newText);
+
+        for (UserSelection.SearchObservator observator : Logic.instance.userSelection.searchObservators) {
+            observator.onSearchChange();
+        }
+
         return true;
     }
 
@@ -306,9 +315,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public boolean onMenuItemClick(MenuItem item) {
         if (item == editButton) {
             if(canEdit) {
-                Intent i = new Intent(this, ItemActivity.class);
-                i.putExtra("item", (Parcelable) Model.getInstance().getCurrentItem());
-                startActivity(i);
+
+                Logic.instance.editItem = Logic.instance.userSelection.getSelectedItem().clone();
+                startActivity(new Intent(this, ItemActivity.class));
+
             }
             else{
                 Toast.makeText(this, "Vent mens genstandens oplysninger hentes", Toast.LENGTH_LONG).show();
@@ -333,6 +343,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        Log.d("Main", "" + getSupportFragmentManager().getBackStackEntryCount());
+
 
         switch (getSupportFragmentManager().getBackStackEntryCount()) {
             case 0:
@@ -340,10 +352,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 break;
             case 1:
                 setSearchButtonVisible(true);
-                String query = Model.getInstance().getSearchManager().getCurrentSearch();
                 updateSearchVisibility();
-                searchView.setQuery(query, false);
-                Model.getInstance().cancelFetch();
+                searchView.setQuery(Logic.instance.userSelection.searchQuery, true);
+                Log.d("Main", Logic.instance.userSelection.searchQuery );
+                Logic.instance.model.cancelFetch();
                 break;
         }
     }
@@ -369,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if (iBar != null) {
             if (isConnected) {
                 iBar.setVisibility(View.GONE);
-                if (!Model.isListUpdated()) {
+                if (!Logic.isListUpdated()) {
                     updateItemList();
                 }
             } else
@@ -381,7 +393,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... params) {
-                return Model.getDAO().getOverviewFromBackend();
+                return Logic.instance.model.dao.getOverviewFromBackend();
             }
 
             @Override
@@ -396,16 +408,24 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         items = new ArrayList<>();
                         JSONArray jsonItems = new JSONArray(data);
 
+                        List<ListItem> listItems = new ArrayList<>();
+
+
                         for (int n = 0; n < jsonItems.length(); n++) {
                             JSONObject item = jsonItems.getJSONObject(n);
-                            itemTitles.add(item.optString("itemheadline", "(ukendt)"));
-                            items.add(item);
+
+                            ListItem listItem = new ListItem();
+                            listItem.details = item.optString("detailsuri");
+                            listItem.id = item.optInt("itemid");
+                            listItem.title = item.optString("itemheadline", "(ukendt)");
+                            listItem.image = item.getString("defaultimage");
+                            listItems.add(listItem);
                         }
-                        Model.getInstance().setItemTitles(itemTitles);
-                        Model.getInstance().setItems(items);
-                        if (SearchManager.getSearchList() != null)
-                            Model.getInstance().getSearchManager().searchItemList(Model.getInstance().getSearchManager().getCurrentSearch());
-                        Model.setListUpdated(true);
+
+                        Logic.instance.items = listItems;
+                        onQueryTextChange(Logic.instance.userSelection.searchQuery);
+
+                        Logic.setListUpdated(true);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

@@ -1,7 +1,6 @@
 package app.ddf.danskdatahistoriskforening;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -15,6 +14,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
+import java.text.SimpleDateFormat;
+
+import app.ddf.danskdatahistoriskforening.domain.Logic;
+
 /**
  * Created by mathias on 12/01/16.
  */
@@ -22,6 +25,11 @@ public class App extends Application {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
     public static final int MAX_THUMBNAIL_WIDTH = 150;
     public static final int MAX_THUMBNAIL_HEIGHT = 250;
+    public static final String BROADCAST_ACTION = "com.datahistoriskforening.android.backgroundservice.BROADCAST";
+
+    private static boolean isConnected;
+    private static AppCompatActivity currentActivity;
+    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
     public static boolean hasRecordAudioPermission(AppCompatActivity activity) {
         return Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED;
@@ -39,12 +47,37 @@ public class App extends Application {
 
     @Override
     public void onCreate(){
+        Logic.instance = new Logic();
+
         System.out.println("Inside the APP");
         ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
 
-        Model.setIsConnected(activeNetwork != null && activeNetwork.isConnectedOrConnecting());
+        setIsConnected(activeNetwork != null && activeNetwork.isConnectedOrConnecting());
         super.onCreate();
     }
+
+
+
+    public static boolean isConnected() {
+        return isConnected;
+    }
+
+    public static void setIsConnected(boolean isConnected) {
+        App.isConnected = isConnected;
+    }
+
+    public static AppCompatActivity getCurrentActivity() {
+        return currentActivity;
+    }
+
+    public static void setCurrentActivity(AppCompatActivity currentActivity) {
+        App.currentActivity = currentActivity;
+    }
+
+    public static SimpleDateFormat getFormatter() {
+        return formatter;
+    }
+
 }

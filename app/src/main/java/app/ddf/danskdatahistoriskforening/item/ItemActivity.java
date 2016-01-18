@@ -38,15 +38,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import app.ddf.danskdatahistoriskforening.App;
-import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.BackgroundService;
 import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
 import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
 
@@ -56,14 +56,16 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
     public static final int  AUDIORECORDING_REQUEST_CODE = 300;
 
-    private Item item;
+ //   private Item item;
     private ArrayList<Pair<ImageView, Uri>> imageUris;
     ArrayList<Uri> audioUris;
     private Uri tempUri;
 
-    public Item getItem() {
-        return item;
-    }
+ //   public Item getItem() {
+ //       return item;
+ //   }
+
+    HashMap<Uri, ImageView> imageViews;
 
     public ArrayList<Pair<ImageView, Uri>> getImageUris() {
         return imageUris;
@@ -91,7 +93,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Model.setCurrentActivity(this);
+        App.setCurrentActivity(this);
         setContentView(R.layout.activity_register);
 
         Toolbar registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
@@ -109,10 +111,10 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         
         if(savedInstanceState == null) {
 
-            item = new Item();
+        //    item = new Item();
             Intent intent = getIntent();
             if (intent.hasExtra("item")) {
-                item = intent.getParcelableExtra("item");
+        //        item = intent.getParcelableExtra("item");
             }
 
             if(intent.hasExtra("isNewRegistration")){
@@ -123,7 +125,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             }
 
         } else {
-            item = savedInstanceState.getParcelable("item");
+        //    item = savedInstanceState.getParcelable("item");
             tempUri = savedInstanceState.getParcelable("tempUri");
             isNewRegistration = savedInstanceState.getBoolean("isNewRegistration");
         }
@@ -136,11 +138,14 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Model.BROADCAST_ACTION);
+        filter.addAction(App.BROADCAST_ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
-
         super.onResume();
+
+        Item item = Logic.instance.editItem;
+
         imageUris = new ArrayList<>();
+        imageViews = new HashMap<>();
         ArrayList<Uri> uris = item.getPictures();
         if (uris != null) {
             for (int i = 0; i < uris.size(); i++) {
@@ -162,22 +167,25 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void generateImagePair(Uri uri) {
-        Pair<ImageView, Uri> uriImagePair = new Pair<>(new ImageView(this), uri);
+
+        ImageView imageView = new ImageView(this);
+
         LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
-        uriImagePair.first.setLayoutParams(sizeParameters);
+        imageView.setLayoutParams(sizeParameters);
 
-        BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
+        BitmapEncoder.loadBitmapFromURI(imageView, uri, App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
 
-        uriImagePair.first.setOnClickListener(this);
+        imageView.setOnClickListener(this);
 
-        imageUris.add(uriImagePair);
+        imageUris.add(new Pair<ImageView, Uri>(imageView, uri));
+        imageViews.put(uri, imageView);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putParcelable("item", item);
+        //outState.putParcelable("item", item);
         //outState.putInt("index", viewPager.getCurrentItem());
         outState.putParcelable("tempUri", tempUri);
         outState.putBoolean("isNewRegistration", isNewRegistration);
@@ -214,11 +222,11 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
     private void save() {
         updateItem();
-
+        Item item = Logic.instance.editItem;
         if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty())
             Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
 
-        if(!Model.isConnected())
+        if(!App.isConnected())
             Toast.makeText(this, "Kan ikke udføres uden internet", Toast.LENGTH_SHORT).show();
 
         //item.setItemHeadline(itemFragment.getItemTitle());
@@ -231,7 +239,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         /*item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
         item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
         item.setItemDescription(descriptionFragment.getItemDescription());*/
-        if(Model.isConnected()) {
+        if(App.isConnected()) {
             if (item.getItemId() > 0) {
                 Intent backgroundService = new Intent(this, BackgroundService.class);
                 backgroundService.putExtra("event", "update");
@@ -243,7 +251,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                 backgroundService.putExtra("item", (Parcelable) item);
                 startService(backgroundService);
             }
-            Model.setListUpdated(false);
+            Logic.setListUpdated(false);
             isNewRegistration = false; //do not save draft if item is being sent to API
             finish();
         } else{
@@ -290,6 +298,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         if (itemDescriptionFragmentWeakReference != null) {
             itemDescriptionFragment = itemDescriptionFragmentWeakReference.get();
         }
+
+        Item item = Logic.instance.editItem;
 
         if (itemFragment != null) {
             itemFragment.updateItem(item);
@@ -419,6 +429,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         System.out.println("AJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ " + requestCode + " " + resultCode);
+        Item item = Logic.instance.editItem;
+
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             //itemFragment.onActivityResult(requestCode, resultCode, data);
             Log.d("updateImage", "Result");
@@ -530,8 +542,9 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
 
         updateItem();
+        Item item = Logic.instance.editItem;
 
-        if(item.hasContent() && isNewRegistration){
+        if(item.hasContent() && Logic.instance.isNewRegistration()){
             //save draft
             Log.d("draft", "Saving Draft");
             (new SaveDraftTask()).execute();
@@ -546,7 +559,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                 FileOutputStream fos = openFileOutput("draft", Context.MODE_PRIVATE);
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
 
-                oos.writeObject(item);
+                oos.writeObject(Logic.instance.editItem);
                 oos.flush();
                 oos.close();
             } catch (FileNotFoundException e) {

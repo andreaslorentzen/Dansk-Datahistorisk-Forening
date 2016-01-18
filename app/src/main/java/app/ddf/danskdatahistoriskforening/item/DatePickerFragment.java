@@ -10,8 +10,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
-import app.ddf.danskdatahistoriskforening.Model;
-import app.ddf.danskdatahistoriskforening.item.ItemDetailsFragment;
+import app.ddf.danskdatahistoriskforening.App;
 
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
@@ -28,7 +27,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
             chosenDate = new Date();
         } else {
             try {
-                chosenDate = Model.getFormatter().parse(ItemDetailsFragment.currentDateField.getText().toString());
+                chosenDate = App.getFormatter().parse(ItemDetailsFragment.currentDateField.getText().toString());
             } catch (ParseException e) {
                 e.printStackTrace();
                 return null;

@@ -12,12 +12,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.net.URI;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.App;
 
 public class Item implements Parcelable, Serializable{
 
@@ -154,9 +153,9 @@ public class Item implements Parcelable, Serializable{
         String itemDatingToString = in.readString();
 
         try {
-            this.itemRecieved = ((itemRecievedString == null) ? null : Model.getFormatter().parse(itemRecievedString));
-            this.itemDatingFrom = ((itemDatingFromString == null) ? null : Model.getFormatter().parse(itemDatingFromString));
-            this.itemDatingTo = ((itemDatingToString == null) ? null : Model.getFormatter().parse(itemDatingToString));
+            this.itemRecieved = ((itemRecievedString == null) ? null : App.getFormatter().parse(itemRecievedString));
+            this.itemDatingFrom = ((itemDatingFromString == null) ? null : App.getFormatter().parse(itemDatingFromString));
+            this.itemDatingTo = ((itemDatingToString == null) ? null : App.getFormatter().parse(itemDatingToString));
         } catch (ParseException e) {
             e.printStackTrace();
             return;
@@ -238,7 +237,7 @@ public class Item implements Parcelable, Serializable{
     }
 
     public String getItemRecievedAsString() {
-        return ((this.itemRecieved == null) ? null : Model.getFormatter().format(this.itemRecieved));
+        return ((this.itemRecieved == null) ? null : App.getFormatter().format(this.itemRecieved));
     }
 
     public void setItemRecieved(Date itemRecieved) {
@@ -250,7 +249,7 @@ public class Item implements Parcelable, Serializable{
     }
 
     public String getItemDatingFromAsString() {
-        return ((this.itemDatingFrom == null) ? null : Model.getFormatter().format(this.itemDatingFrom));
+        return ((this.itemDatingFrom == null) ? null : App.getFormatter().format(this.itemDatingFrom));
     }
 
     public void setItemDatingFrom(Date itemDatingFrom) {
@@ -262,7 +261,7 @@ public class Item implements Parcelable, Serializable{
     }
 
     public String getItemDatingToAsString() {
-        return ((this.itemDatingTo == null) ? null : Model.getFormatter().format(this.itemDatingTo));
+        return ((this.itemDatingTo == null) ? null : App.getFormatter().format(this.itemDatingTo));
     }
 
     public void setItemDatingTo(Date itemDatingTo) {
@@ -440,5 +439,27 @@ public class Item implements Parcelable, Serializable{
         }
 
         return false;
+    }
+
+    public Item clone() {
+        Item item = new Item();
+        item.itemId = itemId;
+        item.itemHeadline = itemHeadline;
+        item.itemDescription = itemDescription;
+        item.itemRecieved = itemRecieved;
+        item.itemDatingFrom = itemDatingFrom;
+        item.itemDatingTo = itemDatingTo;
+
+        item.donator = donator;
+        item.producer = producer;
+        item.postalCode = postalCode;
+        item.pictures = pictures;
+        item.recordings = recordings;
+        item.addedRecordings = addedRecordings;
+        item.picturesChanged = picturesChanged;
+        item.recordingsChanged = recordingsChanged;
+        item.deletedPictures = deletedPictures;
+        item.addedPictures = addedPictures;
+        return item;
     }
 }

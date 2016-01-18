@@ -15,9 +15,9 @@ import android.widget.TextView;
 import java.text.ParseException;
 
 import app.ddf.danskdatahistoriskforening.App;
-import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
 
 
 public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener, ItemUpdater, TextView.OnEditorActionListener, View.OnFocusChangeListener {
@@ -58,7 +58,7 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
         dateToWrapper.setOnClickListener(this);
         dateReceiveWrapper.setOnClickListener(this);
 
-        Item item = ((ItemActivity) getActivity()).getItem();
+        Item item = Logic.instance.editItem;
         dateReceive.setText(item.getItemRecievedAsString() == null ? "Ikke sat" : item.getItemRecievedAsString());
         donator.setText(item.getDonator());
         producer.setText(item.getProducer());
@@ -71,7 +71,7 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
     @Override
     public void onPause() {
         super.onPause();
-        updateItem(((ItemActivity) getActivity()).getItem());
+        updateItem(Logic.instance.editItem);
     }
 
     @Override
@@ -79,9 +79,9 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
         item.setDonator(donator.getText().toString());
         item.setProducer(producer.getText().toString());
         try {
-            item.setItemRecieved(dateReceive.getText().toString().equals("") || dateReceive.getText().toString().equals("Ikke sat") ? null : Model.getFormatter().parse(dateReceive.getText().toString()));
-            item.setItemDatingFrom(dateFrom.getText().toString().equals("") || dateFrom.getText().toString().equals("Ikke sat") ? null : Model.getFormatter().parse(dateFrom.getText().toString()));
-            item.setItemDatingTo(dateTo.getText().toString().equals("") || dateTo.getText().toString().equals("Ikke sat") ? null : Model.getFormatter().parse(dateTo.getText().toString()));
+            item.setItemRecieved(dateReceive.getText().toString().equals("") || dateReceive.getText().toString().equals("Ikke sat") ? null : App.getFormatter().parse(dateReceive.getText().toString()));
+            item.setItemDatingFrom(dateFrom.getText().toString().equals("") || dateFrom.getText().toString().equals("Ikke sat") ? null : App.getFormatter().parse(dateFrom.getText().toString()));
+            item.setItemDatingTo(dateTo.getText().toString().equals("") || dateTo.getText().toString().equals("Ikke sat") ? null : App.getFormatter().parse(dateTo.getText().toString()));
         } catch (ParseException e) {
             e.printStackTrace();
         }
