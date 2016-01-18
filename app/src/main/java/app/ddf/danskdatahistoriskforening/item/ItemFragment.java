@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,8 +17,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import app.ddf.danskdatahistoriskforening.App;
@@ -73,27 +70,16 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
     public void onResume() {
         super.onResume();
 
-        HashMap<Uri, ImageView> imageViews = ((ItemActivity)getActivity()).imageViews;
+        List<Pair<ImageView, Uri>> imageViews = ((ItemActivity)getActivity()).imageViews;
 
         imageContainer.removeAllViews();
 
         Item item = Logic.instance.editItem;
 
-        ArrayList<Uri> uris = item.getPictures();
-        if (uris != null)
-            for (Uri uri : uris) {
-                Log.d("uri", uri.toString());
-                imageContainer.addView(imageViews.get(uri));
-            }
+        for (Pair<ImageView, Uri> pair : imageViews) {
+            imageContainer.addView(pair.first);
 
-        uris = item.getAddedPictures();
-        if (uris != null)
-            for (Uri uri : uris) {
-
-                Log.d("uri added", uri.toString());
-                imageContainer.addView(imageViews.get(uri));
-            }
-
+        }
 
 /*
         for(int i=0; i<imageViews.size(); i++){

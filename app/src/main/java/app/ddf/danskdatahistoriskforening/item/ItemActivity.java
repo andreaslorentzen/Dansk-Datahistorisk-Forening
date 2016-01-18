@@ -34,7 +34,6 @@ import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
@@ -51,20 +50,15 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     public static final int  AUDIORECORDING_REQUEST_CODE = 300;
 
  //   private Item item;
-    private ArrayList<Pair<ImageView, Uri>> imageUris;
-    ArrayList<Uri> audioUris;
+    ArrayList<Pair<ImageView, Uri>> imageViews;
+
     private Uri tempUri;
 
  //   public Item getItem() {
  //       return item;
  //   }
 
-    HashMap<Uri, ImageView> imageViews;
     private boolean itemSaved;
-
-    public ArrayList<Pair<ImageView, Uri>> getImageUris() {
-        return imageUris;
-    }
 
     /**
      * http://developer.android.com/training/animation/screen-slide.html
@@ -140,8 +134,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
         Item item = Logic.instance.editItem;
 
-        imageUris = new ArrayList<>();
-        imageViews = new HashMap<>();
+        imageViews = new ArrayList<>();
         ArrayList<Uri> uris = item.getPictures();
         if (uris != null) {
             for (int i = 0; i < uris.size(); i++) {
@@ -173,8 +166,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
         imageView.setOnClickListener(this);
 
-        imageUris.add(new Pair<ImageView, Uri>(imageView, uri));
-        imageViews.put(uri, imageView);
+        imageViews.add(new Pair<>(imageView, uri));
     }
 
     @Override
@@ -227,7 +219,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
         //item.setItemHeadline(itemFragment.getItemTitle());
 /*
-        for (Pair<ImageView, Uri> pair : imageUris) {
+        for (Pair<ImageView, Uri> pair : imageViews) {
             item.addToPictures(pair.second);
         }
 */
@@ -328,21 +320,16 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         Log.d("DDF", "imageClick");
-        int index = -1;
+
+        int index = 0;
         ArrayList<Uri> uris = new ArrayList<>();
-        for (int i = 0; i < imageUris.size(); i++) {
-            Pair p = (Pair) imageUris.get(i);
-            if (p.first == v) {
-                //the correct imageView was found
+        for (int i = 0; i < imageViews.size(); i++) {
+            Pair<ImageView, Uri> p = imageViews.get(i);
+            uris.add(p.second);
+
+            if (p.first == v)
                 index = i;
-            }
 
-            uris.add((Uri) p.second);
-        }
-
-        if (index < 0) {
-            //none of the imageViews matched
-            return;
         }
 
         Intent intent = new Intent(this, ImageviewerDeleteActivity.class);
@@ -458,7 +445,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d("updateImage", "remaining URIs: " + remainingURIs.size());
 
                 //no change
-                if(remainingURIs.size() == imageUris.size()){
+                if(remainingURIs.size() == imageViews.size()){
                     return;
                 }
 
@@ -466,8 +453,8 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                     item.setPicturesChanged(true);
                 }
 
-                for(int i = 0; i<imageUris.size(); i++){
-                    Pair listItem = (Pair) imageUris.get(i);
+                for(int i = 0; i< imageViews.size(); i++){
+                    Pair listItem = (Pair) imageViews.get(i);
 
                     if(!remainingURIs.contains(listItem.second)){
                         //image has been removed
