@@ -5,12 +5,15 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import app.ddf.danskdatahistoriskforening.App;
+import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
 
 public class DraftManager {
@@ -51,5 +54,42 @@ public class DraftManager {
                 return null;
             }
         }.execute();
+    }
+
+    public void loadDraft(final OnDraftLoaded listener) {
+        new AsyncTask<Void, Void, Item>() {
+
+            @Override
+            protected Item doInBackground(Void... params) {
+                Item draft;
+
+                try {
+                    FileInputStream fis = new FileInputStream(App.getCurrentActivity().getFilesDir().getPath() + "/" + "draft");
+                    ObjectInputStream ois = new ObjectInputStream(fis);
+                    draft = (Item) ois.readObject();
+                    ois.close();
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    return null;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+
+                return draft;
+            }
+
+            @Override
+            protected void onPostExecute(Item item) {
+                listener.onDraftLoaded(item);
+            }
+        }.execute();
+    }
+    public interface OnDraftLoaded{
+        void onDraftLoaded(Item item);
     }
 }

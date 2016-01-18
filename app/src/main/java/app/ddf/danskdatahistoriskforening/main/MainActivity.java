@@ -1,16 +1,13 @@
 package app.ddf.danskdatahistoriskforening.main;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.util.Pair;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -22,29 +19,23 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
-import app.ddf.danskdatahistoriskforening.domain.ListItem;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
 import app.ddf.danskdatahistoriskforening.domain.UserSelection;
+import app.ddf.danskdatahistoriskforening.helper.DraftManager;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 import app.ddf.danskdatahistoriskforening.item.LoadDraftDialogFragment;
 
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener, LoadDraftDialogFragment.ConfirmDraftLoadListener {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnMenuItemClickListener, MenuItemCompat.OnActionExpandListener, LoadDraftDialogFragment.ConfirmDraftLoadListener, DraftManager.OnDraftLoaded {
 
     private static final int REGISTER_REQUEST = 12;
     MenuItem searchButton;
@@ -152,7 +143,19 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             startRegisterDraft(null);
         }
         else {
-            (new LoadDraftTask()).execute();
+            Logic.instance.draftManager.loadDraft(this);
+        }
+    }
+
+    @Override
+    public void onDraftLoaded(Item item) {
+        if (item != null && item.hasContent()) {
+            //load draft dialog
+            LoadDraftDialogFragment dialog = new LoadDraftDialogFragment();
+            dialog.setDraft(item);
+            dialog.show(getSupportFragmentManager(), "LoadDraftDialog");
+        } else {
+            startRegisterDraft(null);
         }
     }
 
@@ -188,46 +191,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public void onDialogNegativeClick() {
         Logic.instance.draftManager.deleteDraft();
         startRegisterDraft(null);
-    }
-
-    private class LoadDraftTask extends AsyncTask<Void, Void, Item> {
-
-        @Override
-        protected Item doInBackground(Void... params) {
-            Item draft;
-
-            try {
-                FileInputStream fis = new FileInputStream(getFilesDir().getPath() + "/" + "draft");
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                draft = (Item) ois.readObject();
-                ois.close();
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                return null;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                return null;
-            }
-
-            return draft;
-        }
-
-        @Override
-        protected void onPostExecute(Item item) {
-            if(item != null && item.hasContent()){
-                //load draft dialog
-                LoadDraftDialogFragment dialog = new LoadDraftDialogFragment();
-                dialog.setDraft(item);
-                dialog.show(getSupportFragmentManager(), "LoadDraftDialog");
-            }
-            else {
-                startRegisterDraft(null);
-            }
-        }
     }
 
     public void setFragmentList() {
@@ -425,4 +388,5 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
     }
+
 }
