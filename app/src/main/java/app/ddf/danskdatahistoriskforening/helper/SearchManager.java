@@ -49,8 +49,6 @@ public class SearchManager {
             searchedListItems = stackListItems.peek();
         }
         lastSearch = searchQuery == null ? "" : searchQuery;
-//        Model.setCurrentJSONObjects(stackTitleAndObjects.peek().second);
-        //    usedOnSearchListener.onSearch(searchedListItems);
         return searchedListItems;
     }
 

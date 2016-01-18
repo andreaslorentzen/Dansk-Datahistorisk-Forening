@@ -9,6 +9,7 @@ import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 public class Logic {
 
     public static Logic instance;
+    private static boolean itemListUpdated = false;
     public UserSelection userSelection;
 
     public List<ListItem> items;
@@ -21,6 +22,14 @@ public class Logic {
         this.userSelection = new UserSelection();
         this.searchManager = new SearchManager();
         this.model = new Model();
+    }
+
+    public static boolean isListUpdated() {
+        return itemListUpdated;
+    }
+
+    public static void setListUpdated(boolean listUpdated) {
+        itemListUpdated = listUpdated;
     }
 
     public boolean isNewRegistration() {

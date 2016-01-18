@@ -1,9 +1,6 @@
 package app.ddf.danskdatahistoriskforening.dal;
 
 import android.content.Context;
-import android.media.Image;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,7 +22,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
 
-import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
 /**
@@ -162,9 +159,9 @@ public class TempDAO implements IDAO {
                     Integer.parseInt(item.getString("itemid")),
                     item.getString("itemheadline"),
                     item.getString("itemdescription"),
-                    (isJsonNull(itemreceived) || itemreceived.equals("0000-00-00")) ? null : Model.getFormatter().parse(itemreceived),
-                    (isJsonNull(itemdatingfrom) || itemdatingfrom.equals("0000-00-00")) ? null : Model.getFormatter().parse(itemdatingfrom),
-                    (isJsonNull(itemdatingto) || itemdatingto.equals("0000-00-00")) ? null : Model.getFormatter().parse(itemdatingto),
+                    (isJsonNull(itemreceived) || itemreceived.equals("0000-00-00")) ? null : App.getFormatter().parse(itemreceived),
+                    (isJsonNull(itemdatingfrom) || itemdatingfrom.equals("0000-00-00")) ? null : App.getFormatter().parse(itemdatingfrom),
+                    (isJsonNull(itemdatingto) || itemdatingto.equals("0000-00-00")) ? null : App.getFormatter().parse(itemdatingto),
                     isJsonNull(donator) ? null : donator,
                     isJsonNull(producer) ? null : producer,
                     isJsonNull(postnummer) ? null : postnummer

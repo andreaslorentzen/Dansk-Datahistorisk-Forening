@@ -47,9 +47,6 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
         Logic.instance.userSelection.searchObservators.add(this);
         onSearchChange();
 
-    //    SearchManager.setOnSearchListener(this);
-    //    updateItemList(Model.getInstance().getItemTitles());
-
         FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fab);
         fab.setOnClickListener(this);
         return layout;

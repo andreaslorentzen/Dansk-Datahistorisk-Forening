@@ -15,7 +15,6 @@ import android.widget.TextView;
 import java.text.ParseException;
 
 import app.ddf.danskdatahistoriskforening.App;
-import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
@@ -80,9 +79,9 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
         item.setDonator(donator.getText().toString());
         item.setProducer(producer.getText().toString());
         try {
-            item.setItemRecieved(dateReceive.getText().toString().equals("") || dateReceive.getText().toString().equals("Ikke sat") ? null : Model.getFormatter().parse(dateReceive.getText().toString()));
-            item.setItemDatingFrom(dateFrom.getText().toString().equals("") || dateFrom.getText().toString().equals("Ikke sat") ? null : Model.getFormatter().parse(dateFrom.getText().toString()));
-            item.setItemDatingTo(dateTo.getText().toString().equals("") || dateTo.getText().toString().equals("Ikke sat") ? null : Model.getFormatter().parse(dateTo.getText().toString()));
+            item.setItemRecieved(dateReceive.getText().toString().equals("") || dateReceive.getText().toString().equals("Ikke sat") ? null : App.getFormatter().parse(dateReceive.getText().toString()));
+            item.setItemDatingFrom(dateFrom.getText().toString().equals("") || dateFrom.getText().toString().equals("Ikke sat") ? null : App.getFormatter().parse(dateFrom.getText().toString()));
+            item.setItemDatingTo(dateTo.getText().toString().equals("") || dateTo.getText().toString().equals("Ikke sat") ? null : App.getFormatter().parse(dateTo.getText().toString()));
         } catch (ParseException e) {
             e.printStackTrace();
         }

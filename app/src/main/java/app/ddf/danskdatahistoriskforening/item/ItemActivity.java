@@ -38,13 +38,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import app.ddf.danskdatahistoriskforening.App;
-import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.BackgroundService;
 import app.ddf.danskdatahistoriskforening.dal.Item;
@@ -95,7 +93,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Model.setCurrentActivity(this);
+        App.setCurrentActivity(this);
         setContentView(R.layout.activity_register);
 
         Toolbar registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
@@ -140,7 +138,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Model.BROADCAST_ACTION);
+        filter.addAction(App.BROADCAST_ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
         super.onResume();
 
@@ -228,7 +226,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty())
             Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
 
-        if(!Model.isConnected())
+        if(!App.isConnected())
             Toast.makeText(this, "Kan ikke udføres uden internet", Toast.LENGTH_SHORT).show();
 
         //item.setItemHeadline(itemFragment.getItemTitle());
@@ -241,7 +239,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         /*item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
         item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
         item.setItemDescription(descriptionFragment.getItemDescription());*/
-        if(Model.isConnected()) {
+        if(App.isConnected()) {
             if (item.getItemId() > 0) {
                 Intent backgroundService = new Intent(this, BackgroundService.class);
                 backgroundService.putExtra("event", "update");
@@ -253,7 +251,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                 backgroundService.putExtra("item", (Parcelable) item);
                 startService(backgroundService);
             }
-            Model.setListUpdated(false);
+            Logic.setListUpdated(false);
             isNewRegistration = false; //do not save draft if item is being sent to API
             finish();
         } else{

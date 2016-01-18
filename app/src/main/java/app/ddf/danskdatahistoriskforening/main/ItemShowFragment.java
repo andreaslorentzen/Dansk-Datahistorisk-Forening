@@ -17,7 +17,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import app.ddf.danskdatahistoriskforening.App;
-import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.domain.Logic;

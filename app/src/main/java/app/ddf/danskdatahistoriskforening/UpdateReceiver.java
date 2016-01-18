@@ -21,11 +21,11 @@ public class UpdateReceiver extends BroadcastReceiver {
 
         boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
-        Model.setIsConnected(isConnected);
+        App.setIsConnected(isConnected);
 
-        if(Model.getCurrentActivity() instanceof MainActivity)
-            ((MainActivity)Model.getCurrentActivity()).updateInternet(isConnected);
-        else if(Model.getCurrentActivity() instanceof ItemActivity)
-            ((ItemActivity)Model.getCurrentActivity()).updateInternet(isConnected);
+        if(App.getCurrentActivity() instanceof MainActivity)
+            ((MainActivity) App.getCurrentActivity()).updateInternet(isConnected);
+        else if(App.getCurrentActivity() instanceof ItemActivity)
+            ((ItemActivity) App.getCurrentActivity()).updateInternet(isConnected);
     }
 }

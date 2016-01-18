@@ -8,10 +8,8 @@ import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
-import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.main.MainActivity;
 
 public class LocalMediaStorage {
@@ -46,7 +44,7 @@ public class LocalMediaStorage {
             return null;
         }
 
-        File mediaStorageDir = Model.getCurrentActivity().getExternalFilesDir(null);
+        File mediaStorageDir = App.getCurrentActivity().getExternalFilesDir(null);
         if(mediaStorageDir == null){
             return null;
         }

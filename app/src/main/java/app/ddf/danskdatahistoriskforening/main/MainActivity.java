@@ -31,7 +31,7 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.domain.ListItem;
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Model.setCurrentActivity(this);
+        App.setCurrentActivity(this);
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
 
@@ -108,18 +108,18 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     protected void onResume() {
-        System.out.println(Model.isConnected());
-        if (!Model.isConnected()) {
+        System.out.println(App.isConnected());
+        if (!App.isConnected()) {
             findViewById(R.id.internetConnBar).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.internetConnBar).setVisibility(View.GONE);
         }
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Model.BROADCAST_ACTION);
+        filter.addAction(App.BROADCAST_ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
 
-        if (!Model.isListUpdated() && Model.isConnected()) {
+        if (!Logic.isListUpdated() && App.isConnected()) {
             updateItemList();
         }
         super.onResume();
@@ -222,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentList() {
-        if (!Model.isConnected() && Logic.instance.items == null) {
+        if (!App.isConnected() && Logic.instance.items == null) {
             Toast.makeText(this, "Der kan ikke hentes nogen liste uden internet", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setFragmentDetails(int position) {
-        if (!Model.isConnected()) {
+        if (!App.isConnected()) {
             Toast.makeText(this, "Detaljer kan ikke hentes, da der ikke er internet", Toast.LENGTH_LONG).show();
             return;
         }
@@ -294,9 +294,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             observator.onSearchChange();
         }
 
-    //    Logic.instance.searchManager.searchItemList();
-
-        //    Model.getInstance().getSearchManager().searchItemList(newText);
         return true;
     }
 
@@ -384,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if (iBar != null) {
             if (isConnected) {
                 iBar.setVisibility(View.GONE);
-                if (!Model.isListUpdated()) {
+                if (!Logic.isListUpdated()) {
                     updateItemList();
                 }
             } else
@@ -396,7 +393,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... params) {
-                return Model.getDAO().getOverviewFromBackend();
+                return Logic.instance.model.dao.getOverviewFromBackend();
             }
 
             @Override
@@ -428,7 +425,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         Logic.instance.items = listItems;
                         onQueryTextChange(Logic.instance.userSelection.searchQuery);
 
-                        Model.setListUpdated(true);
+                        Logic.setListUpdated(true);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

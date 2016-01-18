@@ -10,7 +10,7 @@ import app.ddf.danskdatahistoriskforening.domain.UserSelection;
 
 public class Model {
 
-    private IDAO dao = new TempDAO();
+    public IDAO dao = new TempDAO();
     private AsyncTask<String, Void, Item> currentFetchTask;
 
     public void fetchSelectedListItem() {
@@ -27,7 +27,6 @@ public class Model {
             @Override
             protected void onPostExecute(Item data) {
                 if (data != null) {
-                //    Model.getInstance().setCurrentItem(data);
                     Logic.instance.userSelection.setSelectedItem(data);
 
                 }
