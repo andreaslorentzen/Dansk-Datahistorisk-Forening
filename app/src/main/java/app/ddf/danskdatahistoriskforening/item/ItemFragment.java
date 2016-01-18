@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
 public class ItemFragment extends Fragment implements View.OnClickListener, ItemUpdater, TextView.OnEditorActionListener {
@@ -39,17 +40,23 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
         itemTitle = (EditText) layout.findViewById(R.id.itemTitle);
         itemTitle.setOnEditorActionListener(this);
 
-        Item item = ((ItemActivity) getActivity()).getItem();
+        Item item = Logic.instance.editItem;
         itemTitle.setText(item.getItemHeadline());
         //((HorizontalScrollView) layout.findViewById(R.id.horizontalScrollView)).setFillViewport(true);
         imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
         return layout;
     }
-    
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        imageContainer.removeAllViews();
+    }
+
     @Override
     public void onPause() {
         super.onPause();
-        updateItem(((ItemActivity) getActivity()).getItem());
+        updateItem(Logic.instance.editItem);
         //if fragment is destroyed imageViews need to be added to a new container
     }
 

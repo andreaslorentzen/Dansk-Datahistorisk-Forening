@@ -441,4 +441,26 @@ public class Item implements Parcelable, Serializable{
 
         return false;
     }
+
+    public Item clone() {
+        Item item = new Item();
+        item.itemId = itemId;
+        item.itemHeadline = itemHeadline;
+        item.itemDescription = itemDescription;
+        item.itemRecieved = itemRecieved;
+        item.itemDatingFrom = itemDatingFrom;
+        item.itemDatingTo = itemDatingTo;
+
+        item.donator = donator;
+        item.producer = producer;
+        item.postalCode = postalCode;
+        item.pictures = pictures;
+        item.recordings = recordings;
+        item.addedRecordings = addedRecordings;
+        item.picturesChanged = picturesChanged;
+        item.recordingsChanged = recordingsChanged;
+        item.deletedPictures = deletedPictures;
+        item.addedPictures = addedPictures;
+        return item;
+    }
 }

@@ -18,6 +18,7 @@ import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.Model;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
 
 
 public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener, ItemUpdater, TextView.OnEditorActionListener, View.OnFocusChangeListener {
@@ -58,7 +59,7 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
         dateToWrapper.setOnClickListener(this);
         dateReceiveWrapper.setOnClickListener(this);
 
-        Item item = ((ItemActivity) getActivity()).getItem();
+        Item item = Logic.instance.editItem;
         dateReceive.setText(item.getItemRecievedAsString() == null ? "Ikke sat" : item.getItemRecievedAsString());
         donator.setText(item.getDonator());
         producer.setText(item.getProducer());
@@ -71,7 +72,7 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
     @Override
     public void onPause() {
         super.onPause();
-        updateItem(((ItemActivity) getActivity()).getItem());
+        updateItem(Logic.instance.editItem);
     }
 
     @Override

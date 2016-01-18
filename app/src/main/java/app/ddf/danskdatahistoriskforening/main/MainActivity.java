@@ -150,6 +150,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         Intent i = new Intent(this, ItemActivity.class);
         if(draft != null) {
             i.putExtra("item", (Parcelable) draft);
+            Logic.instance.editItem = draft;
+        }
+        else{
+            Logic.instance.editItem = new Item();
         }
         i.putExtra("isNewRegistration", true);
         startActivity(i);
@@ -311,6 +315,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public boolean onMenuItemClick(MenuItem item) {
         if (item == editButton) {
             if(canEdit) {
+
+                Logic.instance.editItem = Logic.instance.userSelection.selectedItem.clone();
                 Intent i = new Intent(this, ItemActivity.class);
                 i.putExtra("item", (Parcelable) Model.getInstance().getCurrentItem());
                 startActivity(i);
