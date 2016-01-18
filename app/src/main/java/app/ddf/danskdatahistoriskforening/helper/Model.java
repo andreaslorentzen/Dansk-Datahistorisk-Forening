@@ -2,9 +2,17 @@ package app.ddf.danskdatahistoriskforening.helper;
 
 import android.os.AsyncTask;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import app.ddf.danskdatahistoriskforening.dal.IDAO;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.dal.TempDAO;
+import app.ddf.danskdatahistoriskforening.domain.ListItem;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
 import app.ddf.danskdatahistoriskforening.domain.UserSelection;
 
@@ -44,5 +52,50 @@ public class Model {
         }
 
         dao.cancelDownload();
+    }
+
+    public void updateItemList() {
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... params) {
+                return Logic.instance.model.dao.getOverviewFromBackend();
+            }
+
+            @Override
+            protected void onPostExecute(String data) {
+                if (data != null) {
+                    System.out.println("data = " + data);
+
+                    try {
+                        JSONArray jsonItems = new JSONArray(data);
+
+                        List<ListItem> listItems = new ArrayList<>();
+
+
+                        for (int n = 0; n < jsonItems.length(); n++) {
+                            JSONObject item = jsonItems.getJSONObject(n);
+
+                            ListItem listItem = new ListItem();
+                            listItem.details = item.optString("detailsuri");
+                            listItem.id = item.optInt("itemid");
+                            listItem.title = item.optString("itemheadline", "(ukendt)");
+                            listItem.image = item.getString("defaultimage");
+                            listItems.add(listItem);
+                        }
+
+                        Logic.instance.items = listItems;
+                        Logic.instance.searchedItems = Logic.instance.searchManager.search(Logic.instance.userSelection.searchQuery);
+
+                        for (UserSelection.SearchObservator observator : Logic.instance.userSelection.searchObservators) {
+                            observator.onSearchChange();
+                        }
+
+                        Logic.setListUpdated(true);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.execute();
     }
 }

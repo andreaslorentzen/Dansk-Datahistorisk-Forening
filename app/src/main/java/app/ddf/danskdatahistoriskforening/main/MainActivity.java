@@ -57,12 +57,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         public void onReceive(Context context, Intent intent) {
         //    intent.getAction()
             MainActivity.this.checkForErrors(intent.getIntExtra("status", 0));
-
+            Logic.instance.model.updateItemList();
             // is an edit
-            if(Logic.instance.userSelection.getSelectedItem() != null){
+            if(Logic.instance.userSelection.selectedListItem != null){
 
                 Logic.instance.userSelection.setSelectedItem(null);
                 Logic.instance.model.fetchSelectedListItem();
+
             }
         }
     };
@@ -125,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
 
         if (!Logic.isListUpdated() && App.isConnected()) {
-            updateItemList();
+            Logic.instance.model.updateItemList();
         }
         super.onResume();
     }
@@ -387,56 +388,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             if (isConnected) {
                 iBar.setVisibility(View.GONE);
                 if (!Logic.isListUpdated()) {
-                    updateItemList();
+                    Logic.instance.model.updateItemList();
+                //    updateItemList();
                 }
             } else
                 iBar.setVisibility(View.VISIBLE);
         }
-    }
-
-    public void updateItemList() {
-        new AsyncTask<Void, Void, String>() {
-            @Override
-            protected String doInBackground(Void... params) {
-                return Logic.instance.model.dao.getOverviewFromBackend();
-            }
-
-            @Override
-            protected void onPostExecute(String data) {
-                if (data != null) {
-                    System.out.println("data = " + data);
-
-                    try {
-                        List<JSONObject> items;
-                        List<String> itemTitles;
-                        itemTitles = new ArrayList<>();
-                        items = new ArrayList<>();
-                        JSONArray jsonItems = new JSONArray(data);
-
-                        List<ListItem> listItems = new ArrayList<>();
-
-
-                        for (int n = 0; n < jsonItems.length(); n++) {
-                            JSONObject item = jsonItems.getJSONObject(n);
-
-                            ListItem listItem = new ListItem();
-                            listItem.details = item.optString("detailsuri");
-                            listItem.id = item.optInt("itemid");
-                            listItem.title = item.optString("itemheadline", "(ukendt)");
-                            listItem.image = item.getString("defaultimage");
-                            listItems.add(listItem);
-                        }
-
-                        Logic.instance.items = listItems;
-                        onQueryTextChange(Logic.instance.userSelection.searchQuery);
-
-                        Logic.setListUpdated(true);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.execute();
     }
 
     private void checkForErrors(int responseCode) {
