@@ -3,6 +3,7 @@ package app.ddf.danskdatahistoriskforening.domain;
 import java.util.List;
 
 import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.helper.DraftManager;
 import app.ddf.danskdatahistoriskforening.helper.Model;
 import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 
@@ -17,10 +18,12 @@ public class Logic {
     public SearchManager searchManager;
     public Model model;
     public Item editItem;
+    public DraftManager draftManager;
 
     public Logic() {
         this.userSelection = new UserSelection();
         this.searchManager = new SearchManager();
+        this.draftManager = new DraftManager();
         this.model = new Model();
     }
 

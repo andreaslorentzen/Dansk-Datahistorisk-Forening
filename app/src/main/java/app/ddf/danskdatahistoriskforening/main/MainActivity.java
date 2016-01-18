@@ -173,32 +173,21 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REGISTER_REQUEST) {
             if(resultCode == RESULT_OK && data.hasExtra("saved")){
-                (new DeleteDraftTask()).execute();
+                Logic.instance.draftManager.deleteDraft();
             }
         }
     }
 
     @Override
     public void onDialogPositiveClick(Item draft) {
-        (new DeleteDraftTask()).execute();
+        Logic.instance.draftManager.deleteDraft();
         startRegisterDraft(draft);
     }
 
     @Override
     public void onDialogNegativeClick() {
-        (new DeleteDraftTask()).execute();
+        Logic.instance.draftManager.deleteDraft();
         startRegisterDraft(null);
-    }
-
-    private class DeleteDraftTask extends AsyncTask<Void, Void, Void>{
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            File file = new File(getFilesDir().getPath() + "/" + "draft");
-            file.delete();
-
-            return null;
-        }
     }
 
     private class LoadDraftTask extends AsyncTask<Void, Void, Item> {
