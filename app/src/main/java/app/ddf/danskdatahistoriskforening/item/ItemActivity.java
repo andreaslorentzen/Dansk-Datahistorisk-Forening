@@ -72,7 +72,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_register);
 
         Toolbar registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
-        registerToolbar.setNavigationIcon(R.drawable.ic_close);
+        registerToolbar.setNavigationIcon(R.drawable.ic_close_white_24dp);
 
         if(Logic.instance.isNewRegistration()){
             registerToolbar.setTitle("Registrer genstand");
@@ -97,9 +97,16 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onResume() {
+        if (!App.isConnected()) {
+            findViewById(R.id.internetConnBar).setVisibility(View.VISIBLE);
+        } else {
+            findViewById(R.id.internetConnBar).setVisibility(View.GONE);
+        }
+
         IntentFilter filter = new IntentFilter();
         filter.addAction(App.BROADCAST_ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+
         super.onResume();
 
         Item item = Logic.instance.editItem;

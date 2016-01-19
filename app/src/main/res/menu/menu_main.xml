@@ -6,15 +6,15 @@
 
     <!-- "Mark Favorite", should appear as action button if possible -->
     <item android:id="@+id/action_search"
-        android:title="Serach"
-        android:icon="@drawable/ic_search"
+        android:title="Søg"
+        android:icon="@drawable/ic_search_white_24dp"
         app:showAsAction="ifRoom|collapseActionView"
         app:actionViewClass="android.support.v7.widget.SearchView" />
 
     <item android:id="@+id/editModeItem"
-        android:title="editMode"
-        android:icon="@drawable/ic_mode_edit"
-        app:showAsAction="ifRoom"/>
+        android:title="Rediger"
+        android:icon="@drawable/ic_mode_edit_white_24dp"
+        app:showAsAction="ifRoom" />
 
     <!-- Settings, should always be in the overflow -->
     <!--<item android:id="@+id/action_settings"
