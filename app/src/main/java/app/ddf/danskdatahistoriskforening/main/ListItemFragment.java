@@ -22,9 +22,8 @@ import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.domain.ListItem;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
 import app.ddf.danskdatahistoriskforening.domain.UserSelection;
-import app.ddf.danskdatahistoriskforening.helper.SearchManager;
 
-public class ItemListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener, UserSelection.SearchObservator {
+public class ListItemFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener, UserSelection.SearchObservator {
 
     ListView itemList;
     JSONArray items;
@@ -34,8 +33,8 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d("ItemListFragment", "created");
-        View layout = inflater.inflate(R.layout.fragment_item_list, container, false);
+        Log.d("ListItemFragment", "created");
+        View layout = inflater.inflate(R.layout.fragment_list_item, container, false);
 
         emptyText = (TextView) layout.findViewById(R.id.emptyText);
 
@@ -77,7 +76,7 @@ public class ItemListFragment extends Fragment implements AdapterView.OnItemClic
     public void onItemClick(AdapterView<?> aV, View v, int position, long l){
         ListItem item = Logic.instance.searchedItems.get(position);
         Logic.instance.userSelection.selectedListItem = item;
-        Log.d("ItemListFragment", "OnItemClick");
+        Log.d("ListItemFragment", "OnItemClick");
         ((MainActivity)getActivity()).setFragmentDetails(position);
     }
 

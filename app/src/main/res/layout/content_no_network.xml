@@ -11,4 +11,4 @@
     android:id="@+id/internetConnBar"
     android:background="@color/colorAccent"
     android:elevation="2dp"
-    tools:showIn="@layout/activity_register" />
+    tools:showIn="@layout/activity_item" />

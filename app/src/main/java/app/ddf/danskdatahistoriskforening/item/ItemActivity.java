@@ -9,7 +9,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -69,7 +68,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         App.setCurrentActivity(this);
-        setContentView(R.layout.activity_register);
+        setContentView(R.layout.activity_item);
 
         Toolbar registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
         registerToolbar.setNavigationIcon(R.drawable.ic_close_white_24dp);

@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -20,10 +19,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 
 import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
@@ -200,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.frame, new ItemListFragment())
+                    .replace(R.id.frame, new ListItemFragment())
                     .addToBackStack("list")
                     .commit();
         }
@@ -221,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         Logic.instance.model.fetchSelectedListItem();
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.frame, new ItemShowFragment())
+                .replace(R.id.frame, new ShowItemFragment())
                 .addToBackStack(null)
                 .commit();
         boolean expanded = isSearchExpanded();

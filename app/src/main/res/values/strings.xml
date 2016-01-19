@@ -24,4 +24,5 @@
     <string name="showItems">Vis Genstande</string>
     <string name="doneButtonLabel">Færdig</string>
     <string name="deleteButtonLabel">Slet</string>
+    <string name="doneRecordingButtonDescription">Gem optagelse</string>
 </resources>

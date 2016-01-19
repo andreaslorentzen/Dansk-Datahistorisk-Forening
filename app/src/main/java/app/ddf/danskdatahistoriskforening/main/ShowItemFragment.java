@@ -25,7 +25,7 @@ import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
 import app.ddf.danskdatahistoriskforening.image.ImageviewerSimpleActivity;
 
 
-public class ItemShowFragment extends Fragment implements View.OnClickListener, UserSelection.OnSelectItemListener {
+public class ShowItemFragment extends Fragment implements View.OnClickListener, UserSelection.OnSelectItemListener {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
 
     private TextView itemheadlineView;
@@ -42,13 +42,13 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
     private LinearLayout imageContainer;
     private ArrayList<Pair<ImageView, Uri>> imageUris;
 
-    public ItemShowFragment() {
+    public ShowItemFragment() {
         // Required empty public constructor
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View layout = inflater.inflate(R.layout.fragment_item_show, container, false);
+        View layout = inflater.inflate(R.layout.fragment_show_item, container, false);
 
         itemheadlineView = (TextView) layout.findViewById(R.id.itemheadline);
         itemdescriptionView = (TextView) layout.findViewById(R.id.itemdescription);
@@ -119,7 +119,7 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
                 imageUris.add(uriImagePair);
 
                 BitmapEncoder.loadBitmapFromURI(uriImagePair.first, uriImagePair.second, App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
-                uriImagePair.first.setOnClickListener(ItemShowFragment.this);
+                uriImagePair.first.setOnClickListener(ShowItemFragment.this);
             }
         }
     }
