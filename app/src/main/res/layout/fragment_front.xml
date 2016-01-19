@@ -7,23 +7,24 @@
     <Button
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:text="Registrer Genstand"
+        android:text="@string/registerItem"
         android:id="@+id/registerButton"
         android:layout_gravity="center_horizontal"
         android:layout_weight="1"
-        android:textSize="24dp"
+        android:textSize="24sp"
         android:background="?attr/colorPrimary"
         android:layout_margin="20dp"
         android:textColor="#ffffff" />
 
+
     <Button
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:text="Vis Genstande"
+        android:text="@string/showItems"
         android:id="@+id/listButton"
         android:layout_gravity="center_horizontal"
         android:layout_weight="1"
-        android:textSize="24dp"
+        android:textSize="24sp"
         android:background="?attr/colorPrimary"
         android:layout_margin="20dp"
         android:textColor="#ffffff" />

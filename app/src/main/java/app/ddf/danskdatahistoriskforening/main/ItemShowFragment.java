@@ -35,7 +35,6 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
     private TextView datingToView;
     private TextView donatorView;
     private TextView producerView;
-    private TextView postNummerView;
 
     private LinearLayout contentWrapper;
     private ProgressBar progressBar;
@@ -58,7 +57,6 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
         datingToView = (TextView) layout.findViewById(R.id.datingTo);
         donatorView = (TextView) layout.findViewById(R.id.donator);
         producerView = (TextView) layout.findViewById(R.id.producer);
-        postNummerView = (TextView) layout.findViewById(R.id.postNummer);
         imageContainer = (LinearLayout) layout.findViewById(R.id.imageContainer);
 
         contentWrapper = (LinearLayout) layout.findViewById(R.id.item_details_wrapper);
@@ -99,7 +97,6 @@ public class ItemShowFragment extends Fragment implements View.OnClickListener, 
 
         donatorView.setText(item.getDonator());
         producerView.setText(item.getProducer());
-        postNummerView.setText(item.getPostalCode());
 
         progressBar.setVisibility(View.GONE);
         contentWrapper.setVisibility(View.VISIBLE);

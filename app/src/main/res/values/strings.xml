@@ -20,4 +20,8 @@
     <string name="nextButtonDescription" />
     <string name="itemTitleLabel">Titel</string>
     <string name="cameraButtonDescription" />
+    <string name="registerItem">Registrer Genstand</string>
+    <string name="showItems">Vis Genstande</string>
+    <string name="doneButtonLabel">Færdig</string>
+    <string name="deleteButtonLabel">Slet</string>
 </resources>

@@ -144,19 +144,6 @@
                         android:textAppearance="?android:attr/textAppearanceMedium"
                         android:textColor="@color/colorShowItemDetails"/>
 
-                    <TextView
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/itemPostNummerLabel"
-                        android:layout_marginTop="16dp"
-                        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                    <TextView
-                        android:id="@+id/postNummer"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textColor="@color/colorShowItemDetails" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

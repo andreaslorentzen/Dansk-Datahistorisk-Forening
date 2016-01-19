@@ -11,21 +11,10 @@
     <android.support.v7.widget.Toolbar android:id="@+id/main_toolbar"
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:theme="@style/ToolbarTheme"
-        android:elevation="5dp"
+        android:elevation="4dp"
         app:title="@string/toolbar_title"/>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/no_internet"
-        android:gravity="center_horizontal"
-        android:textAlignment="center"
-        android:textColor="#FFFFFF"
-        android:visibility="gone"
-        android:id="@+id/internetConnBar"
-        android:background="@color/colorAccent"
-        android:elevation="3dp"/>
+    <include layout="@layout/content_no_network" />
 
     <FrameLayout
         android:layout_width="match_parent"
