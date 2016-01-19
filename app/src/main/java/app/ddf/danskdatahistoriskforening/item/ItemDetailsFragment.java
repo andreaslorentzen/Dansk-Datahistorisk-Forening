@@ -4,6 +4,7 @@ package app.ddf.danskdatahistoriskforening.item;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,14 +12,15 @@ import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.util.Date;
+import java.text.ParseException;
 
-import app.ddf.danskdatahistoriskforening.dal.Item;
-import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.helper.App;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
 
 
-public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener{
+public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener, ItemActivity.ItemUpdater, TextView.OnEditorActionListener, View.OnFocusChangeListener {
 
     TextView dateFrom;
     TextView dateTo;
@@ -31,11 +33,6 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
     LinearLayout dateReceiveWrapper;
 
     public static TextView currentDateField;
-    private String currentlyChanging;
-
-    private boolean receivedChanged = false;
-    private boolean dateFromChanged = false;
-    private boolean dateToChanged = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -44,6 +41,12 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
         producer = (TextView) layout.findViewById(R.id.Producer);
         donator = (TextView) layout.findViewById(R.id.Donator);
 
+        producer.setOnEditorActionListener(this);
+
+        producer.setOnFocusChangeListener(this);
+        donator.setOnFocusChangeListener(this);
+
+
         dateFrom = (TextView) layout.findViewById(R.id.DateFrom);
         dateTo = (TextView) layout.findViewById(R.id.DateTo);
         dateReceive = (TextView) layout.findViewById(R.id.ReceiveDate);
@@ -51,91 +54,72 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
         dateFromWrapper = (LinearLayout) layout.findViewById(R.id.DateFromWrapper);
         dateToWrapper = (LinearLayout) layout.findViewById(R.id.DateToWrapper);
 
-        dateFrom.setText(Model.getFormatter().format(new Date()));
-        dateTo.setText(Model.getFormatter().format(new Date()));
-        dateReceive.setText(Model.getFormatter().format(new Date()));
-
         dateFromWrapper.setOnClickListener(this);
         dateToWrapper.setOnClickListener(this);
         dateReceiveWrapper.setOnClickListener(this);
 
-        Item item = ((ItemActivity) getActivity()).getItem();
-        setDateFrom(item.getItemDatingFrom());
-        setDateTo(item.getItemDatingTo());
-        setDateReceive(item.getItemRecieved());
-        setDonator(item.getDonator());
-        setProducer(item.getProducer());
+        Item item = Logic.instance.editItem;
+        dateReceive.setText(item.getItemRecievedAsString() == null ? "Ikke sat" : item.getItemRecievedAsString());
+        donator.setText(item.getDonator());
+        producer.setText(item.getProducer());
+        dateFrom.setText(item.getItemDatingFromAsString() == null ? "Ikke sat" : item.getItemDatingFromAsString());
+        dateTo.setText(item.getItemDatingToAsString() == null ? "Ikke sat" : item.getItemDatingToAsString());
 
         return layout;
     }
 
     @Override
-    public void onClick(View v) {
-        if(v == dateReceiveWrapper || v == dateFromWrapper || v == dateToWrapper){
-            if(v == dateReceiveWrapper) {
-                currentDateField = dateReceive;
-                currentlyChanging = "dateReceive";
-            }else if(v == dateFromWrapper) {
-                currentDateField = dateFrom;
-                currentlyChanging = "dateFrom";
-            }else if(v == dateToWrapper) {
-                currentDateField = dateTo;
-                currentlyChanging = "dateTo";
-            }
-            DatePickerFragment datePicker = new DatePickerFragment();
-            datePicker.setOnDateSetListener(this);
-            datePicker.show(getActivity().getSupportFragmentManager(), "datePicker");
+    public void onPause() {
+        super.onPause();
+        updateItem(Logic.instance.editItem);
+    }
+
+    @Override
+    public void updateItem(Item item) {
+        item.setDonator(donator.getText().toString());
+        item.setProducer(producer.getText().toString());
+        try {
+            item.setItemRecieved(dateReceive.getText().toString().equals("") || dateReceive.getText().toString().equals("Ikke sat") ? null : App.getFormatter().parse(dateReceive.getText().toString()));
+            item.setItemDatingFrom(dateFrom.getText().toString().equals("") || dateFrom.getText().toString().equals("Ikke sat") ? null : App.getFormatter().parse(dateFrom.getText().toString()));
+            item.setItemDatingTo(dateTo.getText().toString().equals("") || dateTo.getText().toString().equals("Ikke sat") ? null : App.getFormatter().parse(dateTo.getText().toString()));
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
+        if (item.getItemRecievedAsString() != null)
+            System.out.println(item.getItemRecievedAsString());
     }
 
-    public void dateChanged(){
-        System.out.println("It WORKS");
-        if(currentlyChanging.equals("dateReceive"))
-            receivedChanged = true;
-        else if(currentlyChanging.equals("dateFrom"))
-            dateFromChanged = true;
-        else if(currentlyChanging.equals("dateTo"))
-            dateToChanged = true;
-    }
+    @Override
+    public void onClick(View v) {
+        if (v == dateReceiveWrapper)
+            currentDateField = dateReceive;
+        else if (v == dateFromWrapper)
+            currentDateField = dateFrom;
+        else if (v == dateToWrapper)
+            currentDateField = dateTo;
+        else
+            return;
 
-    public void setDateFrom(Date date) {
-        if(date != null)
-            this.dateFrom.setText(Model.getFormatter().format(date));
-    }
-
-    public void setDateTo(Date date) {
-        if(date != null)
-            this.dateTo.setText(Model.getFormatter().format(date));
-    }
-
-    public void setDateReceive(Date date) {
-        if(date != null)
-            this.dateReceive.setText(Model.getFormatter().format(date));
-    }
-
-    public void setDonator(String donator) {
-        this.donator.setText(donator);
-    }
-
-    public void setProducer(String producer) {
-        this.producer.setText(producer);
+        DatePickerFragment datePicker = new DatePickerFragment();
+        datePicker.setOnDateSetListener(this);
+        datePicker.show(getActivity().getSupportFragmentManager(), "datePicker");
     }
 
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        currentDateField.setText("" + year + "-" + (((monthOfYear + 1) < 10) ? "0"+(monthOfYear+1) : (monthOfYear+1)) + "-" + dayOfMonth);
-        dateChanged();
+        currentDateField.setText("" + year + "-" + (((monthOfYear + 1) < 10) ? "0" + (monthOfYear + 1) : (monthOfYear + 1)) + "-" + dayOfMonth);
     }
 
-    public boolean hasReceiveChanged(){
-        return receivedChanged;
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        v.clearFocus();
+        App.hideKeyboard(getActivity(), v);
+        return false;
     }
 
-    public boolean hasDateFromChanged(){
-        return dateFromChanged;
-    }
-
-    public boolean hasDateToChanged(){
-        return dateToChanged;
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        if (!hasFocus)
+            App.hideKeyboard(getActivity(), v);
     }
 }

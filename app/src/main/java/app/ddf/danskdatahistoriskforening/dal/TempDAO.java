@@ -1,10 +1,8 @@
 package app.ddf.danskdatahistoriskforening.dal;
 
 import android.content.Context;
-import android.media.Image;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,26 +23,15 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
 
-import app.ddf.danskdatahistoriskforening.Model;
+import app.ddf.danskdatahistoriskforening.helper.App;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
-/**
- * Created by mathias on 30/12/15.
- */
 public class TempDAO implements IDAO {
     private static final String API = "http://msondrup.dk/api/v1";
     private static final String userIDString = "?userID=56837dedd2d76438906140";
 
     @Override
     public int saveItemToDB(Context context, Item item) {
-        if(item.getItemHeadline() == null || item.getItemHeadline().isEmpty()){
-            return 1;
-        }
-
-        if(!isConnected(context)){
-            return 2;
-        }
-
         InputStream is = null;
         String requestURL = API + "/items" + userIDString;
         int returnValue = 0;
@@ -87,15 +74,20 @@ public class TempDAO implements IDAO {
             is.close();
             int itemID = createdItem.getInt("itemid");
 
-            if(item.getPictures() != null) {
-                for (Uri picture : item.getPictures()) {
+            if(item.getAddedPictures() != null) {
+                for (Uri picture : item.getAddedPictures()) {
                     postFile(context, picture, itemID, "jpg");
                 }
             }
-            if(item.getRecordings() != null) {
-                for (Uri recording : item.getRecordings()) {
+            System.out.println("HAS RECORDINGS SAVE ITEM");
+            System.out.println(item.getAddedRecordings());
+            if(item.getAddedRecordings() != null) {
+                System.out.println("POST RECORDINGS START:");
+                for (Uri recording : item.getAddedRecordings()) {
+                    System.out.println(recording);
                     postFile(context, recording, itemID, "mp4");
                 }
+                System.out.println("POST RECORDINGS END.");
             }
         } catch(MalformedURLException |ProtocolException e){
             // SHOULD NEVER HAPPEN IN PRODUCTION
@@ -114,13 +106,6 @@ public class TempDAO implements IDAO {
             }
         }
         return returnValue;
-    }
-
-    private boolean isConnected(Context context){
-        ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-
-        return (networkInfo != null && networkInfo.isConnected());
     }
 
     @Override
@@ -143,6 +128,7 @@ public class TempDAO implements IDAO {
 
     @Override
     public Item getDetailsFromBackEnd(String detailsURI) {
+        canceled = false;
         BufferedReader br;
         StringBuilder sb;
         try {
@@ -176,9 +162,9 @@ public class TempDAO implements IDAO {
                     Integer.parseInt(item.getString("itemid")),
                     item.getString("itemheadline"),
                     item.getString("itemdescription"),
-                    (isJsonNull(itemreceived) || itemreceived.equals("0000-00-00")) ? null : Model.getFormatter().parse(itemreceived),
-                    (isJsonNull(itemdatingfrom) || itemdatingfrom.equals("0000-00-00")) ? null : Model.getFormatter().parse(itemdatingfrom),
-                    (isJsonNull(itemdatingto) || itemdatingto.equals("0000-00-00")) ? null : Model.getFormatter().parse(itemdatingto),
+                    (isJsonNull(itemreceived) || itemreceived.equals("0000-00-00")) ? null : App.getFormatter().parse(itemreceived),
+                    (isJsonNull(itemdatingfrom) || itemdatingfrom.equals("0000-00-00")) ? null : App.getFormatter().parse(itemdatingfrom),
+                    (isJsonNull(itemdatingto) || itemdatingto.equals("0000-00-00")) ? null : App.getFormatter().parse(itemdatingto),
                     isJsonNull(donator) ? null : donator,
                     isJsonNull(producer) ? null : producer,
                     isJsonNull(postnummer) ? null : postnummer
@@ -189,6 +175,9 @@ public class TempDAO implements IDAO {
                 JSONObject image;
                 int i = 0;
                 while((image = images.optJSONObject("image_" + i)) != null){
+                    if(canceled) {
+                        return null;
+                    }
                     Uri temp = getFile(image.getString("href"), LocalMediaStorage.MEDIA_TYPE_IMAGE);
                     if(temp == null)
                         continue;;
@@ -202,6 +191,9 @@ public class TempDAO implements IDAO {
                 JSONObject audio;
                 int i = 0;
                 while((audio = audios.optJSONObject("audio_" + i)) != null){
+                    if(canceled) {
+                        return null;
+                    }
                     Uri temp = getFile(audio.getString("href"), LocalMediaStorage.MEDIA_TYPE_AUDIO);
                     if(temp == null)
                         continue;
@@ -225,12 +217,6 @@ public class TempDAO implements IDAO {
 
     @Override
     public int updateItem(Context context, Item item) {
-        if (item.getItemId()== 0){
-            return 1;
-        }
-        if(!isConnected(context)){
-            return 2;
-        }
         String requestURL = API + "/items/" + item.getItemId() + userIDString;
 
         InputStream is = null;
@@ -271,9 +257,8 @@ public class TempDAO implements IDAO {
                 }
             }
 
-            if(item.isRecordingsChanged()){
-                for(Uri recording : item.getRecordings()){
-                    deleteFile(recording, item.getItemId());
+            if(item.getAddedRecordings() != null){
+                for(Uri recording : item.getAddedRecordings()){
                     postFile(context, recording, item.getItemId(), "mp4");
                 }
             }
@@ -376,7 +361,13 @@ public class TempDAO implements IDAO {
             e.printStackTrace();
         }
     }
+    private boolean canceled;
 
+    @Override
+    public void cancelDownload() {
+        canceled = true;
+
+    }
 
     public Uri getFile(String filePath, int type){
 
@@ -399,6 +390,9 @@ public class TempDAO implements IDAO {
             byte[] data = new byte[1024];
             int count;
             while ((count = input.read(data)) != -1) {
+                if(canceled) {
+                    return null;
+                }
                 output.write(data, 0, count);
             }
 

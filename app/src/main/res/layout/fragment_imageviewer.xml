@@ -8,13 +8,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/imageviewfragment_imageview"
-        android:layout_gravity="left|top" />
+        android:layout_gravity="start|top" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Billede "
         android:textColor="#ffffff"
         android:background="#000000"
         android:alpha="0.5"

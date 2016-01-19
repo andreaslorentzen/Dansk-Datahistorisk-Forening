@@ -1,84 +1,142 @@
 package app.ddf.danskdatahistoriskforening.item;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.provider.MediaStore;
+import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.ParseException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
-import app.ddf.danskdatahistoriskforening.dal.Item;
-import app.ddf.danskdatahistoriskforening.Model;
-import app.ddf.danskdatahistoriskforening.helper.PagerSlidingTabStrip;
+import app.ddf.danskdatahistoriskforening.helper.App;
 import app.ddf.danskdatahistoriskforening.R;
+import app.ddf.danskdatahistoriskforening.dal.BackgroundService;
+import app.ddf.danskdatahistoriskforening.dal.Item;
+import app.ddf.danskdatahistoriskforening.domain.Logic;
+import app.ddf.danskdatahistoriskforening.helper.BitmapEncoder;
+import app.ddf.danskdatahistoriskforening.image.ImageviewerDeleteActivity;
 
-public class ItemActivity extends AppCompatActivity{
+public class ItemActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     public static final int IMAGEVIEWER_REQUEST_CODE = 200;
+    public static final int AUDIORECORDING_REQUEST_CODE = 300;
 
-    private Toolbar registerToolbar;
-    private Item item;
+    ArrayList<Pair<ImageView, Uri>> imageViews;
 
-    public Item getItem() {
-        return item;
-    }
+    private boolean itemSaved;
 
-    /**
-     * http://developer.android.com/training/animation/screen-slide.html
-     */
+    private WeakReference<ItemFragment> itemFragmentWeakReference;
+    private WeakReference<ItemDetailsFragment> itemDetailsFragmentWeakReference;
+    private WeakReference<ItemDescriptionFragment> itemDescriptionFragmentWeakReference;
 
-    private ViewPager viewPager;
-    private PagerAdapter mPagerAdapter;
-
-
-    private ItemFragment itemFragment = new ItemFragment();
-    private ItemDetailsFragment detailsFragment = new ItemDetailsFragment();
-    private ItemDescriptionFragment descriptionFragment = new ItemDescriptionFragment();
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ItemActivity.this.checkForErrors(intent.getIntExtra("status", 0));
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register);
+        App.setCurrentActivity(this);
+        setContentView(R.layout.activity_item);
 
-        registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
-        registerToolbar.setTitle("Registrer genstand");
-        registerToolbar.setTitleTextColor(-1); // #FFF
-        registerToolbar.setNavigationIcon(R.drawable.ic_close);
-        setSupportActionBar(registerToolbar);
+        Toolbar registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
+        registerToolbar.setNavigationIcon(R.drawable.ic_close_white_24dp);
 
-        // Instantiate a ViewPager and a PagerAdapter.
-        viewPager = (ViewPager) findViewById(R.id.pager);
-        mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(mPagerAdapter);
-
-        PagerSlidingTabStrip pagerSlidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tab_strip);
-        pagerSlidingTabStrip.setViewPager(viewPager);
-
-        item = new Item();
-        Intent intent = getIntent();
-        if(intent.hasExtra("item")){
-
-            item = intent.getParcelableExtra("item");
+        if (Logic.instance.isNewRegistration()) {
+            registerToolbar.setTitle("Registrer genstand");
+        } else {
+            registerToolbar.setTitle("Rediger genstand");
         }
 
-   //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
-   //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
+        setSupportActionBar(registerToolbar);
 
+        /*
+         * http://developer.android.com/training/animation/screen-slide.html
+         */
+
+        ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
+        PagerAdapter mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(mPagerAdapter);
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_strip);
+        tabLayout.setupWithViewPager(viewPager);
+
+    }
+
+    @Override
+    protected void onResume() {
+        if (!App.isConnected()) {
+            findViewById(R.id.internetConnBar).setVisibility(View.VISIBLE);
+        } else {
+            findViewById(R.id.internetConnBar).setVisibility(View.GONE);
+        }
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(App.BROADCAST_ACTION);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+
+        super.onResume();
+
+        Item item = Logic.instance.editItem;
+
+        imageViews = new ArrayList<>();
+        ArrayList<Uri> uris = item.getPictures();
+        if (uris != null) {
+            for (int i = 0; i < uris.size(); i++) {
+                generateImagePair(uris.get(i));
+            }
+        }
+        uris = item.getAddedPictures();
+        if (uris != null) {
+            for (int i = 0; i < uris.size(); i++) {
+                generateImagePair(uris.get(i));
+            }
+        }
+
+    }
+
+    private void generateImagePair(Uri uri) {
+
+        ImageView imageView = new ImageView(this);
+
+        LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
+        imageView.setLayoutParams(sizeParameters);
+
+        BitmapEncoder.loadBitmapFromURI(imageView, uri, App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
+
+        imageView.setOnClickListener(this);
+
+        imageViews.add(new Pair<>(imageView, uri));
     }
 
     @Override
@@ -87,7 +145,6 @@ public class ItemActivity extends AppCompatActivity{
         inflater.inflate(R.menu.menu_register, menu);
         return true;
     }
-
 
 
     @Override
@@ -112,83 +169,39 @@ public class ItemActivity extends AppCompatActivity{
 
 
     private void save() {
-
-        item.setItemHeadline(itemFragment.getItemTitle());
-        for(Pair<ImageView, Uri> pair : itemFragment.imageUris) {
-            item.addToPictures(pair.second);
-        }
-        item.setRecordings(itemFragment.audioUris);
-        item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
-        item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
-        item.setItemDescription(descriptionFragment.getItemDescription());
-
-
-        if(item.getItemId() > 0){
-            try{
-                if(detailsFragment.dateReceive != null && detailsFragment.dateReceive.getText() != null && !detailsFragment.dateReceive.getText().toString().equals(""))
-                    item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
-                if(detailsFragment.dateFrom != null && detailsFragment.dateFrom.getText() != null && !detailsFragment.dateFrom.getText().toString().equals("") )
-                    item.setItemDatingFrom(Model.getFormatter().parse(detailsFragment.dateFrom.getText().toString()));
-                if(detailsFragment.dateTo != null && detailsFragment.dateTo.getText() != null && !detailsFragment.dateTo.getText().toString().equals("")  )
-                    item.setItemDatingTo(Model.getFormatter().parse(detailsFragment.dateTo.getText().toString()));
-            } catch(ParseException e){
-                e.printStackTrace();
-            }
-            new AsyncTask<Item, Void, Integer>(){
-                @Override
-                protected Integer doInBackground(Item... params){
-                    return Model.getDAO().updateItem(ItemActivity.this, params[0]);
-                }
-
-                @Override
-                protected void onPostExecute(Integer response){
-                    checkForErrors(response);
-                }
-            }.execute(item);
-        }
-        else{
-            try{
-                System.out.println(detailsFragment.hasReceiveChanged());
-                if(detailsFragment.hasReceiveChanged())
-                    item.setItemRecieved(Model.getFormatter().parse(detailsFragment.dateReceive.getText().toString()));
-                else
-                    item.setItemRecieved(null);
-                if(detailsFragment.hasDateFromChanged())
-                    item.setItemDatingFrom(Model.getFormatter().parse(detailsFragment.dateFrom.getText().toString()));
-                else
-                    item.setItemDatingFrom(null);
-                if(detailsFragment.hasDateToChanged())
-                    item.setItemDatingTo(Model.getFormatter().parse(detailsFragment.dateTo.getText().toString()));
-                else
-                    item.setItemDatingTo(null);
-            } catch(ParseException e){
-                e.printStackTrace();
-            }
-            new AsyncTask<Item, Void, Integer>(){
-                @Override
-                protected Integer doInBackground(Item... params){
-                    return Model.getDAO().saveItemToDB(ItemActivity.this, params[0]);
-                }
-
-                @Override
-                protected void onPostExecute(Integer response){
-                   checkForErrors(response);
-                }
-            }.execute(item);
+        updateItem();
+        Item item = Logic.instance.editItem;
+        if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty()) {
+            Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
+            return;
         }
 
+        if (!App.isConnected()) {
+            if (Logic.instance.isNewRegistration())
+                Toast.makeText(this, "Genstanden kan ikke registreres uden internet", Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(this, "Genstanden kan ikke opdateres uden internet", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        Intent backgroundService = new Intent(this, BackgroundService.class);
+        startService(backgroundService);
 
+        Logic.setListUpdated(false);
+
+        Intent i = new Intent();
+        i.putExtra("saved", true);
+        setResult(Activity.RESULT_OK, i);
+
+        itemSaved = true; // do not save draft if item is being sent to API
+
+        finish();
     }
 
-    private void checkForErrors(int responseCode){
-        switch(responseCode){
+    private void checkForErrors(int responseCode) {
+        switch (responseCode) {
             case -1:
-                Model.setListUpdated(false);
-                finish();
-                break;
-            case 1:
-                Toast.makeText(this, "Der er ikke angivet en titel til museumsgenstanden!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Genstanden blev sendt til severen", Toast.LENGTH_SHORT).show();
                 break;
             case 2:
                 Toast.makeText(this, "Enheden er ikke forbundet til internettet!", Toast.LENGTH_LONG).show();
@@ -206,55 +219,258 @@ public class ItemActivity extends AppCompatActivity{
         }
     }
 
-    private void prompt(){
+    private void updateItem() {
+        //update item if fragment is instantiated
+        //destroyed fragments will have updated the item during onPause() already
+        ItemFragment itemFragment = null;
+        ItemDetailsFragment itemDetailsFragment = null;
+        ItemDescriptionFragment itemDescriptionFragment = null;
+
+        if (itemFragmentWeakReference != null) {
+            itemFragment = itemFragmentWeakReference.get();
+        }
+
+        if (itemDetailsFragmentWeakReference != null) {
+            itemDetailsFragment = itemDetailsFragmentWeakReference.get();
+        }
+
+        if (itemDescriptionFragmentWeakReference != null) {
+            itemDescriptionFragment = itemDescriptionFragmentWeakReference.get();
+        }
+
+        Item item = Logic.instance.editItem;
+
+        if (itemFragment != null) {
+            itemFragment.updateItem(item);
+        }
+
+        if (itemDetailsFragment != null) {
+            itemDetailsFragment.updateItem(item);
+        }
+
+        if (itemDescriptionFragment != null) {
+            itemDescriptionFragment.updateItem(item);
+        }
+    }
+
+    private void prompt() {
+        setResult(Activity.RESULT_CANCELED, new Intent());
         finish();
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        int index = 0;
+        ArrayList<Uri> uris = new ArrayList<>();
+        for (int i = 0; i < imageViews.size(); i++) {
+            Pair<ImageView, Uri> p = imageViews.get(i);
+            uris.add(p.second);
+
+            if (p.first == v)
+                index = i;
+
+        }
+
+        Intent intent = new Intent(this, ImageviewerDeleteActivity.class);
+        intent.putExtra("imageURIs", uris);
+        intent.putExtra("index", index);
+        startActivityForResult(intent, ItemActivity.IMAGEVIEWER_REQUEST_CODE);
     }
 
 
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
-        private Pair<String, Fragment>[] fragments = new Pair[3];
-
         public ScreenSlidePagerAdapter(FragmentManager fm) {
             super(fm);
-            fragments[0] = new Pair<String, Fragment>("Genstand", itemFragment);
-            fragments[1] = new Pair<String, Fragment>("Beskrivelse", descriptionFragment);
-            fragments[2] = new Pair<String, Fragment>("Oplysninger", detailsFragment);
         }
 
         @Override
         public Fragment getItem(int position) {
-            return fragments[position].second;
+
+            Fragment fragment;
+
+            switch (position) {
+                case 0:
+                    fragment = new ItemFragment();
+                    break;
+                case 1:
+                    fragment = new ItemDescriptionFragment();
+                    break;
+                case 2:
+                    fragment = new ItemDetailsFragment();
+                    break;
+                default:
+                    fragment = new ItemFragment();
+            }
+
+            return fragment;
+        }
+
+        //save weak references to fragments as they are instantiated for updating item
+        //in case a reference becomes invalid, the fragment should have updated the item in onPause() anyways
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Fragment fragment = (Fragment) super.instantiateItem(container, position);
+
+            switch (position) {
+                case 0:
+                    itemFragmentWeakReference = new WeakReference<>((ItemFragment) fragment);
+                    break;
+                case 1:
+                    itemDescriptionFragmentWeakReference = new WeakReference<>((ItemDescriptionFragment) fragment);
+                    break;
+                case 2:
+                    itemDetailsFragmentWeakReference = new WeakReference<>((ItemDetailsFragment) fragment);
+                    break;
+            }
+
+            return fragment;
         }
 
         @Override
         public int getCount() {
-            return fragments.length;
+            return 3;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return fragments[position].first;
+            CharSequence title;
+
+            switch (position) {
+                case 0:
+                    title = "Genstand";
+                    break;
+                case 1:
+                    title = "Beskrivelse";
+                    break;
+                case 2:
+                    title = "Oplysninger";
+                    break;
+                default:
+                    title = "";
+                    break;
+            }
+
+            return title;
         }
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Item item = Logic.instance.editItem;
+        if (item == null)
+            return;
+
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
-            itemFragment.onActivityResult(requestCode, resultCode, data);
-        }
-        else if(requestCode == IMAGEVIEWER_REQUEST_CODE){
-            itemFragment.onActivityResult(requestCode, resultCode, data);
+            //itemFragment.onActivityResult(requestCode, resultCode, data);
+
+            if (resultCode == Activity.RESULT_OK) {
+                item.addToAddedPictures(Logic.instance.tempUri);
+
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                // User cancelled the image capture
+
+            } else {
+                // Image capture failed, advise user
+                Toast.makeText(this, "Der opstod en fejl under brug af kameraet", Toast.LENGTH_LONG).show();
+            }
+
+            Logic.instance.tempUri = null;
+
+        } else if (requestCode == ItemActivity.IMAGEVIEWER_REQUEST_CODE) {
+            if (resultCode == AppCompatActivity.RESULT_OK) {
+                ArrayList<Uri> remainingURIs = data.getParcelableArrayListExtra("remainingURIs");
+
+                List<Uri> tempDeleteUris = new ArrayList<>();
+                if (item.getPictures() != null) {
+                    for (Uri uri : item.getPictures()) {
+                        if (!remainingURIs.contains(uri)) {
+                            item.addDeletedPicture(uri);
+                            tempDeleteUris.add(uri);
+                        }
+                    }
+                    for (Uri uri : tempDeleteUris) {
+                        item.removeFromPictures(uri);
+                    }
+                }
+                if (item.getAddedPictures() != null) {
+                    tempDeleteUris.clear();
+                    for (Uri uri : item.getAddedPictures()) {
+                        if (!remainingURIs.contains(uri)) {
+                            tempDeleteUris.add(uri);
+                        }
+                    }
+                    for (Uri uri : tempDeleteUris) {
+                        item.removeFromAddedPicture(uri);
+                    }
+                }
+
+            }
+        } else if (requestCode == ItemActivity.AUDIORECORDING_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                item.addToAddRecordings((Uri) data.getParcelableExtra("recordingUri"));
+                Toast.makeText(this, "Audio file added!", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
+    public static final int RECORD_PERMISSION_REQUEST = 2;
 
-    public void takePic(){
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        //    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 
-        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+        if (requestCode == RECORD_PERMISSION_REQUEST && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            startRecording();
+
+        }
     }
 
+    public void startRecording() {
+        if (App.hasRecordAudioPermission(this)) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.RECORD_AUDIO},
+                        ItemActivity.RECORD_PERMISSION_REQUEST);
+
+            } else {
+                Toast.makeText(this, "Funktionen kræver adgang til mikrofonen. Gå til app indstillinger for at give adgang.", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Intent i = new Intent(this, RecordingActivity.class);
+            startActivityForResult(i, ItemActivity.AUDIORECORDING_REQUEST_CODE);
+        }
+    }
+
+    public void updateInternet(boolean isConnected) {
+        TextView iBar = (TextView) findViewById(R.id.internetConnBar);
+        if (iBar != null) {
+            if (isConnected)
+                iBar.setVisibility(View.GONE);
+            else
+                iBar.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+
+        updateItem();
+        Item item = Logic.instance.editItem;
+
+        if (item.hasContent() && Logic.instance.isNewRegistration() && !itemSaved) {
+
+            Logic.instance.draftManager.saveDraft();
+
+        }
+    }
+
+    public interface ItemUpdater {
+        void updateItem(Item item);
+    }
 }

@@ -94,6 +94,11 @@ public class DAO implements IDAO {
 
     }
 
+    @Override
+    public void cancelDownload() {
+
+    }
+
     //create new entry in database
     private class HttpPostItem extends AsyncTask<Item, Void, String> {
         @Override

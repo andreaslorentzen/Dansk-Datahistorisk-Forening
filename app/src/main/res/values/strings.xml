@@ -1,4 +1,28 @@
 <resources>
-    <string name="app_name">G31 Dansk Datahistorisk Forening</string>
-    <string name="toolbar_title">DDF</string>
+    <string name="app_name">g31 Dansk Datahistorisk Forening</string>
+    <string name="no_internet">Ingen internet forbindelse</string>
+    <string name="toolbar_title">DDHF</string>
+    <string name="searchButtonTitle">Søg</string>
+    <string name="editButtonTitle">Rediger</string>
+    <string name="doneButtonTitle">Gem</string>
+
+    <string name="itemDescriptionLabel">Beskrivelse</string>
+    <string name="itemReceivedLabel">Modtaget:</string>
+    <string name="itemDatingFromLabel">Datering fra:</string>
+    <string name="itemDatingToLabel">Datering til:</string>
+    <string name="itemDonatorLabel">Donator:</string>
+    <string name="itemProducerLabel">Producer:</string>
+    <string name="itemPostNummerLabel">Post nummer:</string>
+    <string name="noItemsFound">No items found</string>
+    <string name="recordButtonDescription" />
+    <string name="playSoundButtonDescription" />
+    <string name="prevButtonDescription" />
+    <string name="nextButtonDescription" />
+    <string name="itemTitleLabel">Titel</string>
+    <string name="cameraButtonDescription" />
+    <string name="registerItem">Registrer Genstand</string>
+    <string name="showItems">Vis Genstande</string>
+    <string name="doneButtonLabel">Færdig</string>
+    <string name="deleteButtonLabel">Slet</string>
+    <string name="doneRecordingButtonDescription">Gem optagelse</string>
 </resources>
