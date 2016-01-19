@@ -379,9 +379,10 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     private void resetAudioPlayer() {
 
         MediaPlayer old = ap;
-        ap = new MediaPlayer();
+
         String filePath = LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath();
         if (new File(filePath).exists()) {
+            ap = new MediaPlayer();
             setEnabledTrash(true);
             ap = MediaPlayer.create(this, Uri.parse(filePath));
             seekBar.setMax(ap.getDuration());
