@@ -267,8 +267,11 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onBackPressed() {
+        //super.onBackPressed();
         if (!ar.isRecording())
             cancelRecording();
+        else
+            stopRecording();
     }
 
     @Override
