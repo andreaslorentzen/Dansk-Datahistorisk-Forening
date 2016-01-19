@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,7 +82,7 @@ public class ShowItemFragment extends Fragment implements View.OnClickListener, 
 
         ((MainActivity) getActivity()).enableEdit();
 
-        // felterne udfyld felterne
+        // udfyld felterne
         itemheadlineView.setText(item.getItemHeadline());
         // TODO handle lyd
         itemdescriptionView.setText(item.getItemDescription());
@@ -103,7 +102,7 @@ public class ShowItemFragment extends Fragment implements View.OnClickListener, 
         imageContainer.removeAllViews();
         imageUris = new ArrayList<>();
 
-        if (uris != null) {//activity may have been destroyed while downloading
+        if (uris != null) {
 
             LinearLayout.LayoutParams sizeParameters = new LinearLayout.LayoutParams(App.MAX_THUMBNAIL_WIDTH, App.MAX_THUMBNAIL_HEIGHT);
 
@@ -123,7 +122,7 @@ public class ShowItemFragment extends Fragment implements View.OnClickListener, 
     @Override
     public void onClick(View v) {
         if (v instanceof ImageView) {
-            int index = -1;
+            int index = 0;
             ArrayList<Uri> uris = new ArrayList<>();
             for (int i = 0; i < imageUris.size(); i++) {
                 if (v == imageUris.get(i).first) {
@@ -133,23 +132,11 @@ public class ShowItemFragment extends Fragment implements View.OnClickListener, 
                 uris.add(imageUris.get(i).second);
             }
 
-            if (index < 0) {
-                //none of the imageViews matched
-                Log.d("ddf", "no imageView matched");
-                return;
-            }
-
             Intent intent = new Intent(getActivity(), ImageviewerSimpleActivity.class);
             intent.putExtra("imageURIs", uris);
             intent.putExtra("index", index);
             getActivity().startActivity(intent);
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        System.out.println("Fragment destroyed");
     }
 
 }

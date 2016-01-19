@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -45,12 +44,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-        //    intent.getAction()
+            //    intent.getAction()
             MainActivity.this.checkForErrors(intent.getIntExtra("status", 0));
 
             Logic.instance.model.updateItemList();
             // is an edit
-            if(Logic.instance.userSelection.selectedListItem != null){
+            if (Logic.instance.userSelection.selectedListItem != null) {
 
                 Logic.instance.userSelection.setSelectedItem(null);
                 Logic.instance.model.fetchSelectedListItem();
@@ -131,12 +130,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public void startRegister() {
         File file = new File(getFilesDir().getPath() + "/" + "draft");
 
-        Log.d("draft", "draft to load: " + file.exists());
-
-        if(!file.exists()){
+        if (!file.exists()) {
             startRegisterDraft(null);
-        }
-        else {
+        } else {
             Logic.instance.draftManager.loadDraft(this);
         }
     }
@@ -153,23 +149,19 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
     }
 
-    private void startRegisterDraft(Item draft){
-        Intent i = new Intent(this, ItemActivity.class);
-        if(draft != null) {
-            i.putExtra("item", (Parcelable) draft);
+    private void startRegisterDraft(Item draft) {
+        if (draft != null) {
             Logic.instance.editItem = draft;
-        }
-        else{
+        } else {
             Logic.instance.editItem = new Item();
         }
-        i.putExtra("isNewRegistration", true);
-        startActivityForResult(i, REGISTER_REQUEST);
+        startActivityForResult(new Intent(this, ItemActivity.class), REGISTER_REQUEST);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REGISTER_REQUEST) {
-            if(resultCode == RESULT_OK && data.hasExtra("saved")){
+            if (resultCode == RESULT_OK && data.hasExtra("saved")) {
                 Logic.instance.draftManager.deleteDraft();
             }
         }
@@ -201,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
     }
 
-    public void setFragmentDetails(int position) {
+    public void setFragmentDetails() {
         if (!App.isConnected()) {
             Toast.makeText(this, "Detaljer kan ikke hentes, da der ikke er internet", Toast.LENGTH_LONG).show();
             return;
@@ -229,19 +221,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     private void updateSearchVisibility() {
-        boolean isSerSearchVisible = isSearchButtonVisible();
-        searchButton.setVisible(isSerSearchVisible);
-        editButton.setVisible(!isSerSearchVisible && canEdit);
+        boolean isSearchVisible = isSearchButtonVisible();
+        searchButton.setVisible(isSearchVisible);
+        editButton.setVisible(!isSearchVisible && canEdit);
 
-        if (!isSerSearchVisible) {
+        if (!isSearchVisible) {
             MenuItemCompat.collapseActionView(searchButton);
-        } else {
-            if (isSearchExpanded()) {
-                if (!MenuItemCompat.isActionViewExpanded(searchButton))
-                    MenuItemCompat.expandActionView(searchButton);
-            }
+        } else if (isSearchExpanded() && !MenuItemCompat.isActionViewExpanded(searchButton)) {
+            MenuItemCompat.expandActionView(searchButton);
         }
-
     }
 
     @Override
@@ -251,28 +239,27 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        Log.d("Search",""+newText);
         Logic.instance.userSelection.searchQuery = newText;
 
         Logic.instance.searchedItems = Logic.instance.searchManager.search(newText);
 
-        for (UserSelection.SearchObservator observator : Logic.instance.userSelection.searchObservators) {
-            observator.onSearchChange();
+        for (UserSelection.SearchListener listener : Logic.instance.userSelection.searchListeners) {
+            listener.onSearchChange();
         }
 
         return true;
     }
 
-    public void disableEdit(){
+    public void disableEdit() {
         canEdit = false;
-        if(editButton != null) {
+        if (editButton != null) {
             editButton.setVisible(false);
         }
     }
 
-    public void enableEdit(){
+    public void enableEdit() {
         canEdit = true;
-        if(editButton != null) {
+        if (editButton != null) {
             editButton.setVisible(true);
         }
     }
@@ -280,13 +267,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         if (item == editButton) {
-            if(canEdit) {
+            if (canEdit) {
 
                 Logic.instance.editItem = Logic.instance.userSelection.getSelectedItem().clone();
                 startActivity(new Intent(this, ItemActivity.class));
 
-            }
-            else{
+            } else {
                 Toast.makeText(this, "Vent mens genstandens oplysninger hentes", Toast.LENGTH_LONG).show();
             }
         }
@@ -309,20 +295,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Log.d("Main", "" + getSupportFragmentManager().getBackStackEntryCount());
 
-
-        switch (getSupportFragmentManager().getBackStackEntryCount()) {
-            case 0:
-
-                break;
-            case 1:
-                setSearchButtonVisible(true);
-                updateSearchVisibility();
-                searchView.setQuery(Logic.instance.userSelection.searchQuery, true);
-                Logic.instance.model.cancelFetch();
-                Logic.instance.userSelection.selectedListItem = null;
-                break;
+        if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
+            setSearchButtonVisible(true);
+            updateSearchVisibility();
+            searchView.setQuery(Logic.instance.userSelection.searchQuery, true);
+            Logic.instance.model.cancelFetch();
+            Logic.instance.userSelection.selectedListItem = null;
         }
     }
 
@@ -331,7 +310,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     public void setSearchExpanded(boolean searchExpanded) {
-        this.isSearchExpanded = searchExpanded;
+        isSearchExpanded = searchExpanded;
     }
 
     public boolean isSearchButtonVisible() {
@@ -349,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 iBar.setVisibility(View.GONE);
                 if (!Logic.isListUpdated()) {
                     Logic.instance.model.updateItemList();
-                //    updateItemList();
+                    //    updateItemList();
                 }
             } else
                 iBar.setVisibility(View.VISIBLE);

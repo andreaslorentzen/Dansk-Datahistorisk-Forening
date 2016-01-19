@@ -9,7 +9,7 @@ import android.widget.Button;
 
 import app.ddf.danskdatahistoriskforening.R;
 
-public class FrontFragment extends Fragment implements View.OnClickListener{
+public class FrontFragment extends Fragment implements View.OnClickListener {
 
     Button registerButton;
     Button listButton;
@@ -31,10 +31,9 @@ public class FrontFragment extends Fragment implements View.OnClickListener{
 
     @Override
     public void onClick(View v) {
-        if(v == registerButton){
+        if (v == registerButton) {
             ((MainActivity) getActivity()).startRegister();
-        }
-        else if(v == listButton){
+        } else if (v == listButton) {
             ((MainActivity) getActivity()).setFragmentList();
         }
     }

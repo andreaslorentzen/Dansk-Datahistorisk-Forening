@@ -21,7 +21,7 @@ import app.ddf.danskdatahistoriskforening.domain.ListItem;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
 import app.ddf.danskdatahistoriskforening.domain.UserSelection;
 
-public class ListItemFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener, UserSelection.SearchObservator {
+public class ListItemFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener, UserSelection.SearchListener {
 
     ListView itemList;
     TextView emptyText;
@@ -38,7 +38,7 @@ public class ListItemFragment extends Fragment implements AdapterView.OnItemClic
         itemList.setAdapter(adapter);
         itemList.setOnItemClickListener(this);
 
-        Logic.instance.userSelection.searchObservators.add(this);
+        Logic.instance.userSelection.searchListeners.add(this);
         onSearchChange();
 
         FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fab);
@@ -49,7 +49,7 @@ public class ListItemFragment extends Fragment implements AdapterView.OnItemClic
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        Logic.instance.userSelection.searchObservators.remove(this);
+        Logic.instance.userSelection.searchListeners.remove(this);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class ListItemFragment extends Fragment implements AdapterView.OnItemClic
         ListItem item = Logic.instance.searchedItems.get(position);
         Logic.instance.userSelection.selectedListItem = item;
         Log.d("ListItemFragment", "OnItemClick");
-        ((MainActivity)getActivity()).setFragmentDetails(position);
+        ((MainActivity)getActivity()).setFragmentDetails();
     }
 
     @Override

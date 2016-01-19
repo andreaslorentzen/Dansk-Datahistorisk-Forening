@@ -32,8 +32,8 @@ public class App extends Application {
         return Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED;
     }
 
-    public static void hideKeyboard(FragmentActivity activity, View view){
-        if(activity != null && view != null) {
+    public static void hideKeyboard(FragmentActivity activity, View view) {
+        if (activity != null && view != null) {
             InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
             activity.getWindow().setSoftInputMode(
@@ -43,10 +43,9 @@ public class App extends Application {
     }
 
     @Override
-    public void onCreate(){
+    public void onCreate() {
         Logic.instance = new Logic();
 
-        System.out.println("Inside the APP");
         ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
@@ -54,8 +53,6 @@ public class App extends Application {
         setIsConnected(activeNetwork != null && activeNetwork.isConnectedOrConnecting());
         super.onCreate();
     }
-
-
 
     public static boolean isConnected() {
         return isConnected;

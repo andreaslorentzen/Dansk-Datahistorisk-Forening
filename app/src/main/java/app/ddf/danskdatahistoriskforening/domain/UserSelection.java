@@ -9,7 +9,7 @@ public class UserSelection {
 
     public String searchQuery;
 
-    public List<SearchObservator> searchObservators = new ArrayList<>();
+    public List<SearchListener> searchListeners = new ArrayList<>();
 
     public Item getSelectedItem() {
         return selectedItem;
@@ -22,7 +22,7 @@ public class UserSelection {
         }
     }
 
-    public interface SearchObservator {
+    public interface SearchListener {
         void onSearchChange();
     }
 

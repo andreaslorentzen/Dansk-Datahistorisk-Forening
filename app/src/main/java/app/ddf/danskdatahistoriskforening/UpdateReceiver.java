@@ -20,9 +20,9 @@ public class UpdateReceiver extends BroadcastReceiver {
 
         App.setIsConnected(isConnected);
 
-        if(App.getCurrentActivity() instanceof MainActivity)
+        if (App.getCurrentActivity() instanceof MainActivity)
             ((MainActivity) App.getCurrentActivity()).updateInternet(isConnected);
-        else if(App.getCurrentActivity() instanceof ItemActivity)
+        else if (App.getCurrentActivity() instanceof ItemActivity)
             ((ItemActivity) App.getCurrentActivity()).updateInternet(isConnected);
     }
 }

@@ -86,7 +86,7 @@ public class Model {
                         Logic.instance.items = listItems;
                         Logic.instance.searchedItems = Logic.instance.searchManager.search(Logic.instance.userSelection.searchQuery);
 
-                        for (UserSelection.SearchObservator observator : Logic.instance.userSelection.searchObservators) {
+                        for (UserSelection.SearchListener observator : Logic.instance.userSelection.searchListeners) {
                             observator.onSearchChange();
                         }
 
