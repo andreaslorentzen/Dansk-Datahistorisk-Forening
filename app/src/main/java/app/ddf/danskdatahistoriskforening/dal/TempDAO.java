@@ -2,7 +2,6 @@ package app.ddf.danskdatahistoriskforening.dal;
 
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,7 +23,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
 
-import app.ddf.danskdatahistoriskforening.App;
+import app.ddf.danskdatahistoriskforening.helper.App;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
 public class TempDAO implements IDAO {

@@ -10,7 +10,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
-import app.ddf.danskdatahistoriskforening.App;
+import app.ddf.danskdatahistoriskforening.helper.App;
 
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 

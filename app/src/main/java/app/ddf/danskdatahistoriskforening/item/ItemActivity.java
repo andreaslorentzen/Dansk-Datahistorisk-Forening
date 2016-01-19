@@ -35,7 +35,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-import app.ddf.danskdatahistoriskforening.App;
+import app.ddf.danskdatahistoriskforening.helper.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.BackgroundService;
 import app.ddf.danskdatahistoriskforening.dal.Item;

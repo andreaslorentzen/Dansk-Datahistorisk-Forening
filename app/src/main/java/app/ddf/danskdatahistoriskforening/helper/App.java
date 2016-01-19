@@ -1,4 +1,4 @@
-package app.ddf.danskdatahistoriskforening;
+package app.ddf.danskdatahistoriskforening.helper;
 
 import android.Manifest;
 import android.app.Application;

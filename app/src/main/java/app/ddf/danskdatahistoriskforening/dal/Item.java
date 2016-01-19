@@ -16,7 +16,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import app.ddf.danskdatahistoriskforening.App;
+import app.ddf.danskdatahistoriskforening.helper.App;
 
 public class Item implements Parcelable, Serializable{
 

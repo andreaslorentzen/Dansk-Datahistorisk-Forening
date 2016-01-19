@@ -9,7 +9,6 @@ import android.util.Log;
 
 import java.io.File;
 
-import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.main.MainActivity;
 
 public class LocalMediaStorage {
