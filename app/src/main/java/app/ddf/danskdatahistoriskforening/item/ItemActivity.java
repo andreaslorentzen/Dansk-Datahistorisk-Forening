@@ -495,4 +495,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    public interface ItemUpdater {
+        void updateItem(Item item);
+    }
 }

@@ -42,10 +42,6 @@ public class ShowItemFragment extends Fragment implements View.OnClickListener, 
     private LinearLayout imageContainer;
     private ArrayList<Pair<ImageView, Uri>> imageUris;
 
-    public ShowItemFragment() {
-        // Required empty public constructor
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.fragment_show_item, container, false);

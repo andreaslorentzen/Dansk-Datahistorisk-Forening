@@ -18,9 +18,6 @@ import java.text.SimpleDateFormat;
 
 import app.ddf.danskdatahistoriskforening.domain.Logic;
 
-/**
- * Created by mathias on 12/01/16.
- */
 public class App extends Application {
     //TODO calculate acceptable thumbnail dimensions based on screensize or available space
     public static final int MAX_THUMBNAIL_WIDTH = 150;

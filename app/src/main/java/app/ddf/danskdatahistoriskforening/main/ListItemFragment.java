@@ -1,9 +1,9 @@
 package app.ddf.danskdatahistoriskforening.main;
 
 
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,8 +12,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-
-import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +24,7 @@ import app.ddf.danskdatahistoriskforening.domain.UserSelection;
 public class ListItemFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener, UserSelection.SearchObservator {
 
     ListView itemList;
-    JSONArray items;
-
     TextView emptyText;
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

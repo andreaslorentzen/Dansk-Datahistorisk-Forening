@@ -25,7 +25,7 @@ import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
 import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
-public class ItemFragment extends Fragment implements View.OnClickListener, ItemUpdater, TextView.OnEditorActionListener {
+public class ItemFragment extends Fragment implements View.OnClickListener, ItemActivity.ItemUpdater, TextView.OnEditorActionListener {
 
     ImageButton cameraButton;
     EditText itemTitle;

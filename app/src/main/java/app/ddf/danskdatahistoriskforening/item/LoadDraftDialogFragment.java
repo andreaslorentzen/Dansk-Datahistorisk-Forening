@@ -10,9 +10,6 @@ import android.support.v7.app.AlertDialog;
 
 import app.ddf.danskdatahistoriskforening.dal.Item;
 
-/**
- * Created by jonas on 1/15/16.
- */
 public class LoadDraftDialogFragment extends DialogFragment {
     Item draft;
     ConfirmDraftLoadListener mListener;

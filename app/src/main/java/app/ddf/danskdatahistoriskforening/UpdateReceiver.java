@@ -9,9 +9,6 @@ import android.net.NetworkInfo;
 import app.ddf.danskdatahistoriskforening.item.ItemActivity;
 import app.ddf.danskdatahistoriskforening.main.MainActivity;
 
-/**
- * Created by mathias on 12/01/16.
- */
 public class UpdateReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {

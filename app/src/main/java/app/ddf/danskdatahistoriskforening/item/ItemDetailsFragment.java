@@ -20,7 +20,7 @@ import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
 
 
-public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener, ItemUpdater, TextView.OnEditorActionListener, View.OnFocusChangeListener {
+public class ItemDetailsFragment extends Fragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener, ItemActivity.ItemUpdater, TextView.OnEditorActionListener, View.OnFocusChangeListener {
 
     TextView dateFrom;
     TextView dateTo;
