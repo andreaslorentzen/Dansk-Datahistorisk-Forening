@@ -75,7 +75,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
-                android:src="@drawable/ic_mic"
+                android:src="@drawable/ic_mic_white_48dp"
                 android:background="@drawable/roundbutton"
                 android:maxHeight="60dp"
                 android:minHeight="60dp"

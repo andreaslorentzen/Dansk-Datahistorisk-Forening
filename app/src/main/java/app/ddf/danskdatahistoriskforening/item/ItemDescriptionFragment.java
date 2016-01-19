@@ -71,7 +71,6 @@ public class ItemDescriptionFragment extends Fragment implements ItemUpdater, Vi
         seekBar.setOnSeekBarChangeListener(this);
 
         apHandler = new Handler();
-            resetAudioPlayer(); // sets mPlayer
         return layout;
     }
 

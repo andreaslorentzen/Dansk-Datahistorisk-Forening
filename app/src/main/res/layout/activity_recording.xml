@@ -15,33 +15,40 @@
         android:gravity="center"
         android:layout_margin="10dp">
 
-        <ImageButton
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:id="@+id/cancelButton"
-            android:scaleType="fitCenter"
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_below="@+id/cancelButton"
-            android:layout_centerHorizontal="true"
-            android:maxHeight="36dp"
-            android:maxWidth="36dp"
-            android:background="@drawable/ic_close_red_a700_48dp" />
+            android:padding="6dp">
+
+            <ImageButton
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:id="@+id/cancelButton"
+                android:scaleType="fitCenter"
+                android:background="@drawable/ic_close_red_a700_48dp" />
+        </FrameLayout>
 
         <Space
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <ImageButton
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:id="@+id/doneButton"
-            android:scaleType="fitCenter"
-            android:layout_gravity="center_horizontal"
-            android:layout_below="@+id/cancelButton"
-            android:layout_centerHorizontal="true"
-            android:maxHeight="36dp"
-            android:maxWidth="36dp"
-            android:background="@drawable/ic_done_green_500_48dp" />
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="6dp"
+            android:layout_below="@+id/cancelButton">
+
+            <ImageButton
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:id="@+id/doneButton"
+                android:scaleType="fitCenter"
+
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/ic_done_green_500_48dp" />
+        </FrameLayout>
 
     </LinearLayout>
 
@@ -84,14 +91,18 @@
                 android:gravity="center" >
 
                 <ImageButton
-                    android:layout_width="96dp"
-                    android:layout_height="96dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:id="@+id/recButton"
-                    android:scaleType="fitCenter"
                     android:layout_gravity="center"
                     android:layout_below="@+id/imageButton2"
                     android:layout_centerHorizontal="true"
-                    android:background = "@drawable/ic_fiber_manual_record_black_48dp" />
+                    android:background = "@drawable/roundbutton"
+                    android:src="@drawable/ic_mic_white_48dp"
+                    android:maxHeight="72dp"
+                    android:maxWidth="72dp"
+                    android:minHeight="72dp"
+                    android:minWidth="72dp" />
             </LinearLayout>
 
             <Space
@@ -106,17 +117,22 @@
                 android:layout_marginBottom="10dp"
                 android:layout_marginLeft="10dp">
 
-                <ImageButton
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:id="@+id/trashButton"
-                    android:scaleType="fitCenter"
-                    android:layout_below="@+id/imageButton2"
-                    android:layout_centerHorizontal="true"
-                    android:layout_gravity="left|bottom"
-                    android:maxHeight="36dp"
-                    android:maxWidth="36dp"
-                    android:background="@drawable/ic_delete_red_a700_48dp" />
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="6dp"
+                    android:layout_below="@+id/imageButton2">
+
+                    <ImageButton
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:id="@+id/trashButton"
+                        android:scaleType="fitCenter"
+
+                        android:layout_centerHorizontal="true"
+                        android:layout_gravity="left|bottom"
+                        android:background="@drawable/ic_delete_red_a700_48dp" />
+                </FrameLayout>
 
             </LinearLayout>
 
@@ -196,6 +212,14 @@
         </LinearLayout>
 
     </RelativeLayout>
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Button"
+        android:id="@+id/button"
+        android:layout_gravity="right" />
 
 </LinearLayout>
 

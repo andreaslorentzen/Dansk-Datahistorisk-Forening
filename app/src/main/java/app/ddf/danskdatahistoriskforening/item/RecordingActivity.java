@@ -76,7 +76,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         if (recordedFile.exists()) {
             recordedFile.delete();
         }
-        resetAudioPlayer();
+        //resetAudioPlayer();
 
         arHandler = new Handler();
         apHandler = new Handler();
@@ -84,6 +84,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         startRecording();
     }
 
+    long buttonCooldown;
     @Override
     public void onClick(View v) {
         if(v == cancelButton){
@@ -91,10 +92,14 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         } else  if(v == doneButton){
             finishRecording();
         } else  if(v == recButton){
-            if (ar.isRecording()) {
-                stopRecording();
-            } else {
-                startRecording();
+            long currentTime = System.nanoTime();
+            if (currentTime-buttonCooldown > 200000000) { // hack fix 400 milliseconds cooldown between button clicks
+                if (ar.isRecording()) {
+                    stopRecording();
+                } else {
+                    startRecording();
+                }
+                buttonCooldown = currentTime;
             }
         } else  if(v == trashButton){
             trashRecording();
@@ -191,8 +196,9 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         try {
             if (!ar.isRecording())
                 return;
-            ar.stopRecording();
-            recButton.setBackgroundResource(R.drawable.ic_fiber_manual_record_black_48dp);
+            if (!ar.stopRecording())
+                return;
+            recButton.setImageResource(R.drawable.ic_mic_white_48dp);
             arHandler.removeCallbacks(arRunnable);
             resetAudioPlayer();
             // enable buttons
@@ -210,7 +216,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
             setEnableAP(false);
             ar.startRecording();
             startTime = System.currentTimeMillis();
-            recButton.setBackgroundResource(R.drawable.ic_pause_circle_filled_white_48dp);
+            recButton.setImageResource(R.drawable.ic_pause);
             arHandler.postDelayed(arRunnable, 0);
             audioText.setText("Recording");
         } catch (IOException e) {
@@ -261,8 +267,10 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onBackPressed() {
-        cancelRecording();
+        if (!ar.isRecording())
+            cancelRecording();
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -315,12 +323,25 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         apHandler.removeCallbacks(apRunnable);
         playButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
         setEnableScreen(true);
-        recButton.setEnabled(true);
+        setEnableRec(true);
         audioText.setText("Paused");
         if (ap == null)
             return;
         if (ap.isPlaying())
             ap.pause();
+    }
+
+
+    private void setEnableRec(boolean active) {
+        recButton.setEnabled(active);
+        if (active) {
+            //derp.setBackgroundColor(Color.parseColor("#999999"));
+            recButton.setAlpha(1.0f);
+            recText.setAlpha(1.0f);
+        } else {
+            recButton.setAlpha(0.35f);
+            recText.setAlpha(0.35f);
+        }
     }
 
     // PAUSE does NOT reset seek/pos
@@ -331,17 +352,13 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         apHandler.removeCallbacks(apRunnable);
         playButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
         setEnableScreen(true);
-        recButton.setEnabled(true);
-        recButton.setAlpha(1.0f);
-        recText.setAlpha(1.0f);
+        setEnableRec(true);
     }
 
     private void startAudioPlayer() {
         // disable buttons
         setEnableScreen(false);
-        recButton.setEnabled(false);
-        recText.setAlpha(0.35f);
-        recButton.setAlpha(0.35f);
+        setEnableRec(false);
 
         playButton.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
         ap.start();

@@ -30,8 +30,8 @@ public class AudioRecorder  {
     }
 
     public void startRecording() throws IOException {
-        mr = new MediaRecorder();
         isRecording = true;
+        mr = new MediaRecorder();
         String mFileName = LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD_TEMP).getPath();
         File tempFile = new File(mFileName);
         if (tempFile.exists()) {
@@ -48,16 +48,23 @@ public class AudioRecorder  {
         mr.start();
     }
 
-    public void stopRecording() throws IOException {
+    public boolean stopRecording() throws IOException {
         isRecording = false;
         if (mr == null)
-            return;
-        mr.stop();     // stop recording
+            return false;
+        try{
+            mr.stop();     // stop recording
+        }catch(RuntimeException stopException){
+            return false;
+        }
+
         mr.reset();    // set state to idle
         mr.release();  // release resources back to the system
         File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
         File recordedFileTemp = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD_TEMP).getPath());
         mergeAudioFile(recordedFile, recordedFileTemp);
+        isRecording = false;
+        return true;
     }
 
     private void mergeAudioFile(File recordedFile, File recordedFileTemp) throws IOException {
