@@ -118,6 +118,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         }
 
 
+
         //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
         //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
 
@@ -409,33 +410,22 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
                 Log.d("updateImage", "remaining URIs: " + remainingURIs.size());
 
-                //no change
-                if (remainingURIs.size() == imageViews.size()) {
-                    return;
-                }
-
-                //    item.setPicturesChanged(true);
-
-                for (int i = 0; i < imageViews.size(); i++) {
-                    Pair<ImageView, Uri> listItem = imageViews.get(i);
-
-                    if (!remainingURIs.contains(listItem.second)) {
-                        //image has been removed
-
-                        if (item.getAddedPictures() != null) {//image may have been added during this registration
-                            if (!item.getAddedPictures().contains(listItem.second)) {
-                                item.addDeletedPicture(listItem.second);
-                            } else {
-                                item.removeFromAddedPicture(listItem.second);
-                            }
-                        } else {//image was taken during earlier registration
-                            item.addDeletedPicture(listItem.second);
+                if(item.getPictures() != null){
+                    for (Uri uri: item.getPictures() ) {
+                        if(!remainingURIs.contains(uri)){
+                            item.addDeletedPicture(uri);
+                            item.removeFromPictures(uri);
                         }
-
-                        //remove picture from list of local images
-                        item.removeFromPictures(listItem.second);
                     }
                 }
+                if(item.getAddedPictures() != null) {
+                    for (Uri uri : item.getAddedPictures()) {
+                        if (!remainingURIs.contains(uri)) {
+                            item.removeFromAddedPicture(uri);
+                        }
+                    }
+                }
+
             }
         } else if (requestCode == ItemActivity.AUDIORECORDING_REQUEST_CODE) {
             System.out.println(".");
