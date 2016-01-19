@@ -14,4 +14,10 @@
     <string name="itemProducerLabel">Producer:</string>
     <string name="itemPostNummerLabel">Post nummer:</string>
     <string name="noItemsFound">No items found</string>
+    <string name="recordButtonDescription" />
+    <string name="playSoundButtonDescription" />
+    <string name="prevButtonDescription" />
+    <string name="nextButtonDescription" />
+    <string name="itemTitleLabel">Titel</string>
+    <string name="cameraButtonDescription" />
 </resources>
