@@ -94,32 +94,4 @@ public class AudioRecorder  {
         recordedFileMerged.renameTo(new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath()));
     }
 
-    public static MADATA mergeMultipleAudioFile(List<Uri> audioUris) throws IOException {
-        if (audioUris == null)
-            throw new IOException("AudioUris is null");
-        Movie finalMovie = new Movie();
-        List<Track> tracksList = new ArrayList<Track>();
-        List<Integer> durationList = new ArrayList<Integer>();
-        for (Uri uri : audioUris) {
-            File file = new File(LocalMediaStorage.getOutputMediaFileUri(uri.getPath(), LocalMediaStorage.MEDIA_TYPE_AUDIO).getPath());
-            Movie movie = MovieCreator.build(new FileDataSourceImpl(file));
-            List<Track> movieOneTracks = movie.getTracks();
-            tracksList.add(movieOneTracks.get(0));
-            durationList.add((int) movieOneTracks.get(0).getDuration());
-        }
-        Track[] tracks = (Track[]) tracksList.toArray();
-        finalMovie.addTrack(new AppendTrack(tracks));
-
-        final Container container = new DefaultMp4Builder().build(finalMovie);
-        File recordedFileMerged = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD_MERGED).getPath());
-        if (recordedFileMerged.exists()) {
-            recordedFileMerged.delete();
-        }
-        final FileOutputStream fos = new FileOutputStream(new File(String.format(recordedFileMerged.getPath())));
-        final WritableByteChannel bb = Channels.newChannel(fos);
-        container.writeContainer(bb);
-        fos.close();
-        return new MADATA(recordedFileMerged.toURI(), durationList);
-    }
-
 }
