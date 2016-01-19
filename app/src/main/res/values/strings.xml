@@ -13,4 +13,5 @@
     <string name="itemDonatorLabel">Donator:</string>
     <string name="itemProducerLabel">Producer:</string>
     <string name="itemPostNummerLabel">Post nummer:</string>
+    <string name="noItemsFound">No items found</string>
 </resources>
