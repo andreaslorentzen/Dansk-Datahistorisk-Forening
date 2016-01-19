@@ -388,6 +388,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
 
         String filePath = LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath();
         if (new File(filePath).exists()) {
+            audioText.setText("Paused");
             ap = new MediaPlayer();
             setEnabledTrash(true);
             ap = MediaPlayer.create(this, Uri.parse(filePath));
@@ -408,7 +409,10 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         seekBar.setProgress(0);
         posText.setText("0:00.00");
         durText.setText("0:00.00");
-        audioText.setText("Nothing recorded");
+        if (ar.isRecording())
+            audioText.setText("Recording");
+        else
+            audioText.setText("Nothing recorded");
         setEnableAP(false);
     }
 
