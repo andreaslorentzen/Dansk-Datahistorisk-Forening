@@ -73,10 +73,9 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
         registerToolbar.setNavigationIcon(R.drawable.ic_close_white_24dp);
 
-        if(Logic.instance.isNewRegistration()){
+        if (Logic.instance.isNewRegistration()) {
             registerToolbar.setTitle("Registrer genstand");
-        }
-        else{
+        } else {
             registerToolbar.setTitle("Rediger genstand");
         }
 
@@ -124,13 +123,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-
-
-        //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
-        //    ((LinearLayout.LayoutParams) viewPager.getLayoutParams()).weight = 1;
-
     }
-
 
     private void generateImagePair(Uri uri) {
 
@@ -144,14 +137,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         imageView.setOnClickListener(this);
 
         imageViews.add(new Pair<>(imageView, uri));
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        //outState.putParcelable("item", item);
-        //outState.putInt("index", viewPager.getCurrentItem());
     }
 
     @Override
@@ -186,13 +171,13 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     private void save() {
         updateItem();
         Item item = Logic.instance.editItem;
-        if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty()){
+        if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty()) {
             Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (!App.isConnected()){
-            if(Logic.instance.isNewRegistration())
+        if (!App.isConnected()) {
+            if (Logic.instance.isNewRegistration())
                 Toast.makeText(this, "Genstanden kan ikke registreres uden internet", Toast.LENGTH_SHORT).show();
             else
                 Toast.makeText(this, "Genstanden kan ikke opdateres uden internet", Toast.LENGTH_SHORT).show();
@@ -200,8 +185,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         Intent backgroundService = new Intent(this, BackgroundService.class);
-    //    backgroundService.putExtra("event", Logic.instance.isNewRegistration() ? "create" : "update");
-    //    backgroundService.putExtra("item", (Parcelable) item);
         startService(backgroundService);
 
         Logic.setListUpdated(false);
@@ -277,7 +260,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        Log.d("DDF", "imageClick");
 
         int index = 0;
         ArrayList<Uri> uris = new ArrayList<>();
@@ -376,14 +358,12 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        System.out.println("AJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ " + requestCode + " " + resultCode);
         Item item = Logic.instance.editItem;
         if (item == null)
             return;
 
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             //itemFragment.onActivityResult(requestCode, resultCode, data);
-            Log.d("updateImage", "Result");
 
             if (resultCode == Activity.RESULT_OK) {
                 item.addToAddedPictures(Logic.instance.tempUri);
@@ -402,37 +382,33 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
             if (resultCode == AppCompatActivity.RESULT_OK) {
                 ArrayList<Uri> remainingURIs = data.getParcelableArrayListExtra("remainingURIs");
 
-                Log.d("updateImage", "remaining URIs: " + remainingURIs.size());
-
                 List<Uri> tempDeleteUris = new ArrayList<>();
-                if(item.getPictures() != null){
-                    for (Uri uri: item.getPictures() ) {
-                        if(!remainingURIs.contains(uri)){
+                if (item.getPictures() != null) {
+                    for (Uri uri : item.getPictures()) {
+                        if (!remainingURIs.contains(uri)) {
                             item.addDeletedPicture(uri);
                             tempDeleteUris.add(uri);
                         }
                     }
-                    for (Uri uri: tempDeleteUris) {
+                    for (Uri uri : tempDeleteUris) {
                         item.removeFromPictures(uri);
                     }
                 }
-                if(item.getAddedPictures() != null) {
+                if (item.getAddedPictures() != null) {
                     tempDeleteUris.clear();
                     for (Uri uri : item.getAddedPictures()) {
                         if (!remainingURIs.contains(uri)) {
                             tempDeleteUris.add(uri);
                         }
                     }
-                    for (Uri uri: tempDeleteUris) {
+                    for (Uri uri : tempDeleteUris) {
                         item.removeFromAddedPicture(uri);
                     }
                 }
 
             }
         } else if (requestCode == ItemActivity.AUDIORECORDING_REQUEST_CODE) {
-            System.out.println(".");
             if (resultCode == Activity.RESULT_OK) {
-                System.out.println(". result ok");
                 item.addToAddRecordings((Uri) data.getParcelableExtra("recordingUri"));
                 Toast.makeText(this, "Audio file added!", Toast.LENGTH_LONG).show();
             }
@@ -488,10 +464,9 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         Item item = Logic.instance.editItem;
 
         if (item.hasContent() && Logic.instance.isNewRegistration() && !itemSaved) {
-            //save draft
-            Log.d("draft", "Saving Draft");
 
             Logic.instance.draftManager.saveDraft();
+
         }
     }
 

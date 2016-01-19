@@ -85,15 +85,16 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     }
 
     long buttonCooldown;
+
     @Override
     public void onClick(View v) {
-        if(v == cancelButton){
+        if (v == cancelButton) {
             cancelRecording();
-        } else  if(v == doneButton){
+        } else if (v == doneButton) {
             finishRecording();
-        } else  if(v == recButton){
+        } else if (v == recButton) {
             long currentTime = System.nanoTime();
-            if (currentTime-buttonCooldown > 200000000) { // hack fix 400 milliseconds cooldown between button clicks
+            if (currentTime - buttonCooldown > 200000000) { // hack fix 400 milliseconds cooldown between button clicks
                 if (ar.isRecording()) {
                     stopRecording();
                 } else {
@@ -101,9 +102,9 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
                 }
                 buttonCooldown = currentTime;
             }
-        } else  if(v == trashButton){
+        } else if (v == trashButton) {
             trashRecording();
-        } else if(v == playButton){
+        } else if (v == playButton) {
             if (ap != null) { // enabled first when a recording has been made
                 if (ap.isPlaying()) {
                     pauseAudioPlayer();
@@ -117,7 +118,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     private void finishRecording() {
         destroyAudioPlayer();
         Intent result = new Intent();
-        String fileName = "recording_" + System.nanoTime() +".mp4";
+        String fileName = "recording_" + System.nanoTime() + ".mp4";
         File file = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
         file.renameTo(new File(LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO).getPath()));
         result.putExtra("recordingUri", LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO));
@@ -229,13 +230,11 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         cancelButton.setEnabled(active);
         doneButton.setEnabled(active);
         if (active) {
-            //derp.setBackgroundColor(Color.parseColor("#999999"));
             cancelButton.setAlpha(1f);
             doneButton.setAlpha(1f);
         } else {
             cancelButton.setAlpha(0.35f);
             doneButton.setAlpha(0.35f);
-            //derp.setBackgroundColor(Color.parseColor("#333333"));
         }
     }
 
@@ -270,7 +269,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         //super.onBackPressed();
         if (ar.isRecording())
             stopRecording();
-        else if (ap!= null && ap.isPlaying())
+        else if (ap != null && ap.isPlaying())
             forcestopAudioPlayer();
         else
             cancelRecording();
@@ -295,9 +294,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
 
 
     /**
-     *
      * MEDIA PLAYER START
-     *
      */
 
     Runnable apRunnable = new Runnable() {
@@ -341,7 +338,6 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     private void setEnableRec(boolean active) {
         recButton.setEnabled(active);
         if (active) {
-            //derp.setBackgroundColor(Color.parseColor("#999999"));
             recButton.setAlpha(1.0f);
             recText.setAlpha(1.0f);
         } else {
@@ -433,9 +429,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     }
 
     /**
-     *
      * MEDIA PLAYER STOP
-     *
      */
 
     public int getAudioDuration() {
@@ -451,39 +445,12 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     }
 
     public static String millisToPlayback(int time) {
-        int hours = time/3600000;
+        int hours = time / 3600000;
         time -= hours * 3600000;
-        int minuts = time/60000;
+        int minuts = time / 60000;
         time -= minuts * 60000;
-        int seconds = time/1000;
-        time -= seconds * 1000;
+        int seconds = time / 1000;
 
-        return hours +":"+  String.format("%02d", minuts)+"."+  String.format("%02d", seconds);
+        return hours + ":" + String.format("%02d", minuts) + "." + String.format("%02d", seconds);
     }
-
-/*
-    private void setAlpha(int  a) {
-        List<View> mpChildren = getAllChildrenBFS(findViewById(R.id.mpLayout));
-        for (View c : mpChildren) {
-            Drawable d = c.getBackground();
-            if (c!=null )
-                c.setAlpha(a);
-        }
-    }
-    private List<View> getAllChildrenBFS(View v) {
-        List<View> visited = new ArrayList<View>();
-        List<View> unvisited = new ArrayList<View>();
-        unvisited.add(v);
-
-        while (!unvisited.isEmpty()) {
-            View child = unvisited.remove(0);
-            visited.add(child);
-            if (!(child instanceof ViewGroup)) continue;
-            ViewGroup group = (ViewGroup) child;
-            final int childCount = group.getChildCount();
-            for (int i=0; i<childCount; i++) unvisited.add(group.getChildAt(i));
-        }
-        return visited;
-    }
-    */
 }

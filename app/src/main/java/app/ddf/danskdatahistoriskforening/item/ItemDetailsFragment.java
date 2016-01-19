@@ -119,7 +119,7 @@ public class ItemDetailsFragment extends Fragment implements View.OnClickListene
 
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
-        if(!hasFocus)
+        if (!hasFocus)
             App.hideKeyboard(getActivity(), v);
     }
 }

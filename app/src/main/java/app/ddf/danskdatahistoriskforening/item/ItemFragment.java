@@ -57,8 +57,6 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
     public void onPause() {
         super.onPause();
         updateItem(Logic.instance.editItem);
-
-        //if fragment is destroyed imageViews need to be added to a new container
     }
 
     @Override
@@ -74,19 +72,10 @@ public class ItemFragment extends Fragment implements View.OnClickListener, Item
 
         imageContainer.removeAllViews();
 
-        Item item = Logic.instance.editItem;
-
         for (Pair<ImageView, Uri> pair : imageViews) {
             imageContainer.addView(pair.first);
 
         }
-
-/*
-        for(int i=0; i<imageViews.size(); i++){
-            //    ((View) p.first).setOnClickListener((View.OnClickListener) getActivity());
-            //    ((View) p.first).setOnClickListener(this);
-        }
-*/
     }
 
     @Override

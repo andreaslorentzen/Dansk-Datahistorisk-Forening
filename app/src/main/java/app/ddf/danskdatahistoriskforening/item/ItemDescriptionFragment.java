@@ -339,10 +339,4 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
 
     }
 
-    /*
-    private void setAudioText(TextView vt, int millis) {
-        String posString = RecordingActivity.millisToPlayback(millis);
-        vt.setText(posString.substring(0, posString.length() - 3));
-    }
-    */
 }

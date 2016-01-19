@@ -14,8 +14,9 @@ public class LoadDraftDialogFragment extends DialogFragment {
     Item draft;
     ConfirmDraftLoadListener mListener;
 
-    public interface ConfirmDraftLoadListener{
+    public interface ConfirmDraftLoadListener {
         void onDialogPositiveClick(Item draft);
+
         void onDialogNegativeClick();
     }
 
@@ -36,7 +37,7 @@ public class LoadDraftDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             draft = savedInstanceState.getParcelable("draft");
         }
 
