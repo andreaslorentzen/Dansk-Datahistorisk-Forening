@@ -336,8 +336,10 @@ public class Item implements Parcelable, Serializable{
     }
 
     public void addToAddRecordings(Uri addedRecording) {
+        System.out.println(addedRecording);
         if (addedRecordings == null)
             addedRecordings = new ArrayList<Uri>();
+        System.out.println("addToAddRecordings");
         addedRecordings.add(addedRecording);
     }
 

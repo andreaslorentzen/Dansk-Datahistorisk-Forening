@@ -81,10 +81,15 @@ public class TempDAO implements IDAO {
                     postFile(context, picture, itemID, "jpg");
                 }
             }
+            System.out.println("HAS RECORDINGS SAVE ITEM");
+            System.out.println(item.getAddedRecordings());
             if(item.getAddedRecordings() != null) {
+                System.out.println("POST RECORDINGS START:");
                 for (Uri recording : item.getAddedRecordings()) {
+                    System.out.println(recording);
                     postFile(context, recording, itemID, "mp4");
                 }
+                System.out.println("POST RECORDINGS END.");
             }
         } catch(MalformedURLException |ProtocolException e){
             // SHOULD NEVER HAPPEN IN PRODUCTION
@@ -254,9 +259,8 @@ public class TempDAO implements IDAO {
                 }
             }
 
-            if(item.isRecordingsChanged()){
-                for(Uri recording : item.getRecordings()){
-                    deleteFile(recording, item.getItemId());
+            if(item.getAddedRecordings() != null){
+                for(Uri recording : item.getAddedRecordings()){
                     postFile(context, recording, item.getItemId(), "mp4");
                 }
             }

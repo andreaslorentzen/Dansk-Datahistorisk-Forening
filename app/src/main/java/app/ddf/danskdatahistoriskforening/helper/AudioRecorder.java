@@ -50,6 +50,8 @@ public class AudioRecorder  {
 
     public void stopRecording() throws IOException {
         isRecording = false;
+        if (mr == null)
+            return;
         mr.stop();     // stop recording
         mr.reset();    // set state to idle
         mr.release();  // release resources back to the system
