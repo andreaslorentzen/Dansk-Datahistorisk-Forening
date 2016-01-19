@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
 
 import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
@@ -179,46 +180,33 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     private void save() {
         updateItem();
         Item item = Logic.instance.editItem;
-        if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty())
+        if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty()){
             Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
-
-        if (!App.isConnected())
-            Toast.makeText(this, "Kan ikke udføres uden internet", Toast.LENGTH_SHORT).show();
-
-        //item.setItemHeadline(itemFragment.getItemTitle());
-/*
-        for (Pair<ImageView, Uri> pair : imageViews) {
-            item.addToPictures(pair.second);
+            return;
         }
-*/
 
-        /*item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
-        item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
-        item.setItemDescription(descriptionFragment.getItemDescription());*/
-        if (App.isConnected()) {
-            if (item.getItemId() > 0) {
-                Intent backgroundService = new Intent(this, BackgroundService.class);
-                backgroundService.putExtra("event", "update");
-                backgroundService.putExtra("item", (Parcelable) item);
-                startService(backgroundService);
-            } else {
-                Intent backgroundService = new Intent(this, BackgroundService.class);
-                backgroundService.putExtra("event", "create");
-                backgroundService.putExtra("item", (Parcelable) item);
-                startService(backgroundService);
-            }
-            Logic.setListUpdated(false);
-
-            Intent i = new Intent();
-            i.putExtra("saved", true);
-            setResult(Activity.RESULT_OK, i);
-
-            itemSaved = true; // do not save draft if item is being sent to API
-
-            finish();
-        } else {
-            Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
+        if (!App.isConnected()){
+            if(Logic.instance.isNewRegistration())
+                Toast.makeText(this, "Genstanden kan ikke registreres uden internet", Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(this, "Genstanden kan ikke opdateres uden internet", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        Intent backgroundService = new Intent(this, BackgroundService.class);
+    //    backgroundService.putExtra("event", Logic.instance.isNewRegistration() ? "create" : "update");
+    //    backgroundService.putExtra("item", (Parcelable) item);
+        startService(backgroundService);
+
+        Logic.setListUpdated(false);
+
+        Intent i = new Intent();
+        i.putExtra("saved", true);
+        setResult(Activity.RESULT_OK, i);
+
+        itemSaved = true; // do not save draft if item is being sent to API
+
+        finish();
     }
 
     private void checkForErrors(int responseCode) {
@@ -410,19 +398,27 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
                 Log.d("updateImage", "remaining URIs: " + remainingURIs.size());
 
+                List<Uri> tempDeleteUris = new ArrayList<>();
                 if(item.getPictures() != null){
                     for (Uri uri: item.getPictures() ) {
                         if(!remainingURIs.contains(uri)){
                             item.addDeletedPicture(uri);
-                            item.removeFromPictures(uri);
+                            tempDeleteUris.add(uri);
                         }
+                    }
+                    for (Uri uri: tempDeleteUris) {
+                        item.removeFromPictures(uri);
                     }
                 }
                 if(item.getAddedPictures() != null) {
+                    tempDeleteUris.clear();
                     for (Uri uri : item.getAddedPictures()) {
                         if (!remainingURIs.contains(uri)) {
-                            item.removeFromAddedPicture(uri);
+                            tempDeleteUris.add(uri);
                         }
+                    }
+                    for (Uri uri: tempDeleteUris) {
+                        item.removeFromAddedPicture(uri);
                     }
                 }
 
