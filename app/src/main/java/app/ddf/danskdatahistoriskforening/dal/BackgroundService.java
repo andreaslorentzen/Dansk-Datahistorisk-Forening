@@ -18,10 +18,10 @@ public class BackgroundService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Context context = getApplication();
         Item item = Logic.instance.editItem;
-        int returnValue = -1;
-        if(intent.getStringExtra("event").equals("create")){
+        int returnValue;
+        if(Logic.instance.isNewRegistration()){
             returnValue = Logic.instance.model.dao.saveItemToDB(context, item);
-        } else if(intent.getStringExtra("event").equals("update")){
+        } else {
             returnValue = Logic.instance.model.dao.updateItem(context, item);
         }
         Intent localIntent = new Intent();

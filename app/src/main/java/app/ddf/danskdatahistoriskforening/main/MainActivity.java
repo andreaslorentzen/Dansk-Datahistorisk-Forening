@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     protected void onResume() {
-        System.out.println(App.isConnected());
         if (!App.isConnected()) {
             findViewById(R.id.internetConnBar).setVisibility(View.VISIBLE);
         } else {

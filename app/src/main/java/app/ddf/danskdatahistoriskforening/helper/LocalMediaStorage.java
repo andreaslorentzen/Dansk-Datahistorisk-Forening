@@ -65,8 +65,12 @@ public class LocalMediaStorage {
 
     private static File getOutputMediaFile(String filename, int type, File mediaStorageDir){
         File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE)
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator + System.nanoTime()+".jpeg");
+        if (type == MEDIA_TYPE_IMAGE){
+            if(filename == null)
+                mediaFile = new File(mediaStorageDir.getPath() + File.separator + System.nanoTime()+".jpg");
+            else
+                mediaFile = new File(mediaStorageDir.getPath() + File.separator + filename);
+        }
         else if(type == MEDIA_TYPE_AUDIO)
             mediaFile = new File(mediaStorageDir.getPath() + File.separator + filename);
         else if(type == MEDIA_TYPE_AUDIO_RECORD)

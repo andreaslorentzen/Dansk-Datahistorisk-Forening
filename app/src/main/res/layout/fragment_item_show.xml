@@ -13,8 +13,7 @@
     <ScrollView
         android:id="@+id/content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/item_details_toolbar">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:id="@+id/item_details_wrapper"
@@ -28,20 +27,16 @@
                 android:id="@+id/itemheadline"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Overskrift"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <HorizontalScrollView
                 android:id="@+id/imageScrollView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignTop="@+id/content">
+                android:layout_height="wrap_content">
 
                 <LinearLayout
                     android:id="@+id/imageContainer"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:paddingBottom="16dp"
@@ -52,16 +47,15 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Beskrivelse"
+                android:text="@string/itemDescriptionLabel"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <TextView
                 android:id="@+id/itemdescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Det her er en mega lang tekst sådan, jeg kan se om det bliver på en linje"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@color/show_details_value" />
+                android:textColor="@color/colorShowItemDetails" />
 
             <LinearLayout
                 android:layout_width="fill_parent"
@@ -72,52 +66,49 @@
                 <LinearLayout
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-
                     android:layout_weight="1"
                     android:orientation="vertical">
+
                     <TextView
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:text="Modtaget:"
+                        android:text="@string/itemReceivedLabel"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
 
                     <TextView
                         android:id="@+id/received"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:text="10-12-1994"
                         android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textColor="@color/show_details_value" />
+                        android:textColor="@color/colorShowItemDetails" />
 
                     <TextView
                         android:layout_marginTop="16dp"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:text="Datering fra:"
+                        android:text="@string/itemDatingFromLabel"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
 
                     <TextView
                         android:id="@+id/datingFrom"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:text="10-12-1994"
                         android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textColor="@color/show_details_value" />
+                        android:textColor="@color/colorShowItemDetails" />
 
                     <TextView
                         android:layout_marginTop="16dp"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:text="Datering til:"
+                        android:text="@string/itemDatingToLabel"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
 
                     <TextView
                         android:id="@+id/datingTo"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:text="10-12-1994"
                         android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textColor="@color/show_details_value" />
+                        android:textColor="@color/colorShowItemDetails" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="fill_parent"
@@ -128,21 +119,20 @@
                     <TextView
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:text="Donator:"
+                        android:text="@string/itemDonatorLabel"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
 
                     <TextView
                         android:id="@+id/donator"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Hej med dig"
                         android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textColor="@color/show_details_value" />
+                        android:textColor="@color/colorShowItemDetails" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Producer:"
+                        android:text="@string/itemProducerLabel"
                         android:layout_marginTop="16dp"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
 
@@ -150,14 +140,13 @@
                         android:id="@+id/producer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Hej med dig"
                         android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textColor="@color/show_details_value"/>
+                        android:textColor="@color/colorShowItemDetails"/>
 
                     <TextView
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:text="Post nummer:"
+                        android:text="@string/itemPostNummerLabel"
                         android:layout_marginTop="16dp"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
 
@@ -165,15 +154,10 @@
                         android:id="@+id/postNummer"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:paddingLeft="10dp"
-                        android:text="2800"
                         android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textColor="@color/show_details_value" />
+                        android:textColor="@color/colorShowItemDetails" />
                 </LinearLayout>
             </LinearLayout>
-
         </LinearLayout>
-
     </ScrollView>
 </RelativeLayout>

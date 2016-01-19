@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
 
 import app.ddf.danskdatahistoriskforening.App;
 import app.ddf.danskdatahistoriskforening.R;
@@ -71,7 +72,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_register);
 
         Toolbar registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
-        registerToolbar.setNavigationIcon(R.drawable.ic_close);
+        registerToolbar.setNavigationIcon(R.drawable.ic_close_white_24dp);
 
         if(Logic.instance.isNewRegistration()){
             registerToolbar.setTitle("Registrer genstand");
@@ -96,9 +97,16 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onResume() {
+        if (!App.isConnected()) {
+            findViewById(R.id.internetConnBar).setVisibility(View.VISIBLE);
+        } else {
+            findViewById(R.id.internetConnBar).setVisibility(View.GONE);
+        }
+
         IntentFilter filter = new IntentFilter();
         filter.addAction(App.BROADCAST_ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+
         super.onResume();
 
         Item item = Logic.instance.editItem;
@@ -116,6 +124,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
                 generateImagePair(uris.get(i));
             }
         }
+
 
 
         //     viewPager.setPageTransformer(false, new ZoomOutPageTransformer());
@@ -178,46 +187,33 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     private void save() {
         updateItem();
         Item item = Logic.instance.editItem;
-        if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty())
+        if (item.getItemHeadline() == null || item.getItemHeadline().isEmpty()){
             Toast.makeText(this, "Der skal indtastes en titel", Toast.LENGTH_SHORT).show();
-
-        if (!App.isConnected())
-            Toast.makeText(this, "Kan ikke udføres uden internet", Toast.LENGTH_SHORT).show();
-
-        //item.setItemHeadline(itemFragment.getItemTitle());
-/*
-        for (Pair<ImageView, Uri> pair : imageViews) {
-            item.addToPictures(pair.second);
+            return;
         }
-*/
 
-        /*item.setDonator(detailsFragment.donator == null ? null : detailsFragment.donator.getText().toString());
-        item.setProducer(detailsFragment.producer == null ? null : detailsFragment.producer.getText().toString());
-        item.setItemDescription(descriptionFragment.getItemDescription());*/
-        if (App.isConnected()) {
-            if (item.getItemId() > 0) {
-                Intent backgroundService = new Intent(this, BackgroundService.class);
-                backgroundService.putExtra("event", "update");
-                backgroundService.putExtra("item", (Parcelable) item);
-                startService(backgroundService);
-            } else {
-                Intent backgroundService = new Intent(this, BackgroundService.class);
-                backgroundService.putExtra("event", "create");
-                backgroundService.putExtra("item", (Parcelable) item);
-                startService(backgroundService);
-            }
-            Logic.setListUpdated(false);
-
-            Intent i = new Intent();
-            i.putExtra("saved", true);
-            setResult(Activity.RESULT_OK, i);
-
-            itemSaved = true; // do not save draft if item is being sent to API
-
-            finish();
-        } else {
-            Toast.makeText(this, "Genstanden kan ikke ændres uden internet", Toast.LENGTH_SHORT).show();
+        if (!App.isConnected()){
+            if(Logic.instance.isNewRegistration())
+                Toast.makeText(this, "Genstanden kan ikke registreres uden internet", Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(this, "Genstanden kan ikke opdateres uden internet", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        Intent backgroundService = new Intent(this, BackgroundService.class);
+    //    backgroundService.putExtra("event", Logic.instance.isNewRegistration() ? "create" : "update");
+    //    backgroundService.putExtra("item", (Parcelable) item);
+        startService(backgroundService);
+
+        Logic.setListUpdated(false);
+
+        Intent i = new Intent();
+        i.putExtra("saved", true);
+        setResult(Activity.RESULT_OK, i);
+
+        itemSaved = true; // do not save draft if item is being sent to API
+
+        finish();
     }
 
     private void checkForErrors(int responseCode) {
@@ -409,33 +405,30 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
                 Log.d("updateImage", "remaining URIs: " + remainingURIs.size());
 
-                //no change
-                if (remainingURIs.size() == imageViews.size()) {
-                    return;
-                }
-
-                //    item.setPicturesChanged(true);
-
-                for (int i = 0; i < imageViews.size(); i++) {
-                    Pair<ImageView, Uri> listItem = imageViews.get(i);
-
-                    if (!remainingURIs.contains(listItem.second)) {
-                        //image has been removed
-
-                        if (item.getAddedPictures() != null) {//image may have been added during this registration
-                            if (!item.getAddedPictures().contains(listItem.second)) {
-                                item.addDeletedPicture(listItem.second);
-                            } else {
-                                item.removeFromAddedPicture(listItem.second);
-                            }
-                        } else {//image was taken during earlier registration
-                            item.addDeletedPicture(listItem.second);
+                List<Uri> tempDeleteUris = new ArrayList<>();
+                if(item.getPictures() != null){
+                    for (Uri uri: item.getPictures() ) {
+                        if(!remainingURIs.contains(uri)){
+                            item.addDeletedPicture(uri);
+                            tempDeleteUris.add(uri);
                         }
-
-                        //remove picture from list of local images
-                        item.removeFromPictures(listItem.second);
+                    }
+                    for (Uri uri: tempDeleteUris) {
+                        item.removeFromPictures(uri);
                     }
                 }
+                if(item.getAddedPictures() != null) {
+                    tempDeleteUris.clear();
+                    for (Uri uri : item.getAddedPictures()) {
+                        if (!remainingURIs.contains(uri)) {
+                            tempDeleteUris.add(uri);
+                        }
+                    }
+                    for (Uri uri: tempDeleteUris) {
+                        item.removeFromAddedPicture(uri);
+                    }
+                }
+
             }
         } else if (requestCode == ItemActivity.AUDIORECORDING_REQUEST_CODE) {
             System.out.println(".");
