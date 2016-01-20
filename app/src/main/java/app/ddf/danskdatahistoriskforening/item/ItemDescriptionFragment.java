@@ -123,7 +123,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
     public void onClick(View v) {
         if (v == recButton) {
             File folder = LocalMediaStorage.getOutputMediaFolder();
-            if (folder.exists()) {
+            if (folder == null) {
                 ((ItemActivity) getActivity()).startRecording();
             } else {
                 Toast.makeText(getActivity(), "Der opstod en fejl ved lydoptagelse, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
