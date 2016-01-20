@@ -178,10 +178,16 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
         apHandler.removeCallbacks(apRunnable);
         playButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
         audioText.setText("Paused");
+        for (MediaPlayer mp: aps) {
+            if (mp != null) {
+                if (mp.isPlaying())
+                    mp.stop();
+                mp.release();
+                mp = null;
+            }
+        }
         if (currentAP == null)
             return;
-        if (currentAP.isPlaying())
-            currentAP.stop();
         currentAP = aps.get(0);
         currentAP.seekTo(0);
     }
@@ -270,43 +276,52 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
     }
 
     private void resetAudioPlayer() {
-        Item item = Logic.instance.editItem;
 
-        seekBar.setProgress(0);
-        posText.setText("0:00:00");
-        if (aps != null) {
-            for (MediaPlayer mp : aps) {
-                mp.release();
-                mp = null;
-            }
-            aps.clear();
-        }
-        List<Uri> recordings = new ArrayList<Uri>();
-        List<Uri> recordingsBE = item.getRecordings();
-        List<Uri> recordingsFE = item.getAddedRecordings();
-        if (recordingsBE != null)
-            recordings.addAll(recordingsBE);
-        if (recordingsFE != null)
-            recordings.addAll(recordingsFE);
-        if (recordings.isEmpty()) {
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (folder == null) {
             setEnableAP(false);
-            audioText.setText("No audio files");
+            posText.setText("0:00:00");
             durText.setText("0:00:00");
+            audioText.setText("No SD card found");
+            Toast.makeText(getActivity(), "Intet SD kort blev fundet.", Toast.LENGTH_LONG).show();
         } else {
-            setEnableAP(true);
-            System.out.println(recordings.size());
-            aps = new ArrayList<MediaPlayer>();
-            for (Uri uri : recordings) {
-                System.out.println(uri);
-                File audioFile = new File(uri.getPath());
-                if (audioFile.exists()) {
-                    aps.add(MediaPlayer.create(getActivity(), Uri.parse(uri.getPath())));
+            Item item = Logic.instance.editItem;
+            seekBar.setProgress(0);
+            posText.setText("0:00:00");
+            if (aps != null) {
+                for (MediaPlayer mp : aps) {
+                    mp.release();
+                    mp = null;
                 }
+                aps.clear();
             }
-            currentAP = aps.get(0);
-            seekBar.setMax(getAPSDuration());
-            audioText.setText(aps.size() + " audio files");
-            durText.setText(millisToPlayback(getAPSDuration()));
+            List<Uri> recordings = new ArrayList<Uri>();
+            List<Uri> recordingsBE = item.getRecordings();
+            List<Uri> recordingsFE = item.getAddedRecordings();
+            if (recordingsBE != null)
+                recordings.addAll(recordingsBE);
+            if (recordingsFE != null)
+                recordings.addAll(recordingsFE);
+            if (recordings.isEmpty()) {
+                setEnableAP(false);
+                audioText.setText("No audio files");
+                durText.setText("0:00:00");
+            } else {
+                setEnableAP(true);
+                System.out.println(recordings.size());
+                aps = new ArrayList<MediaPlayer>();
+                for (Uri uri : recordings) {
+                    System.out.println(uri);
+                    File audioFile = new File(uri.getPath());
+                    if (audioFile.exists()) {
+                        aps.add(MediaPlayer.create(getActivity(), Uri.parse(uri.getPath())));
+                    }
+                }
+                currentAP = aps.get(0);
+                seekBar.setMax(getAPSDuration());
+                audioText.setText(aps.size() + " audio files");
+                durText.setText(millisToPlayback(getAPSDuration()));
+            }
         }
     }
     

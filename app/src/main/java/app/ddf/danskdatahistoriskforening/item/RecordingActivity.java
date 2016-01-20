@@ -413,6 +413,12 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     private void resetAudioPlayer() {
         File folder = LocalMediaStorage.getOutputMediaFolder();
         if (folder == null) {
+            setEnabledTrash(false);
+            setEnableAP(false);
+            posText.setText("0:00:00");
+            durText.setText("0:00:00");
+            audioText.setText("No SD card found");
+            Toast.makeText(this, "Intet SD kort blev fundet.", Toast.LENGTH_LONG).show();
         } else {
             MediaPlayer old = ap;
             String filePath = LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath();
@@ -434,16 +440,17 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
                 old.release();
                 return;
             }
+            setEnabledTrash(false);
+            seekBar.setProgress(0);
+            posText.setText("0:00:00");
+            durText.setText("0:00:00");
+            if (ar.isRecording())
+                audioText.setText("Recording");
+            else
+                audioText.setText("Nothing recorded");
+            setEnableAP(false);
         }
-        setEnabledTrash(false);
-        seekBar.setProgress(0);
-        posText.setText("0:00:00");
-        durText.setText("0:00:00");
-        if (ar.isRecording())
-            audioText.setText("Recording");
-        else
-            audioText.setText("Nothing recorded");
-        setEnableAP(false);
+
     }
 
     @Override
