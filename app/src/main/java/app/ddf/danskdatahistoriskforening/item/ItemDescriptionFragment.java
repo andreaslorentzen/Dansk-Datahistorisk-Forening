@@ -273,7 +273,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
         Item item = Logic.instance.editItem;
 
         seekBar.setProgress(0);
-        posText.setText("0:00.00");
+        posText.setText("0:00:00");
         if (aps != null) {
             for (MediaPlayer mp : aps) {
                 mp.release();
@@ -291,7 +291,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
         if (recordings.isEmpty()) {
             setEnableAP(false);
             audioText.setText("No audio files");
-            durText.setText("0:00.00");
+            durText.setText("0:00:00");
         } else {
             setEnableAP(true);
             System.out.println(recordings.size());

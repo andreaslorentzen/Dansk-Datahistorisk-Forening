@@ -190,7 +190,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
                     public void onClick(DialogInterface dialog, int which) {
                         File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
                         recordedFile.delete();
-                        recText.setText("0:00.00");
+                        recText.setText("0:00:00");
                         resetAudioPlayer();
                     }
                 });
@@ -208,14 +208,21 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void setEnabledTrash(boolean active) {
-        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, 3).getPath());
-        if (recordedFile.exists() && active) {
-            trashButton.setEnabled(true);
-            trashButton.setAlpha(1.0f);
-        } else {
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (folder == null) {
             trashButton.setEnabled(false);
             trashButton.setAlpha(0.35f);
+        } else {
+            File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, 3).getPath());
+            if (recordedFile.exists() && active) {
+                trashButton.setEnabled(true);
+                trashButton.setAlpha(1.0f);
+            } else {
+                trashButton.setEnabled(false);
+                trashButton.setAlpha(0.35f);
+            }
         }
+
     }
 
     private void stopRecording() {
@@ -327,7 +334,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         public void run() {
             if (!ap.isPlaying()) {
                 seekBar.setProgress(0);
-                posText.setText("0:00.00");
+                posText.setText("0:00:00");
                 recButton.setAlpha(1.0f);
                 recText.setAlpha(1.0f);
                 forcestopAudioPlayer();
@@ -404,32 +411,34 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void resetAudioPlayer() {
-
-        MediaPlayer old = ap;
-
-        String filePath = LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath();
-        if (new File(filePath).exists()) {
-            audioText.setText("Paused");
-            ap = new MediaPlayer();
-            setEnabledTrash(true);
-            ap = MediaPlayer.create(this, Uri.parse(filePath));
-            seekBar.setMax(ap.getDuration());
-            durText.setText(millisToPlayback(ap.getDuration()));
-            if (old == null) {
-                seekBar.setProgress(0);
-                posText.setText("0:00.00");
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (folder == null) {
+        } else {
+            MediaPlayer old = ap;
+            String filePath = LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath();
+            if (new File(filePath).exists()) {
+                audioText.setText("Paused");
+                ap = new MediaPlayer();
+                setEnabledTrash(true);
+                ap = MediaPlayer.create(this, Uri.parse(filePath));
+                seekBar.setMax(ap.getDuration());
+                durText.setText(millisToPlayback(ap.getDuration()));
+                if (old == null) {
+                    seekBar.setProgress(0);
+                    posText.setText("0:00:00");
+                    return;
+                }
+                seekBar.setProgress(old.getDuration());
+                posText.setText(millisToPlayback(ap.getCurrentPosition()));
+                ap.seekTo(old.getDuration());
+                old.release();
                 return;
             }
-            seekBar.setProgress(old.getDuration());
-            posText.setText(millisToPlayback(ap.getCurrentPosition()));
-            ap.seekTo(old.getDuration());
-            old.release();
-            return;
         }
         setEnabledTrash(false);
         seekBar.setProgress(0);
-        posText.setText("0:00.00");
-        durText.setText("0:00.00");
+        posText.setText("0:00:00");
+        durText.setText("0:00:00");
         if (ar.isRecording())
             audioText.setText("Recording");
         else
@@ -476,6 +485,6 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         time -= minuts * 60000;
         int seconds = time / 1000;
 
-        return hours + ":" + String.format("%02d", minuts) + "." + String.format("%02d", seconds);
+        return hours + ":" + String.format("%02d", minuts) + ":" + String.format("%02d", seconds);
     }
 }
