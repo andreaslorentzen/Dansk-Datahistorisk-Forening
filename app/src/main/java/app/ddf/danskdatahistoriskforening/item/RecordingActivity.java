@@ -213,9 +213,12 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     private void startRecording() {
         try {
             // disable buttons
+            if (!ar.startRecording()) {
+                Toast.makeText(this, "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
+                return;
+            }
             setEnableScreen(false);
             setEnableAP(false);
-            ar.startRecording();
             startTime = System.currentTimeMillis();
             recButton.setImageResource(R.drawable.ic_pause);
             arHandler.postDelayed(arRunnable, 0);

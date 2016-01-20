@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import app.ddf.danskdatahistoriskforening.helper.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
+import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
 public class ItemDescriptionFragment extends Fragment implements ItemActivity.ItemUpdater, View.OnClickListener, SeekBar.OnSeekBarChangeListener, View.OnFocusChangeListener {
     EditText itemDescription;
@@ -120,7 +122,12 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
     @Override
     public void onClick(View v) {
         if (v == recButton) {
-            ((ItemActivity) getActivity()).startRecording();
+            File folder = LocalMediaStorage.getOutputMediaFolder();
+            if (folder.exists()) {
+                ((ItemActivity) getActivity()).startRecording();
+            } else {
+                Toast.makeText(getActivity(), "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
+            }
         } else if(v == playButton){
             if (currentAP.isPlaying())
                 pauseAP();
