@@ -117,12 +117,18 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
 
     private void finishRecording() {
         destroyAudioPlayer();
-        Intent result = new Intent();
-        String fileName = "recording_" + System.nanoTime() + ".mp4";
-        File file = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
-        file.renameTo(new File(LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO).getPath()));
-        result.putExtra("recordingUri", LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO));
-        setResult(Activity.RESULT_OK, result);
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (folder == null) {
+            Toast.makeText(this, "Der opstod en fejl ved lydoptagelse, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
+            finish();
+        } else {
+            Intent result = new Intent();
+            String fileName = "recording_" + System.nanoTime() + ".mp4";
+            File file = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+            file.renameTo(new File(LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO).getPath()));
+            result.putExtra("recordingUri", LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO));
+            setResult(Activity.RESULT_OK, result);
+        }
         finish();
     }
 
