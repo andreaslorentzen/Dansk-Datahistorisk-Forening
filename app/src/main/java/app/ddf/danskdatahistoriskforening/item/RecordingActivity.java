@@ -98,7 +98,12 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
                 if (ar.isRecording()) {
                     stopRecording();
                 } else {
-                    startRecording();
+                    File folder = LocalMediaStorage.getOutputMediaFolder();
+                    if (folder == null) {
+                        Toast.makeText(this, "Der opstod en fejl ved lydoptagelse, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
+                    } else {
+                        startRecording();
+                    }
                 }
                 buttonCooldown = currentTime;
             }
@@ -119,7 +124,8 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         destroyAudioPlayer();
         File folder = LocalMediaStorage.getOutputMediaFolder();
         if (folder == null) {
-            Toast.makeText(this, "Der opstod en fejl ved lydoptagelse, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Der opstod en fejl da lydoptagelsen skulle gemmes, intet SD kort blev fundet, optagelsen blev ikke gemt.", Toast.LENGTH_LONG).show();
+            finish();
         } else {
             Intent result = new Intent();
             String fileName = "recording_" + System.nanoTime() + ".mp4";
@@ -127,8 +133,10 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
             file.renameTo(new File(LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO).getPath()));
             result.putExtra("recordingUri", LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO));
             setResult(Activity.RESULT_OK, result);
+            finish();
         }
-        finish();
+
+
     }
 
     private void cancelRecording() {
@@ -216,18 +224,18 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void startRecording() {
-        // disable buttons
-        File folder = LocalMediaStorage.getOutputMediaFolder();
-        if (folder == null) {
-            Toast.makeText(this, "Der opstod en fejl ved lydoptagelse, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
-            return;
+        try {
+            // disable buttons
+            setEnableScreen(false);
+            setEnableAP(false);
+            ar.startRecording();
+            startTime = System.currentTimeMillis();
+            recButton.setImageResource(R.drawable.ic_pause);
+            arHandler.postDelayed(arRunnable, 0);
+            audioText.setText("Recording");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        setEnableScreen(false);
-        setEnableAP(false);
-        startTime = System.currentTimeMillis();
-        recButton.setImageResource(R.drawable.ic_pause);
-        arHandler.postDelayed(arRunnable, 0);
-        audioText.setText("Recording");
     }
 
     private void setEnableScreen(boolean active) {
