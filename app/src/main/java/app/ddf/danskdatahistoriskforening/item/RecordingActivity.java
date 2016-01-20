@@ -289,14 +289,6 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        forcestopAudioPlayer();
-        destroyAudioPlayer();
-        stopRecording();
-    }
-
-    @Override
     public void onBackPressed() {
         //super.onBackPressed();
         if (ar.isRecording())
@@ -309,21 +301,12 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onPause() {
+        super.onPause();
         forcestopAudioPlayer();
         destroyAudioPlayer();
         stopRecording();
     }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        forcestopAudioPlayer();
-        destroyAudioPlayer();
-        stopRecording();
-    }
-
 
     /**
      * MEDIA PLAYER START

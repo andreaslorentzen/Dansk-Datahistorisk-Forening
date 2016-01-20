@@ -89,13 +89,6 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        forcestopAudioPlayer();
-        destroyAudioPlayer();
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
         forcestopAudioPlayer();
@@ -166,8 +159,8 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
     }
 
     private void destroyAudioPlayer() {
-        if (aps != null)
-            for (MediaPlayer mp: aps) {
+        if (aps != null) {
+            for (MediaPlayer mp : aps) {
                 if (mp != null) {
                     if (mp.isPlaying())
                         mp.stop();
@@ -175,6 +168,8 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
                     mp = null;
                 }
             }
+            aps.clear();
+        }
         if (currentAP == null)
             return;
         currentAP = null;
@@ -287,13 +282,6 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
             Item item = Logic.instance.editItem;
             seekBar.setProgress(0);
             posText.setText("0:00:00");
-            if (aps != null) {
-                for (MediaPlayer mp : aps) {
-                    mp.release();
-                    mp = null;
-                }
-                aps.clear();
-            }
             List<Uri> recordings = new ArrayList<Uri>();
             List<Uri> recordingsBE = item.getRecordings();
             List<Uri> recordingsFE = item.getAddedRecordings();
