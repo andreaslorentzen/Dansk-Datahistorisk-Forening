@@ -2,14 +2,11 @@ package app.ddf.danskdatahistoriskforening.helper;
 
 //http://developer.android.com/guide/topics/media/camera.html#saving-media
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
-
-import app.ddf.danskdatahistoriskforening.main.MainActivity;
 
 public class LocalMediaStorage {
     public static final int MEDIA_TYPE_IMAGE = 1;
@@ -17,13 +14,13 @@ public class LocalMediaStorage {
     public static final int MEDIA_TYPE_AUDIO_RECORD = 3;
     public static final int MEDIA_TYPE_AUDIO_RECORD_TEMP = 4;
     public static final int MEDIA_TYPE_AUDIO_RECORD_MERGED = 5;
-    private static Context context;
-
-
 
     /** Create a file Uri for saving an image or video */
     public static Uri getOutputMediaFileUri(String filename, int type){
         File file = getOutputMediaFile(filename, type);
+        if(file == null){
+            return null;
+        }
         return Uri.fromFile(file);
     }
 
@@ -84,9 +81,5 @@ public class LocalMediaStorage {
         return mediaFile;
     }
 
-
-    public static void setContext(MainActivity mainActivity) {
-        context = mainActivity;
-    }
 }
 

@@ -76,8 +76,6 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         if (recordedFile.exists()) {
             recordedFile.delete();
         }
-        //resetAudioPlayer();
-
         arHandler = new Handler();
         apHandler = new Handler();
         ar = new AudioRecorder();
@@ -98,7 +96,12 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
                 if (ar.isRecording()) {
                     stopRecording();
                 } else {
-                    startRecording();
+                    File folder = LocalMediaStorage.getOutputMediaFolder();
+                    if (folder == null) {
+                        Toast.makeText(this, "Der opstod en fejl ved lydoptagelse, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
+                    } else {
+                        startRecording();
+                    }
                 }
                 buttonCooldown = currentTime;
             }
@@ -117,80 +120,109 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
 
     private void finishRecording() {
         destroyAudioPlayer();
-        Intent result = new Intent();
-        String fileName = "recording_" + System.nanoTime() + ".mp4";
-        File file = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
-        file.renameTo(new File(LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO).getPath()));
-        result.putExtra("recordingUri", LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO));
-        setResult(Activity.RESULT_OK, result);
-        finish();
-    }
-
-    private void cancelRecording() {
-        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
-        if (recordedFile.exists()) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-            builder.setTitle("Annulere optagelse");
-            builder.setMessage("Vil slette optagelsen?");
-            builder.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
-                    recordedFile.delete();
-                    destroyAudioPlayer();
-                    finish();
-                }
-            });
-            builder.setNegativeButton("NEJ", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                }
-            });
-            builder.create().show();
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (folder == null) {
+            Toast.makeText(this, "Der opstod en fejl da lydoptagelsen skulle gemmes, intet SD kort blev fundet, optagelsen blev ikke gemt.", Toast.LENGTH_LONG).show();
+            finish();
         } else {
-            destroyAudioPlayer();
+            Intent result = new Intent();
+            String fileName = "recording_" + System.nanoTime() + ".mp4";
+            File file = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+            file.renameTo(new File(LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO).getPath()));
+            result.putExtra("recordingUri", LocalMediaStorage.getOutputMediaFileUri(fileName, LocalMediaStorage.MEDIA_TYPE_AUDIO));
+            setResult(Activity.RESULT_OK, result);
             finish();
         }
 
+
+    }
+
+    private void cancelRecording() {
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (folder == null) {
+            destroyAudioPlayer();
+            finish();
+        } else {
+            File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+            if (recordedFile.exists()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                builder.setTitle("Annulere optagelse");
+                builder.setMessage("Vil slette optagelsen?");
+                builder.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+                        recordedFile.delete();
+                        destroyAudioPlayer();
+                        finish();
+                    }
+                });
+                builder.setNegativeButton("NEJ", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+                builder.create().show();
+            } else {
+                destroyAudioPlayer();
+                finish();
+            }
+        }
     }
 
 
     private void trashRecording() {
-        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
-        if (recordedFile.exists()) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (folder == null) {
+            Toast.makeText(this, "Der opstod en fejl da lydoptagelsen skulle slettes, intet SD kort blev fundet.", Toast.LENGTH_LONG).show();
+        } else {
+            File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+            if (recordedFile.exists()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-            builder.setTitle("Slet optagelse");
-            builder.setMessage("Vil slette optagelsen?");
-            builder.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
-                    recordedFile.delete();
-                    recText.setText("0:00.00");
-                    resetAudioPlayer();
-                }
-            });
-            builder.setNegativeButton("NEJ", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+                builder.setTitle("Slet optagelse");
+                builder.setMessage("Vil slette optagelsen?");
+                builder.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+                        recordedFile.delete();
+                        recText.setText("0:00:00");
+                        ap.release();
+                        ap = null;
+                        resetAudioPlayer();
+                    }
+                });
+                builder.setNegativeButton("NEJ", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
 
-                }
-            });
-            builder.create().show();
+                    }
+                });
+                builder.create().show();
+            }
         }
+
+
     }
 
     private void setEnabledTrash(boolean active) {
-        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, 3).getPath());
-        if (recordedFile.exists() && active) {
-            trashButton.setEnabled(true);
-            trashButton.setAlpha(1.0f);
-        } else {
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (folder == null) {
             trashButton.setEnabled(false);
             trashButton.setAlpha(0.35f);
+        } else {
+            File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, 3).getPath());
+            if (recordedFile.exists() && active) {
+                trashButton.setEnabled(true);
+                trashButton.setAlpha(1.0f);
+            } else {
+                trashButton.setEnabled(false);
+                trashButton.setAlpha(0.35f);
+            }
         }
+
     }
 
     private void stopRecording() {
@@ -256,13 +288,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         resetAudioPlayer();
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        forcestopAudioPlayer();
-        destroyAudioPlayer();
-        stopRecording();
-    }
+
 
     @Override
     public void onBackPressed() {
@@ -277,21 +303,12 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onPause() {
+        super.onPause();
         forcestopAudioPlayer();
         destroyAudioPlayer();
         stopRecording();
     }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        forcestopAudioPlayer();
-        destroyAudioPlayer();
-        stopRecording();
-    }
-
 
     /**
      * MEDIA PLAYER START
@@ -302,7 +319,7 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         public void run() {
             if (!ap.isPlaying()) {
                 seekBar.setProgress(0);
-                posText.setText("0:00.00");
+                posText.setText("0:00:00");
                 recButton.setAlpha(1.0f);
                 recText.setAlpha(1.0f);
                 forcestopAudioPlayer();
@@ -375,41 +392,49 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
             playButton.setAlpha(1f);
         } else {
             playButton.setAlpha(0.35f);
+            seekBar.setProgress(0);
         }
     }
 
     private void resetAudioPlayer() {
-
-        MediaPlayer old = ap;
-
-        String filePath = LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath();
-        if (new File(filePath).exists()) {
-            audioText.setText("Paused");
-            ap = new MediaPlayer();
-            setEnabledTrash(true);
-            ap = MediaPlayer.create(this, Uri.parse(filePath));
-            seekBar.setMax(ap.getDuration());
-            durText.setText(millisToPlayback(ap.getDuration()));
-            if (old == null) {
-                seekBar.setProgress(0);
-                posText.setText("0:00.00");
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (folder == null) {
+            setEnabledTrash(false);
+            setEnableAP(false);
+            posText.setText("0:00:00");
+            durText.setText("0:00:00");
+            audioText.setText("No SD card found");
+            Toast.makeText(this, "Intet SD kort blev fundet.", Toast.LENGTH_LONG).show();
+        } else {
+            MediaPlayer old = ap;
+            String filePath = LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath();
+            if (new File(filePath).exists()) {
+                ap = MediaPlayer.create(this, Uri.parse(filePath));
+                seekBar.setMax(ap.getDuration());
+                durText.setText(millisToPlayback(ap.getDuration()));
+                audioText.setText("Paused");
+                setEnabledTrash(true);
+                if (old == null) {
+                    seekBar.setProgress(0);
+                    posText.setText("0:00:00");
+                    return;
+                }
+                seekBar.setProgress(old.getDuration());
+                posText.setText(millisToPlayback(ap.getCurrentPosition()));
+                ap.seekTo(old.getDuration());
+                old.release();
                 return;
             }
-            seekBar.setProgress(old.getDuration());
-            posText.setText(millisToPlayback(ap.getCurrentPosition()));
-            ap.seekTo(old.getDuration());
-            old.release();
-            return;
+            setEnabledTrash(false);
+            posText.setText("0:00:00");
+            durText.setText("0:00:00");
+            if (ar.isRecording())
+                audioText.setText("Recording");
+            else
+                audioText.setText("Nothing recorded");
+            setEnableAP(false);
         }
-        setEnabledTrash(false);
-        seekBar.setProgress(0);
-        posText.setText("0:00.00");
-        durText.setText("0:00.00");
-        if (ar.isRecording())
-            audioText.setText("Recording");
-        else
-            audioText.setText("Nothing recorded");
-        setEnableAP(false);
+
     }
 
     @Override
@@ -451,6 +476,6 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         time -= minuts * 60000;
         int seconds = time / 1000;
 
-        return hours + ":" + String.format("%02d", minuts) + "." + String.format("%02d", seconds);
+        return hours + ":" + String.format("%02d", minuts) + ":" + String.format("%02d", seconds);
     }
 }

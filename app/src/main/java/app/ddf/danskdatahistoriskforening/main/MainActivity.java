@@ -60,8 +60,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        App.setCurrentActivity(this);
         setContentView(R.layout.activity_main);
+
         if (savedInstanceState == null) {
 
             getSupportFragmentManager().beginTransaction()
@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        System.out.println("menu new");
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         editButton = menu.findItem(R.id.editModeItem);
@@ -103,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     protected void onResume() {
+        App.setCurrentActivity(this);
+
         if (!App.isConnected()) {
             findViewById(R.id.internetConnBar).setVisibility(View.VISIBLE);
         } else {

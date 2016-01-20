@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import app.ddf.danskdatahistoriskforening.helper.App;
 import app.ddf.danskdatahistoriskforening.R;
 import app.ddf.danskdatahistoriskforening.dal.Item;
 import app.ddf.danskdatahistoriskforening.domain.Logic;
+import app.ddf.danskdatahistoriskforening.helper.LocalMediaStorage;
 
 public class ItemDescriptionFragment extends Fragment implements ItemActivity.ItemUpdater, View.OnClickListener, SeekBar.OnSeekBarChangeListener, View.OnFocusChangeListener {
     EditText itemDescription;
@@ -87,13 +89,6 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        forcestopAudioPlayer();
-        destroyAudioPlayer();
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
         forcestopAudioPlayer();
@@ -120,7 +115,12 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
     @Override
     public void onClick(View v) {
         if (v == recButton) {
-            ((ItemActivity) getActivity()).startRecording();
+            File folder = LocalMediaStorage.getOutputMediaFolder();
+            if (folder == null) {
+                Toast.makeText(getActivity(), "Der opstod en fejl ved lydoptagelse, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
+            } else {
+                ((ItemActivity) getActivity()).startRecording();
+            }
         } else if(v == playButton){
             if (currentAP.isPlaying())
                 pauseAP();
@@ -159,11 +159,19 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
     }
 
     private void destroyAudioPlayer() {
+        if (aps != null) {
+            for (MediaPlayer mp : aps) {
+                if (mp != null) {
+                    if (mp.isPlaying())
+                        mp.stop();
+                    mp.release();
+                    mp = null;
+                }
+            }
+            aps.clear();
+        }
         if (currentAP == null)
             return;
-        if (currentAP.isPlaying())
-            currentAP.stop();
-        currentAP.release();
         currentAP = null;
     }
 
@@ -171,10 +179,9 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
         apHandler.removeCallbacks(apRunnable);
         playButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
         audioText.setText("Paused");
+
         if (currentAP == null)
             return;
-        if (currentAP.isPlaying())
-            currentAP.stop();
         currentAP = aps.get(0);
         currentAP.seekTo(0);
     }
@@ -263,43 +270,51 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
     }
 
     private void resetAudioPlayer() {
-        Item item = Logic.instance.editItem;
 
-        seekBar.setProgress(0);
-        posText.setText("0:00.00");
-        if (aps != null) {
-            for (MediaPlayer mp : aps) {
-                mp.release();
-                mp = null;
-            }
-            aps.clear();
-        }
-        List<Uri> recordings = new ArrayList<Uri>();
-        List<Uri> recordingsBE = item.getRecordings();
-        List<Uri> recordingsFE = item.getAddedRecordings();
-        if (recordingsBE != null)
-            recordings.addAll(recordingsBE);
-        if (recordingsFE != null)
-            recordings.addAll(recordingsFE);
-        if (recordings.isEmpty()) {
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (folder == null) {
             setEnableAP(false);
-            audioText.setText("No audio files");
-            durText.setText("0:00.00");
+            posText.setText("0:00:00");
+            durText.setText("0:00:00");
+            audioText.setText("No SD card found");
+            Toast.makeText(getActivity(), "Intet SD kort blev fundet.", Toast.LENGTH_LONG).show();
         } else {
-            setEnableAP(true);
-            System.out.println(recordings.size());
-            aps = new ArrayList<MediaPlayer>();
-            for (Uri uri : recordings) {
-                System.out.println(uri);
-                File audioFile = new File(uri.getPath());
-                if (audioFile.exists()) {
-                    aps.add(MediaPlayer.create(getActivity(), Uri.parse(uri.getPath())));
+            Item item = Logic.instance.editItem;
+            seekBar.setProgress(0);
+            posText.setText("0:00:00");
+            List<Uri> recordings = new ArrayList<Uri>();
+            List<Uri> recordingsBE = item.getRecordings();
+            List<Uri> recordingsFE = item.getAddedRecordings();
+            if (recordingsBE != null)
+                recordings.addAll(recordingsBE);
+            if (recordingsFE != null)
+                recordings.addAll(recordingsFE);
+            if (recordings.isEmpty()) {
+                setEnableAP(false);
+                audioText.setText("No audio files");
+                durText.setText("0:00:00");
+            } else {
+                setEnableAP(true);
+                System.out.println(recordings.size());
+                aps = new ArrayList<MediaPlayer>();
+                for (Uri uri : recordings) {
+                    System.out.println(uri);
+                    File audioFile = new File(uri.getPath());
+                    if (audioFile.exists()) {
+                        aps.add(MediaPlayer.create(getActivity(), Uri.parse(uri.getPath())));
+                    }
+                }
+                if (!aps.isEmpty()) {
+                    currentAP = aps.get(0);
+                    seekBar.setMax(getAPSDuration());
+                    audioText.setText(aps.size() + " audio files");
+                    durText.setText(millisToPlayback(getAPSDuration()));
+                } else {
+                    audioText.setText("No audio files");
+                    durText.setText("0:00:00");
+                    Toast.makeText(getActivity(), "Lydfiler bør eksistere, men kunne ikke findes, muligvist SD kort fejl.", Toast.LENGTH_LONG).show();
                 }
             }
-            currentAP = aps.get(0);
-            seekBar.setMax(getAPSDuration());
-            audioText.setText(aps.size() + " audio files");
-            durText.setText(millisToPlayback(getAPSDuration()));
         }
     }
     

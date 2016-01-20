@@ -67,7 +67,6 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        App.setCurrentActivity(this);
         setContentView(R.layout.activity_item);
 
         Toolbar registerToolbar = (Toolbar) findViewById(R.id.register_toolbar);
@@ -95,6 +94,7 @@ public class ItemActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onResume() {
+        App.setCurrentActivity(this);
         if (!App.isConnected()) {
             findViewById(R.id.internetConnBar).setVisibility(View.VISIBLE);
         } else {
