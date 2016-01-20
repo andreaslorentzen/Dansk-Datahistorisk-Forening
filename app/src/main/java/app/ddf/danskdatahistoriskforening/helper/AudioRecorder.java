@@ -29,7 +29,7 @@ public class AudioRecorder  {
         return isRecording;
     }
 
-    public boolean startRecording() throws IOException {
+    public void startRecording() throws IOException {
         isRecording = true;
         mr = new MediaRecorder();
         String mFileName = LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD_TEMP).getPath();
@@ -38,12 +38,6 @@ public class AudioRecorder  {
             tempFile.delete();
             mFileName = LocalMediaStorage.getOutputMediaFileUri(null,LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD_TEMP).getPath();
         }
-        tempFile = new File(mFileName);
-        if (!tempFile.exists()) {
-            isRecording = false;
-            return false;
-        }
-        mr = new MediaRecorder();
         mr.setAudioSource(MediaRecorder.AudioSource.MIC);
         mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mr.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
@@ -52,7 +46,6 @@ public class AudioRecorder  {
         mr.setOutputFile(mFileName);
         mr.prepare();
         mr.start();
-        return true;
     }
 
     public boolean stopRecording() throws IOException {

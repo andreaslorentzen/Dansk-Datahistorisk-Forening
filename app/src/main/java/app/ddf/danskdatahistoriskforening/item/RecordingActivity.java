@@ -211,21 +211,18 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void startRecording() {
-        try {
-            // disable buttons
-            if (!ar.startRecording()) {
-                Toast.makeText(this, "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
-                return;
-            }
-            setEnableScreen(false);
-            setEnableAP(false);
-            startTime = System.currentTimeMillis();
-            recButton.setImageResource(R.drawable.ic_pause);
-            arHandler.postDelayed(arRunnable, 0);
-            audioText.setText("Recording");
-        } catch (IOException e) {
-            e.printStackTrace();
+        // disable buttons
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (!folder.exists()) {
+            Toast.makeText(this, "Der opstod en fejl ved lydoptagelse, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
+            return;
         }
+        setEnableScreen(false);
+        setEnableAP(false);
+        startTime = System.currentTimeMillis();
+        recButton.setImageResource(R.drawable.ic_pause);
+        arHandler.postDelayed(arRunnable, 0);
+        audioText.setText("Recording");
     }
 
     private void setEnableScreen(boolean active) {

@@ -126,7 +126,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
             if (folder.exists()) {
                 ((ItemActivity) getActivity()).startRecording();
             } else {
-                Toast.makeText(getActivity(), "Der opstod en fejl ved oprettelse af billedet, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Der opstod en fejl ved lydoptagelse, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
             }
         } else if(v == playButton){
             if (currentAP.isPlaying())
