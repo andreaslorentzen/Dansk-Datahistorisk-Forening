@@ -120,7 +120,6 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
         File folder = LocalMediaStorage.getOutputMediaFolder();
         if (folder == null) {
             Toast.makeText(this, "Der opstod en fejl ved lydoptagelse, sørg for at SD kortet er tilgængeligt og prøv igen.", Toast.LENGTH_LONG).show();
-            finish();
         } else {
             Intent result = new Intent();
             String fileName = "recording_" + System.nanoTime() + ".mp4";
