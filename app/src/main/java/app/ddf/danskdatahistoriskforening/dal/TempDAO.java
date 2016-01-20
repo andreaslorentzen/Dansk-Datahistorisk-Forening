@@ -2,6 +2,7 @@ package app.ddf.danskdatahistoriskforening.dal;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -350,7 +351,18 @@ public class TempDAO implements IDAO {
 
             // start the query
             OutputStream os = conn.getOutputStream();
-            os.write(byteBuffer.toByteArray());
+
+            if (byteBuffer == null){
+                Log.d("SDState", "nothing to post");
+                return;
+            }
+
+            byte[] bytes = byteBuffer.toByteArray();
+            if (bytes == null){
+                Log.d("SDState", "nothing to post");
+                return;
+            }
+            os.write(bytes);
             os.close();
             System.out.println(conn.getResponseCode());
 
