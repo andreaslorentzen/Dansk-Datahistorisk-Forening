@@ -304,10 +304,16 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
                         aps.add(MediaPlayer.create(getActivity(), Uri.parse(uri.getPath())));
                     }
                 }
-                currentAP = aps.get(0);
-                seekBar.setMax(getAPSDuration());
-                audioText.setText(aps.size() + " audio files");
-                durText.setText(millisToPlayback(getAPSDuration()));
+                if (!aps.isEmpty()) {
+                    currentAP = aps.get(0);
+                    seekBar.setMax(getAPSDuration());
+                    audioText.setText(aps.size() + " audio files");
+                    durText.setText(millisToPlayback(getAPSDuration()));
+                } else {
+                    audioText.setText("No audio files");
+                    durText.setText("0:00:00");
+                    Toast.makeText(getActivity(), "Lydfiler bør eksistere, men kunne ikke findes, muligvist SD kort fejl.", Toast.LENGTH_LONG).show();
+                }
             }
         }
     }
