@@ -140,59 +140,71 @@ public class RecordingActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void cancelRecording() {
-        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
-        if (recordedFile.exists()) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-            builder.setTitle("Annulere optagelse");
-            builder.setMessage("Vil slette optagelsen?");
-            builder.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
-                    recordedFile.delete();
-                    destroyAudioPlayer();
-                    finish();
-                }
-            });
-            builder.setNegativeButton("NEJ", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                }
-            });
-            builder.create().show();
-        } else {
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (folder == null) {
             destroyAudioPlayer();
             finish();
-        }
+        } else {
+            File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+            if (recordedFile.exists()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
+                builder.setTitle("Annulere optagelse");
+                builder.setMessage("Vil slette optagelsen?");
+                builder.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+                        recordedFile.delete();
+                        destroyAudioPlayer();
+                        finish();
+                    }
+                });
+                builder.setNegativeButton("NEJ", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+                builder.create().show();
+            } else {
+                destroyAudioPlayer();
+                finish();
+            }
+        }
     }
 
 
     private void trashRecording() {
-        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
-        if (recordedFile.exists()) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        File folder = LocalMediaStorage.getOutputMediaFolder();
+        if (folder == null) {
+            Toast.makeText(this, "Der opstod en fejl da lydoptagelsen skulle slettes, intet SD kort blev fundet.", Toast.LENGTH_LONG).show();
+        } else {
+            File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+            if (recordedFile.exists()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-            builder.setTitle("Slet optagelse");
-            builder.setMessage("Vil slette optagelsen?");
-            builder.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
-                    recordedFile.delete();
-                    recText.setText("0:00.00");
-                    resetAudioPlayer();
-                }
-            });
-            builder.setNegativeButton("NEJ", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+                builder.setTitle("Slet optagelse");
+                builder.setMessage("Vil slette optagelsen?");
+                builder.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        File recordedFile = new File(LocalMediaStorage.getOutputMediaFileUri(null, LocalMediaStorage.MEDIA_TYPE_AUDIO_RECORD).getPath());
+                        recordedFile.delete();
+                        recText.setText("0:00.00");
+                        resetAudioPlayer();
+                    }
+                });
+                builder.setNegativeButton("NEJ", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
 
-                }
-            });
-            builder.create().show();
+                    }
+                });
+                builder.create().show();
+            }
         }
+
+
     }
 
     private void setEnabledTrash(boolean active) {
