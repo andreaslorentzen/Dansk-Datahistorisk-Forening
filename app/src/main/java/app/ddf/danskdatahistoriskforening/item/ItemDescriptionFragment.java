@@ -166,11 +166,17 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
     }
 
     private void destroyAudioPlayer() {
+        if (aps != null)
+            for (MediaPlayer mp: aps) {
+                if (mp != null) {
+                    if (mp.isPlaying())
+                        mp.stop();
+                    mp.release();
+                    mp = null;
+                }
+            }
         if (currentAP == null)
             return;
-        if (currentAP.isPlaying())
-            currentAP.stop();
-        currentAP.release();
         currentAP = null;
     }
 
@@ -178,14 +184,7 @@ public class ItemDescriptionFragment extends Fragment implements ItemActivity.It
         apHandler.removeCallbacks(apRunnable);
         playButton.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
         audioText.setText("Paused");
-        for (MediaPlayer mp: aps) {
-            if (mp != null) {
-                if (mp.isPlaying())
-                    mp.stop();
-                mp.release();
-                mp = null;
-            }
-        }
+
         if (currentAP == null)
             return;
         currentAP = aps.get(0);
